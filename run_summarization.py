@@ -61,6 +61,12 @@ tf.app.flags.DEFINE_float('max_grad_norm', 2.0, 'for gradient clipping')
 # Pointer-generator or baseline model
 tf.app.flags.DEFINE_boolean('pointer_gen', True, 'If True, use pointer-generator model. If False, use baseline model.')
 
+#GCN model
+tf.app.flags.DEFINE_boolean('word_gcn', True, 'If True, use pointer-generator with gcn at word level. If False, use other options.')
+tf.app.flags.DEFINE_boolean('word_gcn_gating', True, 'If True, use gating at word level')
+tf.app.flags.DEFINE_boolean('word_gcn_dropout', True, 'If True, use gating at word level')
+tf.app.flags.DEFINE_integer('word_gcn_layers', 1, 'Layers at gcn')
+
 # Coverage hyperparameters
 tf.app.flags.DEFINE_boolean('coverage', False, 'Use coverage mechanism. Note, the experiments reported in the ACL paper train WITHOUT coverage until converged, and then train for a short phase WITH coverage afterwards. i.e. to reproduce the results in the ACL paper, turn this off for most of training then turn on for a short phase at the end.')
 tf.app.flags.DEFINE_float('cov_loss_wt', 1.0, 'Weight of coverage loss (lambda in the paper). If zero, then no incentive to minimize coverage loss.')
@@ -297,6 +303,8 @@ def main(unused_argv):
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list
       hps_dict[key] = val # add it to the dict
+  if FLAGS.word_gcn:
+    hps_dict['num_word_dependency_labels'] = #something from meta data here . Gives unique dependency labels.
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict)
 
   # Create a batcher object that will create minibatches of data

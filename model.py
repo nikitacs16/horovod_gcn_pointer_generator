@@ -43,7 +43,12 @@ class SummarizationModel(object):
     if FLAGS.pointer_gen:
       self._enc_batch_extend_vocab = tf.placeholder(tf.int32, [hps.batch_size, None], name='enc_batch_extend_vocab')
       self._max_art_oovs = tf.placeholder(tf.int32, [], name='max_art_oovs')
-
+    
+    if FLAGS.word_gcn:
+      self._word_adj_mat_in  = [{lbl: tf.sparse_placeholder(tf.float32,  shape=[None, None],  name='word_adj_mat_in_{}'.  format(lbl))} for lbl in range(hps.num_word_dependency_labels) for _ in range(hps.batch_size)]
+      self._word_adj_mat_out = [{lbl: tf.sparse_placeholder(tf.float32,  shape=[None, None],  name='word_adj_mat_out_{}'. format(lbl))} for lbl in range(hps.num_word_dependency_labels) for _ in range(hps.batch_size)]  
+      self._word_gcn_dropout    = tf.placeholder_with_default(hps.word_gcn_dropout,     shape=(), name='dropout')
+      self._max_word_seq_len     = tf.placeholder(tf.int32, shape=(), name='max_seq_len')
     # decoder part
     self._dec_batch = tf.placeholder(tf.int32, [hps.batch_size, hps.max_dec_steps], name='dec_batch')
     self._target_batch = tf.placeholder(tf.int32, [hps.batch_size, hps.max_dec_steps], name='target_batch')
@@ -92,6 +97,106 @@ class SummarizationModel(object):
       (encoder_outputs, (fw_st, bw_st)) = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs, dtype=tf.float32, sequence_length=seq_len, swap_memory=True)
       encoder_outputs = tf.concat(axis=2, values=encoder_outputs) # concatenate the forwards and backwards states
     return encoder_outputs, fw_st, bw_st
+
+
+
+  def _add_gcn_layer(self, gcn_in,  in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, num_layers=1, use_gating=False, dropout=1.0, name="GCN"):
+    
+    """ Adds GCN layers to the graph. This is a directed GCN
+    
+    Args:
+     gcn_in: Input to GCN Layer
+     in_dim: Dimension of input to GCN Layer 
+     gcn_dim: Hidden state dimension of GCN
+     batch_size: Batch size
+     max_nodes: Maximum number of nodes in graph
+     max_labels: Maximum number of edge labels
+     adj_in: Adjacency matrix for in edges
+     adj_out: Adjacency matrix for out edges
+     num_layers: Number of GCN Layers
+     use_gating: Edge level gating if True
+     dropout: Rate of dropout within the layer
+    Returns
+     out: Outputs from GCN layers. Appended at the index is the final output         
+    """
+
+    out = []
+    out.append(gcn_in)
+
+    for layer in range(num_layers):
+      gcn_in    = out[-1]           # out contains the output of all the GCN layers, intitally contains input to first GCN Layer
+      if len(out) > 1: in_dim = gcn_dim         # After first iteration the in_dim = gcn_dim
+
+      with tf.name_scope('%s-%d' % (name,layer)):
+
+        act_sum = tf.zeros([batch_size, max_nodes, gcn_dim])
+        
+        for lbl in range(max_labels):
+
+          with tf.variable_scope('label-%d_name-%s_layer-%d' % (lbl, name, layer)) as scope:
+
+            w_in   = tf.get_variable('w_in',   [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+            b_in   = tf.get_variable('b_in',   [1, gcn_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
+
+            w_out  = tf.get_variable('w_out',  [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+            b_out  = tf.get_variable('b_out',  [1, gcn_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
+
+            w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+
+            if use_gating:
+              w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+              b_gin  = tf.get_variable('b_gin',  [1],       initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
+
+              w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+              b_gout = tf.get_variable('b_gout', [1],       initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
+
+              w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+
+          with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
+            inp_in  = tf.tensordot(gcn_in, w_in, axes=[2,0]) + tf.expand_dims(b_in, axis=0)
+            in_t    = tf.stack([tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_in[i]) for i in range(batch_size)])
+            if dropout != 1.0: in_t    = tf.nn.dropout(in_t, keep_prob=dropout)
+
+            if use_gating:
+              inp_gin = tf.tensordot(gcn_in, w_gin, axes=[2,0]) + tf.expand_dims(b_gin, axis=0)
+              in_gate = tf.stack([tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_gin[i]) for i in range(batch_size)])
+              in_gsig = tf.sigmoid(in_gate)
+              in_act   = in_t * in_gsig
+            else:
+              in_act   = in_t
+
+          with tf.name_scope('out_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
+            inp_out  = tf.tensordot(gcn_in, w_out, axes=[2,0]) + tf.expand_dims(b_out, axis=0)
+            out_t    = tf.stack([tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_out[i]) for i in range(batch_size)])
+            if dropout != 1.0: out_t    = tf.nn.dropout(out_t, keep_prob=dropout)
+
+            if use_gating:
+              inp_gout = tf.tensordot(gcn_in, w_gout, axes=[2,0]) + tf.expand_dims(b_gout, axis=0)
+              out_gate = tf.stack([tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_gout[i]) for i in range(batch_size)])
+              out_gsig = tf.sigmoid(out_gate)
+              out_act  = out_t * out_gsig
+            else:
+              out_act = out_t
+
+          with tf.name_scope('self_loop'):
+            inp_loop  = tf.tensordot(gcn_in, w_loop,  axes=[2,0])
+            if dropout != 1.0: inp_loop  = tf.nn.dropout(inp_loop, keep_prob=dropout)
+
+            if use_gating:
+              inp_gloop = tf.tensordot(gcn_in, w_gloop, axes=[2,0])
+              loop_gsig = tf.sigmoid(inp_gloop)
+              loop_act  = inp_loop * loop_gsig
+            else:
+              loop_act = inp_loop
+
+
+          act_sum += in_act + out_act + loop_act
+        gcn_out = tf.nn.relu(act_sum)
+        out.append(gcn_out)
+
+    return out 
+
+  
 
 
   def _reduce_states(self, fw_st, bw_st):
@@ -216,9 +321,22 @@ class SummarizationModel(object):
       # Add the encoder.
       enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens)
       self._enc_states = enc_outputs
-
       # Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
       self._dec_in_state = self._reduce_states(fw_st, bw_st)
+      if self._hps.word_gcn:
+        gcn_outputs = self._add_gcn_layer(gcn_in=enc_outputs,  in_dim=self._hps.hidden_dim*2, gcn_dim=self._hps.word_gcn_dim, batch_size=self._hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=self._hps.num_word_dependency_labels, adj_in=self._word_adj_mat_in, adj_out=self._word_adj_mat_out, num_layers=self._hps.word_gcn_layers, use_gating=self._hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")
+        gcn_last_layer_output = gcn_output[-1]
+        self._enc_states = gcn_last_layer_output
+
+
+        '''
+        
+        Ask about fw_st and bw_st here wrt GCN
+        Is seq len right here ?
+
+        '''
+
+      
 
       # Add the decoder.
       with tf.variable_scope('decoder'):
@@ -412,6 +530,9 @@ class SummarizationModel(object):
       feed[self._enc_batch_extend_vocab] = batch.enc_batch_extend_vocab
       feed[self._max_art_oovs] = batch.max_art_oovs
       to_return['p_gens'] = self.p_gens
+
+    if FLAGS.word_gcn:
+      feed[self._max_word_seq_len] = batch.max_word_seq_len
 
     if self._hps.coverage:
       feed[self.prev_coverage] = np.stack(prev_coverage, axis=0)
