@@ -21,7 +21,7 @@ import random
 import struct
 import csv
 from tensorflow.core.example import example_pb2
-
+from collections import defaultdict as ddict
 # <s> and </s> are used in the data files to segment the abstracts into sentences. They don't receive vocab ids.
 SENTENCE_START = '<s>'
 SENTENCE_END = '</s>'
@@ -121,13 +121,29 @@ def example_generator(data_path, single_pass):
   Yields:
     Deserialized tf.Example.
   """
+  data = pickle.load(open(data_path,'rb'))
+  print('Got called')
   while True:
-    filelist = glob.glob(data_path) # get the list of datafiles
-    assert filelist, ('Error: Empty filelist at %s' % data_path) # check filelist isn't empty
+    
+    #filelist = glob.glob(data_path) # get the list of datafiles
+    #assert filelist, ('Error: Empty filelist at %s' % data_path) # check filelist isn't empty
     if single_pass:
-      filelist = sorted(filelist)
+      pass
     else:
-      random.shuffle(filelist)
+      random.shuffle(data)
+    
+
+    for i in data:
+      if hps.word_gcn:
+        yield i['abstract'], i['article'], i['word_edge_list']
+      else:
+        yield i['abstract'], i['article']  
+
+    if single_pass:
+      print "example_generator completed reading all datafiles. No more data."
+      break
+
+    '''
     for f in filelist:
       reader = open(f, 'rb')
       while True:
@@ -139,6 +155,7 @@ def example_generator(data_path, single_pass):
     if single_pass:
       print "example_generator completed reading all datafiles. No more data."
       break
+    '''
 
 
 def article2ids(article_words, vocab):
@@ -274,3 +291,33 @@ def show_abs_oovs(abstract, vocab, article_oovs):
       new_words.append(w)
   out_str = ' '.join(new_words)
   return out_str
+
+
+def get_adj(edge_list, batch_size, max_nodes, max_labels):
+    adj_main_in, adj_main_out = [], []
+
+    for edges in edge_list:
+      adj_in, adj_out = {}, {}
+
+      in_ind, in_data   = ddict(list), ddict(list)
+      out_ind, out_data = ddict(list), ddict(list)
+
+      for src, dest, lbl in edges:
+        out_ind [lbl].append((src, dest))
+        out_data[lbl].append(1.0)
+
+        in_ind  [lbl].append((dest, src))
+        in_data [lbl].append(1.0)
+
+      for lbl in range(max_labels):
+        if lbl not in out_ind and lbl not in in_ind:
+          adj_in [lbl] = sp.coo_matrix((max_nodes, max_nodes))
+          adj_out[lbl] = sp.coo_matrix((max_nodes, max_nodes))
+        else:
+          adj_in [lbl] = sp.coo_matrix((in_data[lbl],  zip(*in_ind[lbl])),  shape=(max_nodes, max_nodes))
+          adj_out[lbl] = sp.coo_matrix((out_data[lbl], zip(*out_ind[lbl])), shape=(max_nodes, max_nodes))
+
+      adj_main_in.append(adj_in)
+      adj_main_out.append(adj_out)
+
+    return adj_main_in, adj_main_out
