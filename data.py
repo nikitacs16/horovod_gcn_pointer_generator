@@ -292,8 +292,10 @@ def show_abs_oovs(abstract, vocab, article_oovs):
   out_str = ' '.join(new_words)
   return out_str
 
+dep_list = ['acl','advcl','advmod','amod','appos','aux','case','cc','ccomp','clf','compound','conj','cop','csubj','dep','det','discourse','dislocated','expl','fixed','flat','goeswith','iobj','list','mark','nmod','nsubj','nummod','obj','obl','orphan','parataxis','punct','reparandum','root','vocative','xcomp']
+dep_dict = {label: i for i, label in enumerate(dep_list)}
 
-def get_adj(edge_list, batch_size, max_nodes, max_labels):
+def get_adj(edge_list, batch_size, max_nodes, max_labels,label_dict=dep_adj):
     adj_main_in, adj_main_out = [], []
 
     for edges in edge_list:
@@ -302,7 +304,8 @@ def get_adj(edge_list, batch_size, max_nodes, max_labels):
       in_ind, in_data   = ddict(list), ddict(list)
       out_ind, out_data = ddict(list), ddict(list)
 
-      for src, dest, lbl in edges:
+      for src, dest, lbl_ in edges:
+        lbl = label_dict[lbl_]
         out_ind [lbl].append((src, dest))
         out_data[lbl].append(1.0)
 

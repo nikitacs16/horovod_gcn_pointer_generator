@@ -191,19 +191,20 @@ def setup_training(model, batcher):
 def run_training(model, batcher, sess_context_manager, sv, summary_writer):
   """Repeatedly runs training iterations, logging loss to screen and writing summaries"""
   tf.logging.info("starting run_training")
+  batch_count = 0
   with sess_context_manager as sess:
     if FLAGS.debug: # start the tensorflow debugger
       sess = tf_debug.LocalCLIDebugWrapperSession(sess)
       sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
     while True: # repeats until interrupted
       batch = batcher.next_batch()
-
+      batch_count = batch_count + 1
       tf.logging.info('running training step...')
       t0=time.time()
       results = model.run_train_step(sess, batch)
       t1=time.time()
       tf.logging.info('seconds for training step: %.3f', t1-t0)
-
+      tf.logging.info('Batch count: %d',batch_count)
       loss = results['loss']
       tf.logging.info('loss: %f', loss) # print the loss to screen
 
@@ -305,7 +306,7 @@ def main(unused_argv):
     if key in hparam_list: # if it's in the list
       hps_dict[key] = val # add it to the dict
   if FLAGS.word_gcn:
-    hps_dict['num_word_dependency_labels'] = 55 #something from meta data here . Gives unique dependency labels.
+    hps_dict['num_word_dependency_labels'] = 37 #something from meta data here . Gives unique dependency labels.
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict)
 
   # Create a batcher object that will create minibatches of data
