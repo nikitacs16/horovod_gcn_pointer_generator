@@ -28,7 +28,7 @@ import data
 class Example(object):
   """Class representing a train/val/test example for text summarization."""
 
-  def __init__(self, article, abstract_sentences, vocab, hps):
+  def __init__(self, article, abstract_sentences, vocab, hps,word_edge_list=None):
     """Initializes the Example, performing tokenization and truncation to produce the encoder, decoder and target sequences, which are stored in self.
 
     Args:
@@ -69,6 +69,9 @@ class Example(object):
 
       # Overwrite decoder target sequence so it uses the temp article OOV ids
       _, self.target = self.get_dec_inp_targ_seqs(abs_ids_extend_vocab, hps.max_dec_steps, start_decoding, stop_decoding)
+
+    if hps.word_gcn:
+      self.word_edge_list = word_edge_list 
 
     # Store the original strings
     self.original_article = article
@@ -129,6 +132,8 @@ class Batch(object):
        vocab: Vocabulary object
     """
     self.pad_id = vocab.word2id(data.PAD_TOKEN) # id of the PAD token used to pad sequences
+    self.adjacency_in = None
+    self.adjacency_out = None
     self.init_encoder_seq(example_list, hps) # initialize the input to the encoder
     self.init_decoder_seq(example_list, hps) # initialize the input and targets for the decoder
     self.store_orig_strings(example_list) # store the original strings
@@ -180,6 +185,8 @@ class Batch(object):
       self.enc_batch_extend_vocab = np.zeros((hps.batch_size, max_enc_seq_len), dtype=np.int32)
       for i, ex in enumerate(example_list):
         self.enc_batch_extend_vocab[i, :] = ex.enc_input_extend_vocab[:]
+    if hps.word_gcn:
+      self.word_adj_in, self.word_adj_out = data.get_adj(edgeList, hps.batch_size, max_enc_seq_len, hps.num_word_dependency_labels)
 
   def init_decoder_seq(self, example_list, hps):
     """Initializes the following:
@@ -289,10 +296,13 @@ class Batcher(object):
     """Reads data from file and processes into Examples which are then placed into the example queue."""
 
     input_gen = self.text_generator(data.example_generator(self._data_path, self._single_pass))
-
+        
     while True:
       try:
-        (article, abstract) = input_gen.next() # read the next example from file. article and abstract are both strings.
+        if self.hps.word_gcn:
+          (article,abstract,word_edge_list) = input_gen.next()
+        else:
+          (article, abstract) = input_gen.next() # read the next example from file. article and abstract are both strings.
       except StopIteration: # if there are no more examples:
         tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
         if self._single_pass:
@@ -303,7 +313,11 @@ class Batcher(object):
           raise Exception("single_pass mode is off but the example generator is out of data; error.")
 
       abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
-      example = Example(article, abstract_sentences, self._vocab, self._hps) # Process into an Example.
+      if self.hps.word_gcn:
+        example = Example(article, abstract_sentences, self._vocab, self._hps,word_edge_list) # Process into an Example.
+      else:
+        example = Example(article, abstract_sentences, self._vocab, self._hps) # Process into an Example.
+
       self._example_queue.put(example) # place the Example in the example queue.
 
 
@@ -361,7 +375,13 @@ class Batcher(object):
     Args:
       example_generator: a generator of tf.Examples from file. See data.example_generator"""
     while True:
-      e = example_generator.next() # e is a tf.Example
+      if word_gcn:
+        abstract_text, article_text, word_edge_list  = example_generator.next() # e is a tf.Example
+        yield abstract_text, article_text, word_edge_list
+      else:
+        abstract_text, article_text = example_generator.next()
+        yield abstract_text, article_text
+      '''
       try:
         article_text = e.features.feature['article'].bytes_list.value[0] # the article text was saved under the key 'article' in the data files
         abstract_text = e.features.feature['abstract'].bytes_list.value[0] # the abstract text was saved under the key 'abstract' in the data files
@@ -372,3 +392,4 @@ class Batcher(object):
         tf.logging.warning('Found an example with empty article text. Skipping it.')
       else:
         yield (article_text, abstract_text)
+      '''

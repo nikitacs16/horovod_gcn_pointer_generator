@@ -45,8 +45,8 @@ class SummarizationModel(object):
       self._max_art_oovs = tf.placeholder(tf.int32, [], name='max_art_oovs')
     
     if FLAGS.word_gcn:
-      self._word_adj_mat_in  = [{lbl: tf.sparse_placeholder(tf.float32,  shape=[None, None],  name='word_adj_mat_in_{}'.  format(lbl))} for lbl in range(hps.num_word_dependency_labels) for _ in range(hps.batch_size)]
-      self._word_adj_mat_out = [{lbl: tf.sparse_placeholder(tf.float32,  shape=[None, None],  name='word_adj_mat_out_{}'. format(lbl))} for lbl in range(hps.num_word_dependency_labels) for _ in range(hps.batch_size)]  
+      self._word_adj_in  = [{lbl: tf.sparse_placeholder(tf.float32,  shape=[None, None],  name='word_adj_in_{}'.  format(lbl))} for lbl in range(hps.num_word_dependency_labels) for _ in range(hps.batch_size)]
+      self._word_adj_out = [{lbl: tf.sparse_placeholder(tf.float32,  shape=[None, None],  name='word_adj_out_{}'. format(lbl))} for lbl in range(hps.num_word_dependency_labels) for _ in range(hps.batch_size)]  
       self._word_gcn_dropout    = tf.placeholder_with_default(hps.word_gcn_dropout,     shape=(), name='dropout')
       self._max_word_seq_len     = tf.placeholder(tf.int32, shape=(), name='max_seq_len')
     # decoder part
@@ -72,6 +72,11 @@ class SummarizationModel(object):
     if FLAGS.pointer_gen:
       feed_dict[self._enc_batch_extend_vocab] = batch.enc_batch_extend_vocab
       feed_dict[self._max_art_oovs] = batch.max_art_oovs
+    
+    if FLAGS.word_gcn:
+      feed_dict[self._word_adj_in] = batch.word_adj_in
+      feed_dict[self._word_adj_out] = batch.word_adj_out
+
     if not just_enc:
       feed_dict[self._dec_batch] = batch.dec_batch
       feed_dict[self._target_batch] = batch.target_batch
@@ -127,30 +132,38 @@ class SummarizationModel(object):
       gcn_in    = out[-1]           # out contains the output of all the GCN layers, intitally contains input to first GCN Layer
       if len(out) > 1: in_dim = gcn_dim         # After first iteration the in_dim = gcn_dim
 
-      with tf.name_scope('%s-%d' % (name,layer)):
+      with tf.variable_scope('%s-%d' % (name,layer)):
 
         act_sum = tf.zeros([batch_size, max_nodes, gcn_dim])
+        w_in   = tf.get_variable('w_in',   [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+        w_out  = tf.get_variable('w_out',  [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+        w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+        if use_gating:
+          w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+          w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)           
+          w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+
         
         for lbl in range(max_labels):
 
           with tf.variable_scope('label-%d_name-%s_layer-%d' % (lbl, name, layer)) as scope:
 
-            w_in   = tf.get_variable('w_in',   [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+            #w_in   = tf.get_variable('w_in',   [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
             b_in   = tf.get_variable('b_in',   [1, gcn_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
 
-            w_out  = tf.get_variable('w_out',  [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+            #w_out  = tf.get_variable('w_out',  [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
             b_out  = tf.get_variable('b_out',  [1, gcn_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
 
-            w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+            #w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
 
             if use_gating:
-              w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+              #w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
               b_gin  = tf.get_variable('b_gin',  [1],       initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
 
-              w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+              #w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
               b_gout = tf.get_variable('b_gout', [1],       initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
 
-              w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+              #w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
 
           with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
             inp_in  = tf.tensordot(gcn_in, w_in, axes=[2,0]) + tf.expand_dims(b_in, axis=0)
@@ -324,7 +337,7 @@ class SummarizationModel(object):
       # Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
       self._dec_in_state = self._reduce_states(fw_st, bw_st)
       if self._hps.word_gcn:
-        gcn_outputs = self._add_gcn_layer(gcn_in=enc_outputs,  in_dim=self._hps.hidden_dim*2, gcn_dim=self._hps.word_gcn_dim, batch_size=self._hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=self._hps.num_word_dependency_labels, adj_in=self._word_adj_mat_in, adj_out=self._word_adj_mat_out, num_layers=self._hps.word_gcn_layers, use_gating=self._hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")
+        gcn_outputs = self._add_gcn_layer(gcn_in=enc_outputs,  in_dim=self._hps.hidden_dim*2, gcn_dim=self._hps.word_gcn_dim, batch_size=self._hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=self._hps.num_word_dependency_labels, adj_in=self._word_adj_in, adj_out=self._word_adj_out, num_layers=self._hps.word_gcn_layers, use_gating=self._hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")
         gcn_last_layer_output = gcn_output[-1]
         self._enc_states = gcn_last_layer_output
 
