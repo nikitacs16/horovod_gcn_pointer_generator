@@ -68,6 +68,7 @@ class SummarizationModel(object):
       batch: Batch object
       just_enc: Boolean. If True, only feed the parts needed for the encoder.
     """
+    hps = self._hps
     feed_dict = {}
     feed_dict[self._enc_batch] = batch.enc_batch
     feed_dict[self._enc_lens] = batch.enc_lens
@@ -77,9 +78,23 @@ class SummarizationModel(object):
       feed_dict[self._max_art_oovs] = batch.max_art_oovs
     
     if FLAGS.word_gcn:
+      word_adj_in = batch.word_adj_in
+      word_adj_out = batch.word_adj_out
+      for i in range(self.hps.batch_size):
+        for lbl in range(self.hps.num_word_dependency_labels):
+          feed_dict[self._word_adj_in[i][lbl]] = tf.SparseTensorValue(  indices   = np.array([word_adj_in[i][lbl].row, word_adj_in[i][lbl].col]).T,
+                                values    = word_adj_in[i][lbl].data,
+                          dense_shape = word_adj_in[i][lbl].shape)
+
+          feed_dict[self._word_adj_out[i][lbl]] = tf.SparseTensorValue(  indices  = np.array([word_adj_out[i][lbl].row, word_adj_out[i][lbl].col]).T,
+                              values    = word_adj_out[i][lbl].data,
+                          dense_shape = word_adj_out[i][lbl].shape)
+
+      '''
+
       feed_dict[self._word_adj_in] = batch.word_adj_in
       feed_dict[self._word_adj_out] = batch.word_adj_out
-
+      '''
     if not just_enc:
       feed_dict[self._dec_batch] = batch.dec_batch
       feed_dict[self._target_batch] = batch.target_batch
