@@ -132,8 +132,8 @@ class Batch(object):
        vocab: Vocabulary object
     """
     self.pad_id = vocab.word2id(data.PAD_TOKEN) # id of the PAD token used to pad sequences
-    self.adjacency_in = None
-    self.adjacency_out = None
+    self.word_adj_in = None
+    self.word_adj_out = None
     self.init_encoder_seq(example_list, hps) # initialize the input to the encoder
     self.init_decoder_seq(example_list, hps) # initialize the input and targets for the decoder
     self.store_orig_strings(example_list) # store the original strings
