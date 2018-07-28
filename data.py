@@ -22,6 +22,8 @@ import struct
 import csv
 from tensorflow.core.example import example_pb2
 from collections import defaultdict as ddict
+import pickle
+import scipy.sparse as sp
 # <s> and </s> are used in the data files to segment the abstracts into sentences. They don't receive vocab ids.
 SENTENCE_START = '<s>'
 SENTENCE_END = '</s>'
@@ -295,9 +297,9 @@ def show_abs_oovs(abstract, vocab, article_oovs):
 dep_list = ['acl','advcl','advmod','amod','appos','aux','case','cc','ccomp','clf','compound','conj','cop','csubj','dep','det','discourse','dislocated','expl','fixed','flat','goeswith','iobj','list','mark','nmod','nsubj','nummod','obj','obl','orphan','parataxis','punct','reparandum','root','vocative','xcomp']
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
-def get_adj(edge_list, batch_size, max_nodes, max_labels,label_dict=dep_adj):
+def get_adj(edge_list, batch_size, max_nodes, max_labels=37,label_dict=dep_dict):
     adj_main_in, adj_main_out = [], []
-
+	
     for edges in edge_list:
       adj_in, adj_out = {}, {}
 
@@ -322,5 +324,6 @@ def get_adj(edge_list, batch_size, max_nodes, max_labels,label_dict=dep_adj):
 
       adj_main_in.append(adj_in)
       adj_main_out.append(adj_out)
+      print(adj_main_in)
 
     return adj_main_in, adj_main_out
