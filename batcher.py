@@ -299,7 +299,7 @@ class Batcher(object):
         
     while True:
       try:
-        if self.hps.word_gcn:
+        if self._hps.word_gcn:
           (article,abstract,word_edge_list) = input_gen.next()
         else:
           (article, abstract) = input_gen.next() # read the next example from file. article and abstract are both strings.
@@ -313,7 +313,7 @@ class Batcher(object):
           raise Exception("single_pass mode is off but the example generator is out of data; error.")
 
       abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
-      if self.hps.word_gcn:
+      if self._hps.word_gcn:
         example = Example(article, abstract_sentences, self._vocab, self._hps,word_edge_list) # Process into an Example.
       else:
         example = Example(article, abstract_sentences, self._vocab, self._hps) # Process into an Example.
@@ -375,7 +375,7 @@ class Batcher(object):
     Args:
       example_generator: a generator of tf.Examples from file. See data.example_generator"""
     while True:
-      if word_gcn:
+      if self._hps.word_gcn:
         abstract_text, article_text, word_edge_list  = example_generator.next() # e is a tf.Example
         yield abstract_text, article_text, word_edge_list
       else:

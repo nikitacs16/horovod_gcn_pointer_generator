@@ -31,6 +31,7 @@ class SummarizationModel(object):
   def __init__(self, hps, vocab):
     self._hps = hps
     self._vocab = vocab
+    self.regularizer = None
 
   def _add_placeholders(self):
     """Add placeholders to the graph. These are entry points for any input data."""
@@ -45,7 +46,9 @@ class SummarizationModel(object):
       self._max_art_oovs = tf.placeholder(tf.int32, [], name='max_art_oovs')
     
     if FLAGS.word_gcn:
+      #tf.logging.info(hps.num_word_dependency_labels)
       self._word_adj_in  = [{lbl: tf.sparse_placeholder(tf.float32,  shape=[None, None],  name='word_adj_in_{}'.  format(lbl))} for lbl in range(hps.num_word_dependency_labels) for _ in range(hps.batch_size)]
+      #tf.logging.info(self._word_adj_in)
       self._word_adj_out = [{lbl: tf.sparse_placeholder(tf.float32,  shape=[None, None],  name='word_adj_out_{}'. format(lbl))} for lbl in range(hps.num_word_dependency_labels) for _ in range(hps.batch_size)]  
       self._word_gcn_dropout    = tf.placeholder_with_default(hps.word_gcn_dropout,     shape=(), name='dropout')
       self._max_word_seq_len     = tf.placeholder(tf.int32, shape=(), name='max_seq_len')
@@ -145,6 +148,8 @@ class SummarizationModel(object):
 
         
         for lbl in range(max_labels):
+	  tf.logging.info(lbl)
+	  tf.logging.info(max_labels)
 
           with tf.variable_scope('label-%d_name-%s_layer-%d' % (lbl, name, layer)) as scope:
 
@@ -165,13 +170,16 @@ class SummarizationModel(object):
 
               #w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
 
+	  for i in range(batch_size):
+	    tf.logging.info(adj_in[i].keys())		
+		
           with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
-            inp_in  = tf.tensordot(gcn_in, w_in, axes=[2,0]) + tf.expand_dims(b_in, axis=0)
+            inp_in  = tf.tensordot(gcn_in, w_in, axes=[[2],[0]]) + tf.expand_dims(b_in, axis=0)#syntax changed for version compatibility
             in_t    = tf.stack([tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_in[i]) for i in range(batch_size)])
             if dropout != 1.0: in_t    = tf.nn.dropout(in_t, keep_prob=dropout)
 
             if use_gating:
-              inp_gin = tf.tensordot(gcn_in, w_gin, axes=[2,0]) + tf.expand_dims(b_gin, axis=0)
+              inp_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) + tf.expand_dims(b_gin, axis=0)
               in_gate = tf.stack([tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_gin[i]) for i in range(batch_size)])
               in_gsig = tf.sigmoid(in_gate)
               in_act   = in_t * in_gsig
@@ -179,12 +187,12 @@ class SummarizationModel(object):
               in_act   = in_t
 
           with tf.name_scope('out_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
-            inp_out  = tf.tensordot(gcn_in, w_out, axes=[2,0]) + tf.expand_dims(b_out, axis=0)
+            inp_out  = tf.tensordot(gcn_in, w_out, axes=[[2],[0]]) + tf.expand_dims(b_out, axis=0)
             out_t    = tf.stack([tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_out[i]) for i in range(batch_size)])
             if dropout != 1.0: out_t    = tf.nn.dropout(out_t, keep_prob=dropout)
 
             if use_gating:
-              inp_gout = tf.tensordot(gcn_in, w_gout, axes=[2,0]) + tf.expand_dims(b_gout, axis=0)
+              inp_gout = tf.tensordot(gcn_in, w_gout, axes=[[2],[0]]) + tf.expand_dims(b_gout, axis=0)
               out_gate = tf.stack([tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_gout[i]) for i in range(batch_size)])
               out_gsig = tf.sigmoid(out_gate)
               out_act  = out_t * out_gsig
@@ -192,11 +200,11 @@ class SummarizationModel(object):
               out_act = out_t
 
           with tf.name_scope('self_loop'):
-            inp_loop  = tf.tensordot(gcn_in, w_loop,  axes=[2,0])
+            inp_loop  = tf.tensordot(gcn_in, w_loop,  axes=[[2],[0]])
             if dropout != 1.0: inp_loop  = tf.nn.dropout(inp_loop, keep_prob=dropout)
 
             if use_gating:
-              inp_gloop = tf.tensordot(gcn_in, w_gloop, axes=[2,0])
+              inp_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])
               loop_gsig = tf.sigmoid(inp_gloop)
               loop_act  = inp_loop * loop_gsig
             else:
