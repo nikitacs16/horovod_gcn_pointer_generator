@@ -144,16 +144,14 @@ class SummarizationModel(object):
 
     out = []
     out.append(gcn_in)
-#    return tf.nn.relu(tf.zeros([batch_size, max_nodes, gcn_dim]))      	
+
     for layer in range(num_layers):
       gcn_in    = out[-1]           # out contains the output of all the GCN layers, intitally contains input to first GCN Layer
       if len(out) > 1: in_dim = gcn_dim         # After first iteration the in_dim = gcn_dim
+
       with tf.variable_scope('%s-%d' % (name,layer)):
 
         act_sum = tf.zeros([batch_size, max_nodes, gcn_dim])
-	tf.logging.info('act_sum')
-	tf.logging.info(act_sum.get_shape())
-
         w_in   = tf.get_variable('w_in',   [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
         w_out  = tf.get_variable('w_out',  [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
         w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
@@ -164,8 +162,8 @@ class SummarizationModel(object):
 
         
         for lbl in range(max_labels):
-	  tf.logging.info('Label')
-	  tf.logging.info(lbl)
+#	  tf.logging.info(lbl)
+#	  tf.logging.info(max_labels)
 
           with tf.variable_scope('label-%d_name-%s_layer-%d' % (lbl, name, layer)) as scope:
 
@@ -186,28 +184,14 @@ class SummarizationModel(object):
 
               #w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
 
-		
+#	  for i in range(batch_size):
+#	    tf.logging.info(adj_in[i].keys())		
 		
           with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
-	    tf.logging.info('gcn_in')
-            tf.logging.info(gcn_in.get_shape())	
-            tf.logging.info('w_in')
-	    tf.logging.info(w_in.get_shape())
-	    tf.logging.info('b_in')
-            tf.logging.info( tf.expand_dims(b_in, axis=0).get_shape())
-            tf.logging.info('tensorfot')
-	    tf.logging.info(tf.tensordot(act_sum,w_in,axes=[[2],[0]]).get_shape())  
             inp_in  = tf.tensordot(gcn_in, w_in, axes=[[2],[0]]) + tf.expand_dims(b_in, axis=0)#syntax changed for version compatibility
-	    tf.logging.info('inp_in')
-            tf.logging.info(inp_in.get_shape())
-	    tf.logging.info('tenso sparse')
-	    tf.logging.info(tf.sparse_tensor_dense_matmul(adj_in[0][lbl], inp_in[0]).get_shape())	 
             in_t    = tf.stack([tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_in[i]) for i in range(batch_size)])
-            tf.logging.info('in_t')
-	    tf.logging.info(tf.shape(in_t))
-	    tf.logging.info(in_t.get_shape()) 	
             if dropout != 1.0: in_t    = tf.nn.dropout(in_t, keep_prob=dropout)
-	    	
+
             if use_gating:
               inp_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) + tf.expand_dims(b_gin, axis=0)
               in_gate = tf.stack([tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_gin[i]) for i in range(batch_size)])
@@ -215,11 +199,6 @@ class SummarizationModel(object):
               in_act   = in_t * in_gsig
             else:
               in_act   = in_t
-	    tf.logging.info('in_act')	
-	    tf.logging.info(tf.shape(in_act))
-            tf.logging.info(in_act.get_shape()[2].value)
-	    tf.logging.info(in_act.get_shape())
-#	    return in_act 	
 
           with tf.name_scope('out_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
             inp_out  = tf.tensordot(gcn_in, w_out, axes=[[2],[0]]) + tf.expand_dims(b_out, axis=0)
@@ -247,15 +226,10 @@ class SummarizationModel(object):
 
 
           act_sum += in_act + out_act + loop_act
-#	  return act_sum	
         gcn_out = tf.nn.relu(act_sum)
         out.append(gcn_out)
-    #tf.logging.info(type(out))
-    #tf.logging.info(gcn_out.get_shape()[0].value)
-    #tf.logging.info(gcn_out.get_shape()[1].value)
-    #tf.logging.info(gcn_out.get_shape()[2].value)
-    #return out commented from Original code
-    return gcn_out 
+ 
+    return out 
 
   
 
@@ -383,22 +357,20 @@ class SummarizationModel(object):
       enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens)
       self._enc_states = enc_outputs
       tf.logging.info('Encoder outputs')
-      #tf.logging.info(type(enc_outputs))
-      tf.logging.info(enc_outputs.get_shape())
+      tf.logging.info(tf.size(enc_outputs))
       # Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
       self._dec_in_state = self._reduce_states(fw_st, bw_st)
       
       if self._hps.word_gcn:
 	gcn_outputs = self._add_gcn_layer(gcn_in=enc_outputs,  in_dim=self._hps.hidden_dim*2, gcn_dim=self._hps.word_gcn_dim, batch_size=self._hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=self._hps.num_word_dependency_labels, adj_in=self._word_adj_in, adj_out=self._word_adj_out, num_layers=self._hps.word_gcn_layers, use_gating=self._hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")
-           
-        #tf.logging.info(tf.size(gcn_outputs))
-        #gcn_last_layer_output = gcn_outputs[-1]
-        self._enc_states = gcn_outputs
-	tf.logging.info('gcn_outputs')        
-	tf.logging.info(self._enc_states.get_shape())
-	
+        '''      
+        tf.logging.info(tf.size(gcn_outputs))
+        gcn_last_layer_output = gcn_outputs[-1]
+        self._enc_states = gcn_last_layer_output
+        tf.logging.info(tf.size(gcn_last_layer_output))
+
        
-        ''' 
+        
         Ask about fw_st and bw_st here wrt GCN
         Is seq len right here ?
 
