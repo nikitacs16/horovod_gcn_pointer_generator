@@ -23,8 +23,8 @@ import time
 import numpy as np
 import tensorflow as tf
 import data
-
-
+import pickle
+import random
 class Example(object):
   """Class representing a train/val/test example for text summarization."""
 
@@ -38,7 +38,7 @@ class Example(object):
       hps: hyperparameters
     """
     self.hps = hps
-
+    
     # Get ids of special tokens
     start_decoding = vocab.word2id(data.START_DECODING)
     stop_decoding = vocab.word2id(data.STOP_DECODING)
@@ -186,7 +186,10 @@ class Batch(object):
       for i, ex in enumerate(example_list):
         self.enc_batch_extend_vocab[i, :] = ex.enc_input_extend_vocab[:]
     if hps.word_gcn:
-      self.word_adj_in, self.word_adj_out = data.get_adj(edgeList, hps.batch_size, max_enc_seq_len, hps.num_word_dependency_labels)
+      edge_list = []
+      for ex in example_list:
+	edge_list.append(ex.word_edge_list)
+      self.word_adj_in, self.word_adj_out = data.get_adj(edge_list, hps.batch_size, max_enc_seq_len, hps.num_word_dependency_labels)
 
   def init_decoder_seq(self, example_list, hps):
     """Initializes the following:
@@ -239,7 +242,8 @@ class Batcher(object):
     self._vocab = vocab
     self._hps = hps
     self._single_pass = single_pass
-
+    self._data = pickle.load(open(self._data_path,'rb'))
+    tf.logging.info(len(self._data))
     # Initialize a queue of Batches waiting to be used, and a queue of Examples waiting to be batched
     self._batch_queue = Queue.Queue(self.BATCH_QUEUE_MAX)
     self._example_queue = Queue.Queue(self.BATCH_QUEUE_MAX * self._hps.batch_size)
@@ -294,31 +298,36 @@ class Batcher(object):
 
   def fill_example_queue(self):
     """Reads data from file and processes into Examples which are then placed into the example queue."""
-
-    input_gen = self.text_generator(data.example_generator(self._data_path, self._single_pass))
-        
+    #tf.logging.info('Inside fill example queue')
+    #x,y,z = data.example_generator(self._data_path, self._single_pass,self._hps.word_gcn)
+    #y = pickle.load(open('/home/ubuntu/test_cnn.pkl','rb'))
+     		    
+    #tf.logging.info('y')
+    #tf.logging.info(len(y))
+    #input_gen = self.text_generator(data.example_generator(self._data_path, self._single_pass,self._hps.word_gcn))
+    #tf.logging.info(type(input_gen))
+    #tf.logging.info(input_gen.next())  	        
     while True:
-      try:
+      if not self._single_pass:
+	random.shuffle(self._data)
+      for i in self._data:
         if self._hps.word_gcn:
-          (article,abstract,word_edge_list) = input_gen.next()
+          (article,abstract,word_edge_list) = i['article'], i['abstract'], i['word_edge_list']
         else:
-          (article, abstract) = input_gen.next() # read the next example from file. article and abstract are both strings.
-      except StopIteration: # if there are no more examples:
-        tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
-        if self._single_pass:
-          tf.logging.info("single_pass mode is on, so we've finished reading dataset. This thread is stopping.")
-          self._finished_reading = True
-          break
+          (article, abstract) = i['article'], i['abstract']  # read the next example from file. article and abstract are both strings.
+   
+        abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
+        if self._hps.word_gcn:
+          example = Example(article, abstract_sentences, self._vocab, self._hps,word_edge_list) # Process into an Example.                          
+#          tf.logging.info(word_edge_list[0])		
         else:
-          raise Exception("single_pass mode is off but the example generator is out of data; error.")
+          example = Example(article, abstract_sentences, self._vocab, self._hps) # Process into an Example.
 
-      abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
-      if self._hps.word_gcn:
-        example = Example(article, abstract_sentences, self._vocab, self._hps,word_edge_list) # Process into an Example.
-      else:
-        example = Example(article, abstract_sentences, self._vocab, self._hps) # Process into an Example.
-
-      self._example_queue.put(example) # place the Example in the example queue.
+        self._example_queue.put(example) # place the Example in the example queue.
+      if self._single_pass:
+        tf.logging.info("single_pass mode is on, so we've finished reading dataset. This thread is stopping.")
+        self._finished_reading = True
+        break
 
 
   def fill_batch_queue(self):
@@ -369,7 +378,7 @@ class Batcher(object):
           new_t.start()
 
 
-  def text_generator(self, example_generator):
+  def text_generator(self, example_generator): #Deprecated
     """Generates article and abstract text from tf.Example.
 
     Args:
