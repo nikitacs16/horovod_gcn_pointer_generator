@@ -28,7 +28,7 @@ from model import SummarizationModel
 from decode import BeamSearchDecoder
 import util
 from tensorflow.python import debug as tf_debug
-
+import pickle
 FLAGS = tf.app.flags.FLAGS
 
 # Where to find data
@@ -66,7 +66,7 @@ tf.app.flags.DEFINE_boolean('word_gcn', True, 'If True, use pointer-generator wi
 tf.app.flags.DEFINE_boolean('word_gcn_gating', True, 'If True, use gating at word level')
 tf.app.flags.DEFINE_float('word_gcn_dropout', 1.0, 'dropout keep probability for the gcn layer')
 tf.app.flags.DEFINE_integer('word_gcn_layers', 1, 'Layers at gcn')
-tf.app.flags.DEFINE_integer('word_gcn_dim', 50, 'La')
+tf.app.flags.DEFINE_integer('word_gcn_dim', 512, 'La')
 
 # Coverage hyperparameters
 tf.app.flags.DEFINE_boolean('coverage', False, 'Use coverage mechanism. Note, the experiments reported in the ACL paper train WITHOUT coverage until converged, and then train for a short phase WITH coverage afterwards. i.e. to reproduce the results in the ACL paper, turn this off for most of training then turn on for a short phase at the end.')
@@ -114,22 +114,22 @@ def restore_best_model():
 
   # Initialize all vars in the model
   sess = tf.Session(config=util.get_config())
-  print "Initializing all variables..."
+  print ("Initializing all variables...")
   sess.run(tf.initialize_all_variables())
 
   # Restore the best model from eval dir
   saver = tf.train.Saver([v for v in tf.all_variables() if "Adagrad" not in v.name])
-  print "Restoring all non-adagrad variables from best model in eval dir..."
+  print ("Restoring all non-adagrad variables from best model in eval dir...")
   curr_ckpt = util.load_ckpt(saver, sess, "eval")
-  print "Restored %s." % curr_ckpt
+  print ("Restored %s." % curr_ckpt)
 
   # Save this model to train dir and quit
   new_model_name = curr_ckpt.split("/")[-1].replace("bestmodel", "model")
   new_fname = os.path.join(FLAGS.log_root, "train", new_model_name)
-  print "Saving model to %s..." % (new_fname)
+  print ("Saving model to %s..." % (new_fname))
   new_saver = tf.train.Saver() # this saver saves all variables that now exist, including Adagrad variables
   new_saver.save(sess, new_fname)
-  print "Saved."
+  print ("Saved.")
   exit()
 
 
@@ -139,21 +139,21 @@ def convert_to_coverage_model():
 
   # initialize an entire coverage model from scratch
   sess = tf.Session(config=util.get_config())
-  print "initializing everything..."
+  print ("initializing everything...")
   sess.run(tf.global_variables_initializer())
 
   # load all non-coverage weights from checkpoint
   saver = tf.train.Saver([v for v in tf.global_variables() if "coverage" not in v.name and "Adagrad" not in v.name])
-  print "restoring non-coverage variables..."
+  print ("restoring non-coverage variables...")
   curr_ckpt = util.load_ckpt(saver, sess)
-  print "restored."
+  print ("restored.")
 
   # save this model and quit
   new_fname = curr_ckpt + '_cov_init'
-  print "saving model to %s..." % (new_fname)
+  print ("saving model to %s..." % (new_fname))
   new_saver = tf.train.Saver() # this one will save all variables that now exist
   new_saver.save(sess, new_fname)
-  print "saved."
+  print ("saved.")
   exit()
 
 
@@ -307,15 +307,20 @@ def main(unused_argv):
       hps_dict[key] = val # add it to the dict
   if FLAGS.word_gcn:
     hps_dict['num_word_dependency_labels'] = 37 #something from meta data here . Gives unique dependency labels.
-  hps = namedtuple("HParams", hps_dict.keys())(**hps_dict)
-
+  hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
+ # tf.logging.info(len('/home/ubuntu/test_cnn.pkl'))
+  #tf.logging.info(len(FLAGS.data_path))	
+#  new_data = pickle.load(open(FLAGS.data_path,'rb')) 
+#  tf.logging.info(len(new_data)) 
   # Create a batcher object that will create minibatches of data
   batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass)
+  tf.logging.info(type(batcher))
+
 
   tf.set_random_seed(111) # a seed value for randomness
 
   if hps.mode == 'train':
-    print "creating model..."
+    print ("creating model...")
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
   elif hps.mode == 'eval':

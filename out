@@ -1,0 +1,10 @@
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcublas.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:126] Couldn't open CUDA library libcudnn.so.5. LD_LIBRARY_PATH: /usr/local/cuda-7.5/lib64:
+I tensorflow/stream_executor/cuda/cuda_dnn.cc:3517] Unable to load cuDNN DSO
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcufft.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcuda.so.1 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcurand.so.8.0 locally
+INFO:tensorflow:Starting seq2seq_attention in train mode...
+max_size of vocab was specified as 50000; we now have 50000 words. Stopping reading.
+Finished constructing vocabulary of 50000 total words. Last word added: chaudhary
+INFO:tensorflow:<class 'batcher.Batcher'>

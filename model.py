@@ -157,11 +157,23 @@ class SummarizationModel(object):
         w_in   = tf.get_variable('w_in',   [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
         w_out  = tf.get_variable('w_out',  [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
         w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
-        if use_gating:
+	 
+        #for code optimisation only 
+        pre_com_o_in = tf.tensordot(gcn_in, w_in, axes=[[2],[0]]) 
+        pre_com_o_out = tf.tensordot(gcn_in, w_out, axes=[[2],[0]])
+        pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2],[0]])
+       
+
+	if use_gating:
           w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
           w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)           
           w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
-
+	
+	  #for code optimisation only
+          pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) 
+	  pre_com_o_gout = tf.tensordot(gcn_in, w_gout, axes=[[2],[0]])
+	  pre_com_o_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])		
+	
         
         for lbl in range(max_labels):
 	  tf.logging.info('Label')
@@ -189,45 +201,28 @@ class SummarizationModel(object):
 		
 		
           with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
-	    tf.logging.info('gcn_in')
-            tf.logging.info(gcn_in.get_shape())	
-            tf.logging.info('w_in')
-	    tf.logging.info(w_in.get_shape())
-	    tf.logging.info('b_in')
-            tf.logging.info( tf.expand_dims(b_in, axis=0).get_shape())
-            tf.logging.info('tensorfot')
-	    tf.logging.info(tf.tensordot(act_sum,w_in,axes=[[2],[0]]).get_shape())  
-            inp_in  = tf.tensordot(gcn_in, w_in, axes=[[2],[0]]) + tf.expand_dims(b_in, axis=0)#syntax changed for version compatibility
-	    tf.logging.info('inp_in')
-            tf.logging.info(inp_in.get_shape())
-	    tf.logging.info('tenso sparse')
-	    tf.logging.info(tf.sparse_tensor_dense_matmul(adj_in[0][lbl], inp_in[0]).get_shape())	 
+            inp_in  = pre_com_o_in + tf.expand_dims(b_in, axis=0)#syntax changed for version compatibility
             in_t    = tf.stack([tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_in[i]) for i in range(batch_size)])
-            tf.logging.info('in_t')
-	    tf.logging.info(tf.shape(in_t))
-	    tf.logging.info(in_t.get_shape()) 	
+      	
             if dropout != 1.0: in_t    = tf.nn.dropout(in_t, keep_prob=dropout)
 	    	
             if use_gating:
-              inp_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) + tf.expand_dims(b_gin, axis=0)
+              inp_gin = pre_com_o_gin + tf.expand_dims(b_gin, axis=0)
               in_gate = tf.stack([tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_gin[i]) for i in range(batch_size)])
               in_gsig = tf.sigmoid(in_gate)
               in_act   = in_t * in_gsig
             else:
               in_act   = in_t
-	    tf.logging.info('in_act')	
-	    tf.logging.info(tf.shape(in_act))
-            tf.logging.info(in_act.get_shape()[2].value)
-	    tf.logging.info(in_act.get_shape())
-#	    return in_act 	
+
+ 	
 
           with tf.name_scope('out_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
-            inp_out  = tf.tensordot(gcn_in, w_out, axes=[[2],[0]]) + tf.expand_dims(b_out, axis=0)
+            inp_out  = pre_com_o_out + tf.expand_dims(b_out, axis=0)
             out_t    = tf.stack([tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_out[i]) for i in range(batch_size)])
             if dropout != 1.0: out_t    = tf.nn.dropout(out_t, keep_prob=dropout)
 
             if use_gating:
-              inp_gout = tf.tensordot(gcn_in, w_gout, axes=[[2],[0]]) + tf.expand_dims(b_gout, axis=0)
+              inp_gout = pre_com_o_gout + tf.expand_dims(b_gout, axis=0)
               out_gate = tf.stack([tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_gout[i]) for i in range(batch_size)])
               out_gsig = tf.sigmoid(out_gate)
               out_act  = out_t * out_gsig
@@ -235,11 +230,11 @@ class SummarizationModel(object):
               out_act = out_t
 
           with tf.name_scope('self_loop'):
-            inp_loop  = tf.tensordot(gcn_in, w_loop,  axes=[[2],[0]])
+            inp_loop  = pre_com_o_loop
             if dropout != 1.0: inp_loop  = tf.nn.dropout(inp_loop, keep_prob=dropout)
 
             if use_gating:
-              inp_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])
+              inp_gloop = pre_com_o_gloop
               loop_gsig = tf.sigmoid(inp_gloop)
               loop_act  = inp_loop * loop_gsig
             else:
