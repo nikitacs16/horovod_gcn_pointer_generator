@@ -297,7 +297,7 @@ def show_abs_oovs(abstract, vocab, article_oovs):
   out_str = ' '.join(new_words)
   return out_str
 
-dep_list = ['acl','advcl','advmod','amod','appos','aux','case','cc','ccomp','clf','compound','conj','cop','csubj','dep','det','discourse','dislocated','expl','fixed','flat','goeswith','iobj','list','mark','nmod','nsubj','nummod','obj','obl','orphan','parataxis','punct','reparandum','root','vocative','xcomp']
+dep_list = ['cc','agent','ccomp','prt','meta','nsubjpass','csubj','conj','amod','poss','neg','csubjpass','mark','auxpass','advcl','aux','ROOT','prep','parataxis','xcomp','nsubj','nummod','advmod','punct','quantmod','acomp','compound','pcomp','intj','relcl','npadvmod','case','attr','dep','appos','det','nmod','dobj','dative','pobj','expl','predet','preconj','oprd','acl']
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 def get_adj(edge_list, batch_size, max_nodes, max_labels=37,label_dict=dep_dict):
@@ -310,12 +310,13 @@ def get_adj(edge_list, batch_size, max_nodes, max_labels=37,label_dict=dep_dict)
       out_ind, out_data = ddict(list), ddict(list)
 
       for src, dest, lbl_ in edges:
-        lbl = label_dict[lbl_]
-        out_ind [lbl].append((src, dest))
-        out_data[lbl].append(1.0)
+        if lbl_ in label_dict: #For future purposes when we need to consider only the frequent edges
+          lbl = label_dict[lbl_]
+          out_ind [lbl].append((src, dest))
+          out_data[lbl].append(1.0)
 
-        in_ind  [lbl].append((dest, src))
-        in_data [lbl].append(1.0)
+          in_ind  [lbl].append((dest, src))
+          in_data [lbl].append(1.0)
 
       for lbl in range(max_labels):
         if lbl not in out_ind and lbl not in in_ind:

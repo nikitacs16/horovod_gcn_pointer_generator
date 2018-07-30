@@ -306,15 +306,9 @@ def main(unused_argv):
     if key in hparam_list: # if it's in the list
       hps_dict[key] = val # add it to the dict
   if FLAGS.word_gcn:
-    hps_dict['num_word_dependency_labels'] = 37 #something from meta data here . Gives unique dependency labels.
+    hps_dict['num_word_dependency_labels'] = 45 #something from meta data here . Gives unique dependency labels.
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
- # tf.logging.info(len('/home/ubuntu/test_cnn.pkl'))
-  #tf.logging.info(len(FLAGS.data_path))	
-#  new_data = pickle.load(open(FLAGS.data_path,'rb')) 
-#  tf.logging.info(len(new_data)) 
-  # Create a batcher object that will create minibatches of data
   batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass)
-  tf.logging.info(type(batcher))
 
 
   tf.set_random_seed(111) # a seed value for randomness
