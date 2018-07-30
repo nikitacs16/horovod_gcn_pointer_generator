@@ -151,8 +151,6 @@ class SummarizationModel(object):
       with tf.variable_scope('%s-%d' % (name,layer)):
 
         act_sum = tf.zeros([batch_size, max_nodes, gcn_dim])
-	tf.logging.info('act_sum')
-	tf.logging.info(act_sum.get_shape())
 
         w_in   = tf.get_variable('w_in',   [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
         w_out  = tf.get_variable('w_out',  [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
@@ -164,20 +162,18 @@ class SummarizationModel(object):
         pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2],[0]])
        
 
-	if use_gating:
+		if use_gating:
           w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
           w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)           
           w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
 	
-	  #for code optimisation only
-          pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) 
-	  pre_com_o_gout = tf.tensordot(gcn_in, w_gout, axes=[[2],[0]])
-	  pre_com_o_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])		
+		  #for code optimisation only
+	      pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) 
+		  pre_com_o_gout = tf.tensordot(gcn_in, w_gout, axes=[[2],[0]])
+		  pre_com_o_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])		
 	
         
         for lbl in range(max_labels):
-	  tf.logging.info('Label')
-	  tf.logging.info(lbl)
 
           with tf.variable_scope('label-%d_name-%s_layer-%d' % (lbl, name, layer)) as scope:
 
@@ -242,14 +238,9 @@ class SummarizationModel(object):
 
 
           act_sum += in_act + out_act + loop_act
-#	  return act_sum	
         gcn_out = tf.nn.relu(act_sum)
         out.append(gcn_out)
-    #tf.logging.info(type(out))
-    #tf.logging.info(gcn_out.get_shape()[0].value)
-    #tf.logging.info(gcn_out.get_shape()[1].value)
-    #tf.logging.info(gcn_out.get_shape()[2].value)
-    #return out commented from Original code
+
     return gcn_out 
 
   
@@ -377,29 +368,14 @@ class SummarizationModel(object):
       # Add the encoder.
       enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens)
       self._enc_states = enc_outputs
-      tf.logging.info('Encoder outputs')
-      #tf.logging.info(type(enc_outputs))
-      tf.logging.info(enc_outputs.get_shape())
       # Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
       self._dec_in_state = self._reduce_states(fw_st, bw_st)
       
       if self._hps.word_gcn:
-	gcn_outputs = self._add_gcn_layer(gcn_in=enc_outputs,  in_dim=self._hps.hidden_dim*2, gcn_dim=self._hps.word_gcn_dim, batch_size=self._hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=self._hps.num_word_dependency_labels, adj_in=self._word_adj_in, adj_out=self._word_adj_out, num_layers=self._hps.word_gcn_layers, use_gating=self._hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")
-           
-        #tf.logging.info(tf.size(gcn_outputs))
-        #gcn_last_layer_output = gcn_outputs[-1]
-        self._enc_states = gcn_outputs
-	tf.logging.info('gcn_outputs')        
-	tf.logging.info(self._enc_states.get_shape())
-	
-       
-        ''' 
-        Ask about fw_st and bw_st here wrt GCN
-        Is seq len right here ?
-
-        '''
-
+	    gcn_outputs = self._add_gcn_layer(gcn_in=enc_outputs,  in_dim=self._hps.hidden_dim*2, gcn_dim=self._hps.word_gcn_dim, batch_size=self._hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=self._hps.num_word_dependency_labels, adj_in=self._word_adj_in, adj_out=self._word_adj_out, num_layers=self._hps.word_gcn_layers, use_gating=self._hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")         
+        self._enc_states = gcn_outputs #note we return the last output from the gcn directly instead of all the outputs outputs
       
+       
 
       # Add the decoder.
       with tf.variable_scope('decoder'):
