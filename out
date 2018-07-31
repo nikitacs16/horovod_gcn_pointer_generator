@@ -1,16 +1,42 @@
-I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcublas.so.8.0 locally
-I tensorflow/stream_executor/dso_loader.cc:126] Couldn't open CUDA library libcudnn.so.5. LD_LIBRARY_PATH: /usr/local/cuda-7.5/lib64:
-I tensorflow/stream_executor/cuda/cuda_dnn.cc:3517] Unable to load cuDNN DSO
-I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcufft.so.8.0 locally
-I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcuda.so.1 locally
-I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcurand.so.8.0 locally
 INFO:tensorflow:Starting seq2seq_attention in train mode...
 max_size of vocab was specified as 50000; we now have 50000 words. Stopping reading.
 Finished constructing vocabulary of 50000 total words. Last word added: chaudhary
 INFO:tensorflow:11490
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:<type 'generator'>
+INFO:tensorflow:Inside fill_example_queue
+INFO:tensorflow:<type 'generator'>
 creating model...
 INFO:tensorflow:Building graph...
-Writing word embedding metadata file to /home/ubuntu/gttp_logs/test1/train/vocab_metadata.tsv...
+Writing word embedding metadata file to ../logs/myexperiment/train/vocab_metadata.tsv...
 INFO:tensorflow:Adding attention_decoder timestep 0 of 100
 INFO:tensorflow:Adding attention_decoder timestep 1 of 100
 INFO:tensorflow:Adding attention_decoder timestep 2 of 100
@@ -111,31 +137,31 @@ INFO:tensorflow:Adding attention_decoder timestep 96 of 100
 INFO:tensorflow:Adding attention_decoder timestep 97 of 100
 INFO:tensorflow:Adding attention_decoder timestep 98 of 100
 INFO:tensorflow:Adding attention_decoder timestep 99 of 100
-INFO:tensorflow:Time to build graph: 71 seconds
+INFO:tensorflow:Time to build graph: 52 seconds
 INFO:tensorflow:Preparing or waiting for session...
-W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE3 instructions, but these are available on your machine and could speed up CPU computations.
-W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
-W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
-W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
-W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
-W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
-I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:910] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-I tensorflow/core/common_runtime/gpu/gpu_device.cc:885] Found device 0 with properties: 
-name: Tesla K80
-major: 3 minor: 7 memoryClockRate (GHz) 0.8235
-pciBusID 0000:00:1e.0
-Total memory: 11.17GiB
-Free memory: 11.10GiB
-I tensorflow/core/common_runtime/gpu/gpu_device.cc:906] DMA: 0 
-I tensorflow/core/common_runtime/gpu/gpu_device.cc:916] 0:   Y 
-I tensorflow/core/common_runtime/gpu/gpu_device.cc:975] Creating TensorFlow device (/gpu:0) -> (device: 0, name: Tesla K80, pci bus id: 0000:00:1e.0)
-INFO:tensorflow:Created session.
-INFO:tensorflow:starting run_training
-INFO:tensorflow:global_step/sec: 0
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:global_step/sec: 0
-INFO:tensorflow:global_step/sec: 0
-INFO:tensorflow:global_step/sec: 0
-INFO:tensorflow:global_step/sec: 0
-INFO:tensorflow:global_step/sec: 0
-INFO:tensorflow:global_step/sec: 0
+2018-07-31 15:48:10.439309: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+2018-07-31 15:48:10.439344: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+2018-07-31 15:48:10.439356: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+2018-07-31 15:48:10.439370: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+2018-07-31 15:48:10.439379: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+INFO:tensorflow:Restoring parameters from ../logs/myexperiment/train/model.ckpt-0
+Traceback (most recent call last):
+  File "run_summarization.py", line 333, in <module>
+    tf.app.run()
+  File "/home/nikita/anaconda2/envs/py27/lib/python2.7/site-packages/tensorflow/python/platform/app.py", line 48, in run
+    _sys.exit(main(_sys.argv[:1] + flags_passthrough))
+  File "run_summarization.py", line 319, in main
+    setup_training(model, batcher)
+  File "run_summarization.py", line 182, in setup_training
+    sess_context_manager = sv.prepare_or_wait_for_session(config=util.get_config())
+  File "/home/nikita/anaconda2/envs/py27/lib/python2.7/site-packages/tensorflow/python/training/supervisor.py", line 709, in prepare_or_wait_for_session
+    self._write_graph()
+  File "/home/nikita/anaconda2/envs/py27/lib/python2.7/site-packages/tensorflow/python/training/supervisor.py", line 614, in _write_graph
+    self._summary_writer.add_graph(self._graph)
+  File "/home/nikita/anaconda2/envs/py27/lib/python2.7/site-packages/tensorflow/python/summary/writer/writer.py", line 164, in add_graph
+    true_graph_def = graph.as_graph_def(add_shapes=True)
+  File "/home/nikita/anaconda2/envs/py27/lib/python2.7/site-packages/tensorflow/python/framework/ops.py", line 2361, in as_graph_def
+    result, _ = self._as_graph_def(from_version, add_shapes)
+  File "/home/nikita/anaconda2/envs/py27/lib/python2.7/site-packages/tensorflow/python/framework/ops.py", line 2317, in _as_graph_def
+    graph.node.extend([op.node_def])
+KeyboardInterrupt

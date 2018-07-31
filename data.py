@@ -108,7 +108,7 @@ class Vocab(object):
         writer.writerow({"word": self._id_to_word[i]})
 
 
-def example_generator(data_path, single_pass,word_gcn=True):
+def example_generator(data_, single_pass,word_gcn=True):
   """Generates tf.Examples from data files.
 
     Binary data format: <length><blob>. <length> represents the byte size
@@ -124,22 +124,16 @@ def example_generator(data_path, single_pass,word_gcn=True):
   Yields:
     Deserialized tf.Example.
   """
-#  tf.logging.info(data_path)
-  data_ = pickle.load(open(data_path,'rb')) # modify when multiple files come
-  
+  #tf.logging.info(data_path)
   while True:
     
     tf.logging.info(len(data_))
-    if single_pass:
-      pass
-    else:
+    if not single_pass:
       random.shuffle(data_)
+      
 
-    for i in data_:
-      if word_gcn:
-        yield (i['article'], i['abstract'], i['word_edge_list'])
-      else:
-        yield (i['article'], i['abstract']) 
+    for k,i in enumerate(data_):
+      yield i
 
     if single_pass:
       print ("example_generator completed reading all datafiles. No more data.")
