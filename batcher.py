@@ -300,37 +300,30 @@ class Batcher(object):
 
   def fill_example_queue(self):
     """Reads data from file and processes into Examples which are then placed into the example queue."""
-    #tf.logging.info('Inside fill example queue')
-    #x,y,z = data.example_generator(self._data_path, self._single_pass,self._hps.word_gcn)
-    #y = pickle.load(open('/home/ubuntu/test_cnn.pkl','rb'))
-     		    
-    #tf.logging.info('y')
-    #tf.logging.info(len(y))
-    #input_gen = self.text_generator(data.example_generator(self._data_path, self._single_pass,self._hps.word_gcn))
-    #tf.logging.info(type(input_gen))
-    #tf.logging.info(input_gen.next())  	        
-    while True:
-      if not self._single_pass:
-	random.shuffle(self._data)
-      for k,i in enumerate(self._data):
-        tf.logging.info("%d\t%s\n"%(k,i['article'][0:100]))
-        if self._hps.word_gcn:
-          (article,abstract,word_edge_list) = i['article'], i['abstract'], i['word_edge_list']
-        else:
-          (article, abstract) = i['article'], i['abstract']  # read the next example from file. article and abstract are both strings.
-   
-        abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
-        if self._hps.word_gcn:
-          example = Example(article, abstract_sentences, self._vocab, self._hps,word_edge_list) # Process into an Example.                          
-#          tf.logging.info(word_edge_list[0])		
-        else:
-          example = Example(article, abstract_sentences, self._vocab, self._hps) # Process into an Example.
+	input_gen = self.text_generator(data.example_generator(self._data_path, self._single_pass))
+	while True:
+	  try:
+	    if self._hps.word_gcn:
+	    	(article,abstract,word_edge_list) = input_gen.next()
+		else:
+			(article,abstract) = input_gen.next()	
 
-        self._example_queue.put(example) # place the Example in the example queue.
-      if self._single_pass:
-        tf.logging.info("single_pass mode is on, so we've finished reading dataset. This thread is stopping.")
-        self._finished_reading = True
-        break
+	  except StopIteration: # if there are no more examples:
+	    tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
+		if self._single_pass:
+		  tf.logging.info("single_pass mode is on, so we've finished reading dataset. This thread is stopping.")
+	      self._finished_reading = True
+	      break
+		else:
+		  raise Exception("single_pass mode is off but the example generator is out of data; error.")
+
+	  abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
+	  if self._hps.word_gcn:
+		  example = Example(article, abstract_sentences, self._vocab, self._hps, word_edge_list) # Process into an Example.
+	  else:
+		  example = Example(article, abstract_sentences, self._vocab, self._hps)
+	
+	  self._example_queue.put(example) # place the Example in the example queue.
 
 
   def fill_batch_queue(self):
@@ -381,18 +374,18 @@ class Batcher(object):
           new_t.start()
 
 
-  def text_generator(self, example_generator): #Deprecated
+  def text_generator(self, example_generator): 
     """Generates article and abstract text from tf.Example.
 
     Args:
       example_generator: a generator of tf.Examples from file. See data.example_generator"""
     while True:
       if self._hps.word_gcn:
-        abstract_text, article_text, word_edge_list  = example_generator.next() # e is a tf.Example
-        yield abstract_text, article_text, word_edge_list
+        article_text, abstract_text, word_edge_list  = example_generator.next() # e is a tf.Example
+        yield article_text, abstract_text, word_edge_list
       else:
-        abstract_text, article_text = example_generator.next()
-        yield abstract_text, article_text
+        article_text, abstract_text = example_generator.next()
+        yield article_text, abstract_text
       '''
       try:
         article_text = e.features.feature['article'].bytes_list.value[0] # the article text was saved under the key 'article' in the data files

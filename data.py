@@ -125,24 +125,19 @@ def example_generator(data_path, single_pass,word_gcn=True):
     Deserialized tf.Example.
   """
 #  tf.logging.info(data_path)
-  data_ = pickle.load(open(data_path,'rb'))
-  tf.logging.info('Got called to load data') 
-  tf.logging.info(len(data))
+  data_ = pickle.load(open(data_path,'rb')) # modify when multiple files come
+  
   while True:
-    
-    #filelist = glob.glob(data_path) # get the list of datafiles
-    #assert filelist, ('Error: Empty filelist at %s' % data_path) # check filelist isn't empty
     if single_pass:
       pass
     else:
       random.shuffle(data)
-    
 
     for i in data_:
       if word_gcn:
-        yield i['abstract'], i['article'], i['word_edge_list']
+        yield (i['article'], i['abstract'], i['word_edge_list'])
       else:
-        yield i['abstract'], i['article']  
+        yield (i['article'], i['abstract']) 
 
     if single_pass:
       print ("example_generator completed reading all datafiles. No more data.")
