@@ -77,10 +77,14 @@ class SummarizationModel(object):
       feed_dict[self._max_art_oovs] = batch.max_art_oovs
     
     if FLAGS.word_gcn:
+#      tf.logging.info('batch_len_max_word')
+ #     tf.logging.info(batch.max_word_len) 
+      feed_dict[self._max_word_seq_len] = batch.max_word_len
+	
       word_adj_in = batch.word_adj_in
       word_adj_out = batch.word_adj_out
-      for i in range(self.hps.batch_size):
-        for lbl in range(self.hps.num_word_dependency_labels):
+      for i in range(hps.batch_size):
+        for lbl in range(hps.num_word_dependency_labels):
           feed_dict[self._word_adj_in[i][lbl]] = tf.SparseTensorValue(  indices   = np.array([word_adj_in[i][lbl].row, word_adj_in[i][lbl].col]).T,
                                 values    = word_adj_in[i][lbl].data,
                           dense_shape = word_adj_in[i][lbl].shape)
@@ -162,15 +166,15 @@ class SummarizationModel(object):
         pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2],[0]])
        
 
-		if use_gating:
+	if use_gating:
           w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
           w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)           
           w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
 	
-		  #for code optimisation only
-	      pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) 
-		  pre_com_o_gout = tf.tensordot(gcn_in, w_gout, axes=[[2],[0]])
-		  pre_com_o_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])		
+	#for code optimisation only
+	  pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) 
+          pre_com_o_gout = tf.tensordot(gcn_in, w_gout, axes=[[2],[0]])
+	  pre_com_o_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])		
 	
         
         for lbl in range(max_labels):
@@ -372,7 +376,7 @@ class SummarizationModel(object):
       self._dec_in_state = self._reduce_states(fw_st, bw_st)
       
       if self._hps.word_gcn:
-	    gcn_outputs = self._add_gcn_layer(gcn_in=enc_outputs,  in_dim=self._hps.hidden_dim*2, gcn_dim=self._hps.word_gcn_dim, batch_size=self._hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=self._hps.num_word_dependency_labels, adj_in=self._word_adj_in, adj_out=self._word_adj_out, num_layers=self._hps.word_gcn_layers, use_gating=self._hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")         
+	gcn_outputs = self._add_gcn_layer(gcn_in=enc_outputs,  in_dim=self._hps.hidden_dim*2, gcn_dim=self._hps.word_gcn_dim, batch_size=self._hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=self._hps.num_word_dependency_labels, adj_in=self._word_adj_in, adj_out=self._word_adj_out, num_layers=self._hps.word_gcn_layers, use_gating=self._hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")         
         self._enc_states = gcn_outputs #note we return the last output from the gcn directly instead of all the outputs outputs
       
        
