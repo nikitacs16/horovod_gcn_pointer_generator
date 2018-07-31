@@ -128,10 +128,12 @@ def example_generator(data_path, single_pass,word_gcn=True):
   data_ = pickle.load(open(data_path,'rb')) # modify when multiple files come
   
   while True:
+    
+    tf.logging.info(len(data_))
     if single_pass:
       pass
     else:
-      random.shuffle(data)
+      random.shuffle(data_)
 
     for i in data_:
       if word_gcn:
