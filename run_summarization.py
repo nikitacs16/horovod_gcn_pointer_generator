@@ -62,11 +62,11 @@ tf.app.flags.DEFINE_float('max_grad_norm', 2.0, 'for gradient clipping')
 tf.app.flags.DEFINE_boolean('pointer_gen', True, 'If True, use pointer-generator model. If False, use baseline model.')
 
 #GCN model
-tf.app.flags.DEFINE_boolean('word_gcn', True, 'If True, use pointer-generator with gcn at word level. If False, use other options.')
+tf.app.flags.DEFINE_boolean('word_gcn', False, 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('word_gcn_gating', True, 'If True, use gating at word level')
 tf.app.flags.DEFINE_float('word_gcn_dropout', 1.0, 'dropout keep probability for the gcn layer')
 tf.app.flags.DEFINE_integer('word_gcn_layers', 1, 'Layers at gcn')
-tf.app.flags.DEFINE_integer('word_gcn_dim', 512, 'La')
+tf.app.flags.DEFINE_integer('word_gcn_dim', 256, 'La')
 
 # Coverage hyperparameters
 tf.app.flags.DEFINE_boolean('coverage', False, 'Use coverage mechanism. Note, the experiments reported in the ACL paper train WITHOUT coverage until converged, and then train for a short phase WITH coverage afterwards. i.e. to reproduce the results in the ACL paper, turn this off for most of training then turn on for a short phase at the end.')

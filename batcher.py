@@ -132,11 +132,12 @@ class Batch(object):
        vocab: Vocabulary object
     """
     self.pad_id = vocab.word2id(data.PAD_TOKEN) # id of the PAD token used to pad sequences
-    self.word_adj_in = None
-    self.word_adj_out = None
+    #self.word_adj_in = None
+    #self.word_adj_out = None
     self.init_encoder_seq(example_list, hps) # initialize the input to the encoder
     self.init_decoder_seq(example_list, hps) # initialize the input and targets for the decoder
     self.store_orig_strings(example_list) # store the original strings
+    #self.max_word_len = 400	
 
   def init_encoder_seq(self, example_list, hps):
     """Initializes the following:
@@ -157,7 +158,7 @@ class Batch(object):
     """
     # Determine the maximum length of the encoder input sequence in this batch
     max_enc_seq_len = max([ex.enc_len for ex in example_list])
-
+    self.max_word_len = max_enc_seq_len	
     # Pad the encoder input sequences up to the length of the longest sequence
     for ex in example_list:
       ex.pad_encoder_input(max_enc_seq_len, self.pad_id)
@@ -188,6 +189,7 @@ class Batch(object):
     if hps.word_gcn:
       edge_list = []
       for ex in example_list:
+#	tf.logging.info(len(ex.word_edge_list))	
 	edge_list.append(ex.word_edge_list)
       self.word_adj_in, self.word_adj_out = data.get_adj(edge_list, hps.batch_size, max_enc_seq_len, hps.num_word_dependency_labels)
 
@@ -310,7 +312,8 @@ class Batcher(object):
     while True:
       if not self._single_pass:
 	random.shuffle(self._data)
-      for i in self._data:
+      for k,i in enumerate(self._data):
+        tf.logging.info("%d\t%s\n"%(k,i['article'][0:100]))
         if self._hps.word_gcn:
           (article,abstract,word_edge_list) = i['article'], i['abstract'], i['word_edge_list']
         else:

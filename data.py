@@ -300,8 +300,10 @@ def show_abs_oovs(abstract, vocab, article_oovs):
 dep_list = ['cc','agent','ccomp','prt','meta','nsubjpass','csubj','conj','amod','poss','neg','csubjpass','mark','auxpass','advcl','aux','ROOT','prep','parataxis','xcomp','nsubj','nummod','advmod','punct','quantmod','acomp','compound','pcomp','intj','relcl','npadvmod','case','attr','dep','appos','det','nmod','dobj','dative','pobj','expl','predet','preconj','oprd','acl']
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
-def get_adj(edge_list, batch_size, max_nodes, max_labels=37,label_dict=dep_dict):
+def get_adj(edge_list, batch_size, max_nodes, max_labels=45,label_dict=dep_dict):
     adj_main_in, adj_main_out = [], []
+    #tf.logging.info(max_labels)
+    #tf.logging.info(len(dep_list))	
 	
     for edges in edge_list:
       adj_in, adj_out = {}, {}
@@ -310,13 +312,16 @@ def get_adj(edge_list, batch_size, max_nodes, max_labels=37,label_dict=dep_dict)
       out_ind, out_data = ddict(list), ddict(list)
 
       for src, dest, lbl_ in edges:
-        if lbl_ in label_dict: #For future purposes when we need to consider only the frequent edges
-          lbl = label_dict[lbl_]
-          out_ind [lbl].append((src, dest))
-          out_data[lbl].append(1.0)
+	if src >=max_nodes or dest >=max_nodes:
+		continue        
+        lbl = label_dict[lbl_]
+        out_ind [lbl].append((src, dest))
+        out_data[lbl].append(1.0)
 
-          in_ind  [lbl].append((dest, src))
-          in_data [lbl].append(1.0)
+        in_ind  [lbl].append((dest, src))
+        in_data [lbl].append(1.0)
+        
+
 
       for lbl in range(max_labels):
         if lbl not in out_ind and lbl not in in_ind:
@@ -326,8 +331,11 @@ def get_adj(edge_list, batch_size, max_nodes, max_labels=37,label_dict=dep_dict)
           adj_in [lbl] = sp.coo_matrix((in_data[lbl],  zip(*in_ind[lbl])),  shape=(max_nodes, max_nodes))
           adj_out[lbl] = sp.coo_matrix((out_data[lbl], zip(*out_ind[lbl])), shape=(max_nodes, max_nodes))
 
+
+	  
+
       adj_main_in.append(adj_in)
       adj_main_out.append(adj_out)
-      print(adj_main_in)
+      #print(adj_main_in)
 
     return adj_main_in, adj_main_out
