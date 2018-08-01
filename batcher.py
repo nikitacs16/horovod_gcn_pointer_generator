@@ -316,7 +316,7 @@ class Batcher(object):
 				if self._hps.word_gcn:
 					word_edge_list = curr_data['word_edge_list']
 					
-#				tf.logging.info("%d\t%s\t%s\n"%(count,str(threading.currentThread().getName()),article[0:40])) 
+				tf.logging.info("%d\t%s\t%s\n"%(count,str(threading.currentThread().getName()),article[0:40])) 
 			except Exception as e: # if there are no more examples:
 				tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
 				if self._single_pass:
