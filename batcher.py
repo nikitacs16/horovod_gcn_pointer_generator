@@ -247,8 +247,8 @@ class Batcher(object):
 		# Initialize a queue of Batches waiting to be used, and a queue of Examples waiting to be batched
 		self._batch_queue = Queue.Queue(self.BATCH_QUEUE_MAX)
 		self._example_queue = Queue.Queue(self.BATCH_QUEUE_MAX * self._hps.batch_size)
-		self._data = pickle.load(open(data_path,'rb'))
-		tf.logging.info(len(self._data))
+	#	self._data = pickle.load(open(data_path,'rb'))
+	#	tf.logging.info(len(self._data))
 
 		# Different settings depending on whether we're in single_pass mode or not
 		if single_pass:
@@ -301,7 +301,7 @@ class Batcher(object):
 
 	def fill_example_queue(self):
 		"""Reads data from file and processes into Examples which are then placed into the example queue."""
-		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass))
+		input_gen = self.text_generator(data.example_generator(self.data_path, self._single_pass))
 		count = 0
 		while True:
 			try:
