@@ -25,10 +25,7 @@ from collections import defaultdict as ddict
 import pickle
 import scipy.sparse as sp
 import tensorflow as tf
-<<<<<<< HEAD
 import numpy as np
-=======
->>>>>>> 757757bcbfbe2d848367f51f4b489bd7de1e7260
 # <s> and </s> are used in the data files to segment the abstracts into sentences. They don't receive vocab ids.
 SENTENCE_START = '<s>'
 SENTENCE_END = '</s>'
@@ -112,7 +109,7 @@ class Vocab(object):
         writer.writerow({"word": self._id_to_word[i]})
 
 
-def example_generator(data_, single_pass,word_gcn=True):
+def example_generator(data_path, single_pass,word_gcn=True):
   """Generates tf.Examples from data files.
 
     Binary data format: <length><blob>. <length> represents the byte size
@@ -129,29 +126,27 @@ def example_generator(data_, single_pass,word_gcn=True):
     Deserialized tf.Example.
   """
   #tf.logging.info(data_path)
+
+
   while True:
-<<<<<<< HEAD
-    x = np.arange(len(data_))
-#    np.random.shuffle(x)
-    #tf.logging.info(x[0:100])
-    if not single_pass:
-      np.random.shuffle(x)
-      #new_data = data_[x]
-      #random.shuffle(data_)
-    
+    filelist = glob.glob(data_path)
+    if len(filelist) == 1:
+      data_ = pickle.load(open(filelist[0],'rb'))
+      x = np.arange(len(data_))
+      if not single_pass:
+        np.random.shuffle(x)
+        for i in x:
+          yield data_[i]
+    else:
+      if single_pass:
+        filelist = sorted(filelist)
+      else:
+        random.shuffle(filelist)
 
-    for i in x:
-      yield data_[i]
-=======
-    
-    tf.logging.info(len(data_))
-    if not single_pass:
-      random.shuffle(data_)
-      
-
-    for k,i in enumerate(data_):
-      yield i
->>>>>>> 757757bcbfbe2d848367f51f4b489bd7de1e7260
+      for f in filelist:
+        data_ = pickle.load(open(f,'rb'))
+        for i in data_:
+          yield i
 
     if single_pass:
       print ("example_generator completed reading all datafiles. No more data.")
@@ -265,7 +260,7 @@ def abstract2sents(abstract):
       start_p = abstract.index(SENTENCE_START, cur)
       end_p = abstract.index(SENTENCE_END, start_p + 1)
       cur = end_p + len(SENTENCE_END)
-      sents.append(abstract[start_p+len(SENTENCE_START):end_p])
+      sents.append(abstract[start_p+len(SENTENCE_START):end_p].strip())
     except ValueError as e: # no more sentences
       return sents
 
