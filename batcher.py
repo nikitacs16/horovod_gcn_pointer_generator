@@ -311,7 +311,7 @@ class Batcher(object):
                                 #if article[0]=='\"':
 				#	article = article[1:]
 				
-				abstract = curr_data['abstract']
+				abstract = curr_data['abstract'].strip()
 				if self._hps.word_gcn:
 					word_edge_list = curr_data['word_edge_list']
 					
