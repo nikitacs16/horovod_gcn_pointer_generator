@@ -24,7 +24,10 @@ import numpy as np
 import tensorflow as tf
 import data
 import pickle
+<<<<<<< HEAD
 import threading
+=======
+>>>>>>> 757757bcbfbe2d848367f51f4b489bd7de1e7260
 import random
 class Example(object):
 	"""Class representing a train/val/test example for text summarization."""
@@ -39,7 +42,11 @@ class Example(object):
 			hps: hyperparameters
 		"""
 		self.hps = hps
+<<<<<<< HEAD
 #		tf.logging.info('Example inited')
+=======
+		tf.logging.info('Example inited')
+>>>>>>> 757757bcbfbe2d848367f51f4b489bd7de1e7260
 		# Get ids of special tokens
 		start_decoding = vocab.word2id(data.START_DECODING)
 		stop_decoding = vocab.word2id(data.STOP_DECODING)
@@ -264,11 +271,18 @@ class Batcher(object):
 
 		# Start the threads that load the queues
 		self._example_q_threads = []
+<<<<<<< HEAD
 		for k in xrange(self._num_example_q_threads):
 			self._example_q_threads.append(Thread(name=str(k),target=self.fill_example_queue))
 			self._example_q_threads[-1].daemon = True
 			self._example_q_threads[-1].start()
 			time.sleep(0.001)
+=======
+		for _ in xrange(self._num_example_q_threads):
+			self._example_q_threads.append(Thread(target=self.fill_example_queue))
+			self._example_q_threads[-1].daemon = True
+			self._example_q_threads[-1].start()
+>>>>>>> 757757bcbfbe2d848367f51f4b489bd7de1e7260
 		self._batch_q_threads = []
 		for _ in xrange(self._num_batch_q_threads):
 			self._batch_q_threads.append(Thread(target=self.fill_batch_queue))
@@ -301,9 +315,12 @@ class Batcher(object):
 		return batch
 
 	def fill_example_queue(self):
+<<<<<<< HEAD
 #		new_data = self._data
 #		random.shuffle(new_data)
 #		tf.logging.info("Thread : %s"%(threading.currentThread().getName()))
+=======
+>>>>>>> 757757bcbfbe2d848367f51f4b489bd7de1e7260
 		"""Reads data from file and processes into Examples which are then placed into the example queue."""
 		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass))
 		count = 0
@@ -316,15 +333,23 @@ class Batcher(object):
 				if self._hps.word_gcn:
 					word_edge_list = curr_data['word_edge_list']
 					
+<<<<<<< HEAD
 				tf.logging.info("%d\t%s\t%s\n"%(count,str(threading.currentThread().getName()),article[0:40])) 
 			except Exception as e: # if there are no more examples:
+=======
+				tf.logging.info("%d\t%s\n"%(count,article[0:100])) 
+			except : # if there are no more examples:
+>>>>>>> 757757bcbfbe2d848367f51f4b489bd7de1e7260
 				tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
 				if self._single_pass:
 					tf.logging.info("single_pass mode is on, so we've finished reading dataset. This thread is stopping.")
 					self._finished_reading = True
 					break
 				else:
+<<<<<<< HEAD
                                         tf.logging.info(e)
+=======
+>>>>>>> 757757bcbfbe2d848367f51f4b489bd7de1e7260
 					raise Exception("single_pass mode is off but the example generator is out of data; error.")
 
 			abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
@@ -390,7 +415,11 @@ class Batcher(object):
 			example_generator: a generator of tf.Examples from file. See data.example_generator"""
 		while True:
 			e = example_generator.next()
+<<<<<<< HEAD
 #			tf.logging.info(len(e['article']))
+=======
+			tf.logging.info(len(e['article']))
+>>>>>>> 757757bcbfbe2d848367f51f4b489bd7de1e7260
 			yield e
 			'''
 			if self._hps.word_gcn:
