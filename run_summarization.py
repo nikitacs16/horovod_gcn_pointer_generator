@@ -198,6 +198,9 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
       sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
     while True: # repeats until interrupted
       batch = batcher.next_batch()
+ #     w = batch.original_abstracts_sents
+  #    m = [s[0:20] for s in w]
+
       batch_count = batch_count + 1
       tf.logging.info('running training step...')
       t0=time.time()
@@ -205,6 +208,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
       t1=time.time()
       tf.logging.info('seconds for training step: %.3f', t1-t0)
       tf.logging.info('Batch count: %d',batch_count)
+#      tf.logging.info(m)
       loss = results['loss']
       tf.logging.info('loss: %f', loss) # print the loss to screen
 

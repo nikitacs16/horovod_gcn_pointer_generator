@@ -25,6 +25,7 @@ from collections import defaultdict as ddict
 import pickle
 import scipy.sparse as sp
 import tensorflow as tf
+import numpy as np
 # <s> and </s> are used in the data files to segment the abstracts into sentences. They don't receive vocab ids.
 SENTENCE_START = '<s>'
 SENTENCE_END = '</s>'
@@ -126,14 +127,17 @@ def example_generator(data_, single_pass,word_gcn=True):
   """
   #tf.logging.info(data_path)
   while True:
-    
-    tf.logging.info(len(data_))
+    x = np.arange(len(data_))
+#    np.random.shuffle(x)
+    #tf.logging.info(x[0:100])
     if not single_pass:
-      random.shuffle(data_)
-      
+      np.random.shuffle(x)
+      #new_data = data_[x]
+      #random.shuffle(data_)
+    
 
-    for k,i in enumerate(data_):
-      yield i
+    for i in x:
+      yield data_[i]
 
     if single_pass:
       print ("example_generator completed reading all datafiles. No more data.")
