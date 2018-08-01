@@ -29,6 +29,7 @@ from decode import BeamSearchDecoder
 import util
 from tensorflow.python import debug as tf_debug
 import pickle
+import glob
 FLAGS = tf.app.flags.FLAGS
 
 # Where to find data
@@ -271,6 +272,13 @@ def run_eval(model, batcher, vocab):
     if train_step % 100 == 0:
       summary_writer.flush()
 
+def get_data(data_path):
+  new_data = []
+  for f in sorted(glob.glob(data_path)):
+    temp = pickle.load(open(f,'rb'))
+    tf.logging.info(len(temp))
+    new_data.append(temp)
+  return new_data
 
 def main(unused_argv):
   if len(unused_argv) != 1: # prints a message if you've entered flags incorrectly
@@ -308,7 +316,8 @@ def main(unused_argv):
   if FLAGS.word_gcn:
     hps_dict['num_word_dependency_labels'] = 45 #something from meta data here . Gives unique dependency labels.
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
-  batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass)
+  data_ = get_data(FLAGS.data_path)
+  batcher = Batcher(data_, vocab, hps, single_pass=FLAGS.single_pass)
 
 
   tf.set_random_seed(111) # a seed value for randomness

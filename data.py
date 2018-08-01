@@ -129,7 +129,22 @@ def example_generator(data_path, single_pass,word_gcn=True):
 
 
   while True:
-    filelist = glob.glob(data_path)
+    if single_pass:
+      for data_ in data_path:
+        for i in data_:
+          yield i
+    else:
+      random.shuffle(data_path)
+      for data_ in data_path:
+        new_data = data_
+        x = np.arange(len(new_data))
+        np.random.shuffle(x)
+        #random.shuffle(new_data)
+        for i in x:
+          yield new_data[i]  
+    if single_pass:
+      break  
+    '''
     if len(filelist) == 1:
       data_ = pickle.load(open(filelist[0],'rb'))
       x = np.arange(len(data_))
@@ -144,15 +159,19 @@ def example_generator(data_path, single_pass,word_gcn=True):
         random.shuffle(filelist)
 
       for f in filelist:
-        data_ = pickle.load(open(f,'rb'))
+	tf.logging.info(f)
+	try:
+          data_ = pickle.load(open(f,'rb'))
+	  tf.logging.info('tried')	
+	except Exception as e:
+	  tf.logging.info('caught')	
+	  tf.logging.info(e)	
         for i in data_:
           yield i
-
+    
     if single_pass:
       print ("example_generator completed reading all datafiles. No more data.")
       break
-
-    '''
     for f in filelist:
       reader = open(f, 'rb')
       while True:

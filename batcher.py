@@ -231,7 +231,7 @@ class Batcher(object):
 
 	BATCH_QUEUE_MAX = 100 # max number of batches the batch_queue can hold
 
-	def __init__(self, data_path, vocab, hps, single_pass):
+	def __init__(self, data_, vocab, hps, single_pass):
 		"""Initialize the batcher. Start threads that process the data into batches.
 
 		Args:
@@ -240,7 +240,7 @@ class Batcher(object):
 			hps: hyperparameters
 			single_pass: If True, run through the dataset exactly once (useful for when you want to run evaluation on the dev or test set). Otherwise generate random batches indefinitely (useful for training).
 		"""
-		self._data_path = data_path
+		self._data = data_
 		self._vocab = vocab
 		self._hps = hps
 		self._single_pass = single_pass
@@ -301,18 +301,21 @@ class Batcher(object):
 
 	def fill_example_queue(self):
 		"""Reads data from file and processes into Examples which are then placed into the example queue."""
-		input_gen = self.text_generator(data.example_generator(self.data_path, self._single_pass))
+		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass))
 		count = 0
 		while True:
 			try:
 				curr_data = input_gen.next()
 				count = count + 1
 				article = curr_data['article']
+                                #if article[0]=='\"':
+				#	article = article[1:]
+				
 				abstract = curr_data['abstract']
 				if self._hps.word_gcn:
 					word_edge_list = curr_data['word_edge_list']
 					
-				tf.logging.info("%d\t%s\t%s\n"%(count,str(threading.currentThread().getName()),article[0:40])) 
+#				tf.logging.info("%d\t%s\t%s\n"%(count,str(threading.currentThread().getName()),article[0:40])) 
 			except Exception as e: # if there are no more examples:
 				tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
 				if self._single_pass:
@@ -320,7 +323,7 @@ class Batcher(object):
 					self._finished_reading = True
 					break
 				else:
-                    tf.logging.info(e)
+			                tf.logging.info(e)
 					raise Exception("single_pass mode is off but the example generator is out of data; error.")
 
 			abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
