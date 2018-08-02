@@ -31,6 +31,9 @@ from tensorflow.python import debug as tf_debug
 import pickle
 import glob
 FLAGS = tf.app.flags.FLAGS
+# GPU device 
+tf.app.flags.DEFINE_string('gpu_device_id','0','allocate gpu to which device')
+os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpu_device_id
 
 # Where to find data
 tf.app.flags.DEFINE_string('data_path', '', 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
@@ -317,6 +320,7 @@ def main(unused_argv):
     hps_dict['num_word_dependency_labels'] = 45 #something from meta data here . Gives unique dependency labels.
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
   data_ = get_data(FLAGS.data_path)
+  tf.logging.info(tf.flags.FLAGS.__flags)	
   batcher = Batcher(data_, vocab, hps, single_pass=FLAGS.single_pass)
 
 
