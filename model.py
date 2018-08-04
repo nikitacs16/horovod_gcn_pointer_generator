@@ -166,15 +166,15 @@ class SummarizationModel(object):
         pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2],[0]])
        
 
-	if use_gating:
+	      if use_gating:
           w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
           w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)           
           w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
 	
-	#for code optimisation only
-	  pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) 
+	       #for code optimisation only
+	        pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) 
           pre_com_o_gout = tf.tensordot(gcn_in, w_gout, axes=[[2],[0]])
-	  pre_com_o_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])		
+	        pre_com_o_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])		
 	
         
         for lbl in range(max_labels):
@@ -370,10 +370,10 @@ class SummarizationModel(object):
         emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch, axis=1)] # list length max_dec_steps containing shape (batch_size, emb_size)
 
       if self._hps.no_lstm_encoder: #use gcn directly 
-        b_in   = tf.get_variable('trainable_dec_start_state',   [1, hps.emb_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
+        trainable_dec_start_state   = tf.get_variable('trainable_dec_start_state',   [1, hps.emb_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
         self._enc_states = emb_enc_inputs            
         in_dim = hps.emb_dim
-        self._dec_in_state = 
+        self._dec_in_state = trainable_dec_start_state
       
       else:  
       # Add the encoder.
