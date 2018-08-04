@@ -66,11 +66,12 @@ tf.app.flags.DEFINE_float('max_grad_norm', 2.0, 'for gradient clipping')
 tf.app.flags.DEFINE_boolean('pointer_gen', True, 'If True, use pointer-generator model. If False, use baseline model.')
 
 #GCN model
+tf.app.flags.DEFINE_boolean('no_lstm_encoder', False, 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('word_gcn', False, 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('word_gcn_gating', True, 'If True, use gating at word level')
 tf.app.flags.DEFINE_float('word_gcn_dropout', 1.0, 'dropout keep probability for the gcn layer')
 tf.app.flags.DEFINE_integer('word_gcn_layers', 1, 'Layers at gcn')
-tf.app.flags.DEFINE_integer('word_gcn_dim', 256, 'La')
+tf.app.flags.DEFINE_integer('word_gcn_dim', 256, 'output of gcn ')
 
 # Coverage hyperparameters
 tf.app.flags.DEFINE_boolean('coverage', False, 'Use coverage mechanism. Note, the experiments reported in the ACL paper train WITHOUT coverage until converged, and then train for a short phase WITH coverage afterwards. i.e. to reproduce the results in the ACL paper, turn this off for most of training then turn on for a short phase at the end.')
@@ -289,7 +290,9 @@ def main(unused_argv):
 
   tf.logging.set_verbosity(tf.logging.INFO) # choose what level of logging you want
   tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))
-
+  if FLAGS.no_lstm_encoder and FLAGS.word_gcn!=True:
+    raise Exception("Set word_gcn to True to continue")
+    
   # Change log_root to FLAGS.log_root/FLAGS.exp_name and create the dir if necessary
   FLAGS.log_root = os.path.join(FLAGS.log_root, FLAGS.exp_name)
   if not os.path.exists(FLAGS.log_root):

@@ -369,14 +369,22 @@ class SummarizationModel(object):
         emb_enc_inputs = tf.nn.embedding_lookup(embedding, self._enc_batch) # tensor with shape (batch_size, max_enc_steps, emb_size)
         emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch, axis=1)] # list length max_dec_steps containing shape (batch_size, emb_size)
 
+      if self._hps.no_lstm_encoder: #use gcn directly 
+        b_in   = tf.get_variable('trainable_dec_start_state',   [1, hps.emb_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
+        self._enc_states = emb_enc_inputs            
+        in_dim = hps.emb_dim
+        self._dec_in_state = 
+      
+      else:  
       # Add the encoder.
-      enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens)
-      self._enc_states = enc_outputs
+        enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens)
+        self._enc_states = enc_outputs
+        in_dim = self._hps.hidden_dim * 2
       # Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
-      self._dec_in_state = self._reduce_states(fw_st, bw_st)
+        self._dec_in_state = self._reduce_states(fw_st, bw_st)
       
       if self._hps.word_gcn:
-	gcn_outputs = self._add_gcn_layer(gcn_in=enc_outputs,  in_dim=self._hps.hidden_dim*2, gcn_dim=self._hps.word_gcn_dim, batch_size=self._hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=self._hps.num_word_dependency_labels, adj_in=self._word_adj_in, adj_out=self._word_adj_out, num_layers=self._hps.word_gcn_layers, use_gating=self._hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")         
+	      gcn_outputs = self._add_gcn_layer(gcn_in=self._enc_states,  in_dim=hps.hidden_dim*2, gcn_dim=hps.word_gcn_dim, batch_size=hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in, adj_out=self._word_adj_out, num_layers=hps.word_gcn_layers, use_gating=hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")         
         self._enc_states = gcn_outputs #note we return the last output from the gcn directly instead of all the outputs outputs
       
        
