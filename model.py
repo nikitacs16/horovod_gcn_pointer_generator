@@ -45,12 +45,12 @@ def get_initial_cell_state(cell, initializer, batch_size, dtype):
   the shapes `[batch_size x s]` for each s in `state_size`.
   Snippet from : https://r2rt.com/non-zero-initial-states-for-recurrent-neural-networks.html
   """
-  state_size = cell.state_size
+  state_size = cell.state_size #starting state. returns the size of individual states 
   if nest.is_sequence(state_size):
       state_size_flat = nest.flatten(state_size)
-      init_state_flat = [
+      init_state_flat = [                               #this part for multi-layered RNN
           initializer(_state_size_with_prefix(s), batch_size, dtype, i)
-              for i, s in enumerate(state_size_flat)]
+              for i, s in enumerate(state_size_flat)] 
       init_state = nest.pack_sequence_as(structure=state_size,
                                   flat_sequence=init_state_flat)
   else:
@@ -61,18 +61,25 @@ def get_initial_cell_state(cell, initializer, batch_size, dtype):
 
 def make_variable_state_initializer(**kwargs):
   def variable_state_initializer(shape, batch_size, dtype, index):
+    """
+    shape : shape of the cell of the RNNCell
+    batch_size : int, float, or unit Tensor representing the batch size.
+    dtype: the data type to use for the state. Typically float32
+    index : not sure 
+
+    """
     args = kwargs.copy()
 
     if args.get('name'):
-        args['name'] = args['name'] + '_' + str(index)
+        args['name'] = args['name'] + '_' + str(index) #naming the variable ?
     else:
         args['name'] = 'init_state_' + str(index)
 
     args['shape'] = shape
     args['dtype'] = dtype
 
-    var = tf.get_variable(**args)
-    var = tf.expand_dims(var, 0)
+    var = tf.get_variable(**args) #name, shape, dtype
+    var = tf.expand_dims(var, 0) #1 * shape
     var = tf.tile(var, tf.stack([batch_size] + [1] * len(shape)))
     var.set_shape(_state_size_with_prefix(shape, prefix=[None]))
     return var
@@ -238,7 +245,7 @@ class SummarizationModel(object):
           with tf.variable_scope('label-%d_name-%s_layer-%d' % (lbl, name, layer)) as scope:
 
             #w_in   = tf.get_variable('w_in',   [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
-            b_in   = tf.get_variable('b_in',   [1, gcn_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
+            #b_in   = tf.get_variable('b_in',   [1, gcn_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
 
             #w_out  = tf.get_variable('w_out',  [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
             b_out  = tf.get_variable('b_out',  [1, gcn_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
@@ -247,7 +254,7 @@ class SummarizationModel(object):
 
             if use_gating:
               #w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
-              b_gin  = tf.get_variable('b_gin',  [1],       initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
+              #b_gin  = tf.get_variable('b_gin',  [1],       initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
 
               #w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
               b_gout = tf.get_variable('b_gout', [1],       initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
@@ -257,13 +264,13 @@ class SummarizationModel(object):
 		
 		
           with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
-            inp_in  = pre_com_o_in + tf.expand_dims(b_in, axis=0)#syntax changed for version compatibility
+            inp_in  = pre_com_o_in + tf.expand_dims(b_out, axis=0)#syntax changed for version compatibility
             in_t    = tf.stack([tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_in[i]) for i in range(batch_size)])
       	
             if dropout != 1.0: in_t    = tf.nn.dropout(in_t, keep_prob=dropout)
 	    	
             if use_gating:
-              inp_gin = pre_com_o_gin + tf.expand_dims(b_gin, axis=0)
+              inp_gin = pre_com_o_gin + tf.expand_dims(b_gout, axis=0)
               in_gate = tf.stack([tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_gin[i]) for i in range(batch_size)])
               in_gsig = tf.sigmoid(in_gate)
               in_act   = in_t * in_gsig
@@ -349,7 +356,6 @@ class SummarizationModel(object):
     hps = self._hps
     cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim, state_is_tuple=True, initializer=self.rand_unif_init)
     if hps.no_lstm_encoder:
-
       self._dec_in_state = get_initial_cell_state(cell, make_variable_state_initializer(), hps.batch_size, tf.float32)
 
     prev_coverage = self.prev_coverage if hps.mode=="decode" and hps.coverage else None # In decode mode, we run attention_decoder one step at a time and so need to pass in the previous step's coverage vector each time
