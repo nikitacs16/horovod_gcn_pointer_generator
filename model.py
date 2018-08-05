@@ -25,6 +25,24 @@ from tensorflow.contrib.tensorboard.plugins import projector
 
 FLAGS = tf.app.flags.FLAGS
 
+#def make_variable_state_initializer(**kwargs):
+def variable_state_initializer(shape, batch_size, dtype, index):
+  args = kwargs.copy()
+  if args.get('name'):
+    args['name'] = args['name'] + '_' + str(index)
+
+  else:
+    args['name'] = 'init_state_' + str(index)
+  args['shape'] = shape
+  args['dtype'] = dtype
+  var = tf.get_variable(**args)
+  var = tf.expand_dims(var, 0)
+  var = tf.tile(var, tf.pack([batch_size] + [1] * len(shape)))
+  var.set_shape(_state_size_with_prefix(shape, prefix=[None]))
+  return var
+
+    return variable_state_initializer
+
 class SummarizationModel(object):
   """A class to represent a sequence-to-sequence model for text summarization. Supports both baseline mode, pointer-generator mode, and coverage"""
 
@@ -166,15 +184,15 @@ class SummarizationModel(object):
         pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2],[0]])
        
 
-	      if use_gating:
+	if use_gating:
           w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
           w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)           
           w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
 	
 	       #for code optimisation only
-	        pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) 
+	  pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2],[0]]) 
           pre_com_o_gout = tf.tensordot(gcn_in, w_gout, axes=[[2],[0]])
-	        pre_com_o_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])		
+	  pre_com_o_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2],[0]])		
 	
         
         for lbl in range(max_labels):
@@ -370,10 +388,12 @@ class SummarizationModel(object):
         emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch, axis=1)] # list length max_dec_steps containing shape (batch_size, emb_size)
 
       if self._hps.no_lstm_encoder: #use gcn directly 
-        trainable_dec_start_state   = tf.get_variable('trainable_dec_start_state',   [1, hps.emb_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
+   
+        init_state = get_initial_cell_state(cell, initializer, hps.batch_size, tf.float32)
+	#trainable_dec_start_state   = tf.get_variable('trainable_dec_start_state',   [1, hps.emb_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
         self._enc_states = emb_enc_inputs            
         in_dim = hps.emb_dim
-        self._dec_in_state = trainable_dec_start_state
+        self._dec_in_state = init_state
       
       else:  
       # Add the encoder.
@@ -384,7 +404,7 @@ class SummarizationModel(object):
         self._dec_in_state = self._reduce_states(fw_st, bw_st)
       
       if self._hps.word_gcn:
-	      gcn_outputs = self._add_gcn_layer(gcn_in=self._enc_states,  in_dim=hps.hidden_dim*2, gcn_dim=hps.word_gcn_dim, batch_size=hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in, adj_out=self._word_adj_out, num_layers=hps.word_gcn_layers, use_gating=hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")         
+	gcn_outputs = self._add_gcn_layer(gcn_in=self._enc_states,  in_dim=in_dim, gcn_dim=hps.word_gcn_dim, batch_size=hps.batch_size, max_nodes=self._max_word_seq_len, max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in, adj_out=self._word_adj_out, num_layers=hps.word_gcn_layers, use_gating=hps.word_gcn_gating, dropout=self._word_gcn_dropout, name="gcn_word")         
         self._enc_states = gcn_outputs #note we return the last output from the gcn directly instead of all the outputs outputs
       
        
