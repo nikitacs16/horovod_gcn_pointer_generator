@@ -22,6 +22,9 @@ import numpy as np
 import tensorflow as tf
 from attention_decoder import attention_decoder
 from tensorflow.contrib.tensorboard.plugins import projector
+from tensorflow.python.util import nest
+from tensorflow.python.ops import rnn_cell_impl as rnc
+_state_size_with_prefix = rnc._state_size_with_prefix #will need a workaround with higher versions
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -56,7 +59,7 @@ def get_initial_cell_state(cell, initializer, batch_size, dtype):
 
   return init_state
 
- def make_variable_state_initializer(**kwargs):
+def make_variable_state_initializer(**kwargs):
   def variable_state_initializer(shape, batch_size, dtype, index):
     args = kwargs.copy()
 
@@ -70,7 +73,7 @@ def get_initial_cell_state(cell, initializer, batch_size, dtype):
 
     var = tf.get_variable(**args)
     var = tf.expand_dims(var, 0)
-    var = tf.tile(var, tf.pack([batch_size] + [1] * len(shape)))
+    var = tf.tile(var, tf.stack([batch_size] + [1] * len(shape)))
     var.set_shape(_state_size_with_prefix(shape, prefix=[None]))
     return var
 
@@ -347,7 +350,7 @@ class SummarizationModel(object):
     cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim, state_is_tuple=True, initializer=self.rand_unif_init)
     if hps.no_lstm_encoder:
 
-      self._dec_in_state = get_initial_cell_state(cell, make_variable_initializer(), hps.batch_size, tf.float32)
+      self._dec_in_state = get_initial_cell_state(cell, make_variable_state_initializer(), hps.batch_size, tf.float32)
 
     prev_coverage = self.prev_coverage if hps.mode=="decode" and hps.coverage else None # In decode mode, we run attention_decoder one step at a time and so need to pass in the previous step's coverage vector each time
 
