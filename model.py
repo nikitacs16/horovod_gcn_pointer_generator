@@ -380,6 +380,7 @@ class SummarizationModel(object):
         if hps.no_lstm_encoder:
             self._dec_in_state = get_initial_cell_state(cell, make_variable_state_initializer(), hps.batch_size,
                                                         tf.float32)
+            # TODO Feed the averaged gcn word vectors
 
         prev_coverage = self.prev_coverage if hps.mode == "decode" and hps.coverage else None  # In decode mode, we run attention_decoder one step at a time and so need to pass in the previous step's coverage vector each time
 
