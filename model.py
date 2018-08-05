@@ -288,7 +288,6 @@ class SummarizationModel(object):
                                                                axis=0)  # syntax changed for version compatibility
                         in_t = tf.stack(
                             [tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_in[i]) for i in range(batch_size)])
-
                         if dropout != 1.0: in_t = tf.nn.dropout(in_t, keep_prob=dropout)
 
                         if use_gating:
@@ -315,18 +314,20 @@ class SummarizationModel(object):
                         else:
                             out_act = out_t
 
-                    with tf.name_scope('self_loop'):
-                        inp_loop = pre_com_o_loop
-                        if dropout != 1.0: inp_loop = tf.nn.dropout(inp_loop, keep_prob=dropout)
+                    act_sum += in_act + out_act
 
-                        if use_gating:
-                            inp_gloop = pre_com_o_gloop
-                            loop_gsig = tf.sigmoid(inp_gloop)
-                            loop_act = inp_loop * loop_gsig
-                        else:
-                            loop_act = inp_loop
+                with tf.name_scope('self_loop'):
+                    inp_loop = pre_com_o_loop
+                    if dropout != 1.0: inp_loop = tf.nn.dropout(inp_loop, keep_prob=dropout)
 
-                    act_sum += in_act + out_act + loop_act
+                    if use_gating:
+                        inp_gloop = pre_com_o_gloop
+                        loop_gsig = tf.sigmoid(inp_gloop)
+                        loop_act = inp_loop * loop_gsig
+                    else:
+                        loop_act = inp_loop
+
+                act_sum += loop_act
                 gcn_out = tf.nn.relu(act_sum)
                 out.append(gcn_out)
 
