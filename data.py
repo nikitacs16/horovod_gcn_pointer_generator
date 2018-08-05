@@ -334,18 +334,18 @@ dep_list = ['cc', 'agent', 'ccomp', 'prt', 'meta', 'nsubjpass', 'csubj', 'conj',
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 
-def get_adj(edge_list, batch_size, max_nodes, max_labels=45, label_dict=dep_dict):
+def get_adj(batch_list, batch_size, max_nodes, max_labels=45, label_dict=dep_dict):
     adj_main_in, adj_main_out = [], []
     # tf.logging.info(max_labels)
     # tf.logging.info(len(dep_list))
 
-    for edges in edge_list:
+    for edge_list in batch_list:
         adj_in, adj_out = {}, {}
 
         in_ind, in_data = ddict(list), ddict(list)
         out_ind, out_data = ddict(list), ddict(list)
 
-        for src, dest, lbl_ in edges:
+        for src, dest, lbl_ in edge_list:
             if src >= max_nodes or dest >= max_nodes:
                 continue
             lbl = label_dict[lbl_]
