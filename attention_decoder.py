@@ -215,7 +215,7 @@ def linear(args, output_size, bias, bias_start=0.0, scope=None):
     if not shape[1]:
       raise ValueError("Linear expects shape[1] of arguments: %s" % str(shapes))
     else:
-      total_arg_size += shape[1]
+      total_arg_size += shape[1] #keeps count of n ?
 
   # Now the computation.
   with tf.variable_scope(scope or "Linear"):

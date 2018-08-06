@@ -106,6 +106,11 @@ class SummarizationModel(object):
         self._enc_batch = tf.placeholder(tf.int32, [hps.batch_size, None], name='enc_batch')
         self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size], name='enc_lens')
         self._enc_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, None], name='enc_padding_mask')
+        if FLAGS.query_encoder:
+            self._que_batch = tf.placeholder(tf.int32, [hps.batch_size, None], name='que_batch')
+            self._que_lens = tf.placeholder(tf.int32, [hps.batch_size], name='que_lens')
+            self._que_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, None], name='que_padding_mask')
+
         if FLAGS.pointer_gen:
             self._enc_batch_extend_vocab = tf.placeholder(tf.int32, [hps.batch_size, None],
                                                           name='enc_batch_extend_vocab')
@@ -120,7 +125,21 @@ class SummarizationModel(object):
                 {lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_out_{}'.format(lbl)) for lbl
                  in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
             self._word_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout, shape=(), name='dropout')
-            self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_seq_len')
+            self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
+
+        if FLAGS.query_gcn:
+            # tf.logging.info(hps.num_word_dependency_labels)
+            self._query_adj_in = [
+                {lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_in_{}'.format(lbl)) for lbl
+                 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
+            self._query_adj_out = [
+                {lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_out_{}'.format(lbl)) for lbl
+                 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
+            self._query_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout, shape=(), name='query_dropout')
+            self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
+        
+
+
         # decoder part
         self._dec_batch = tf.placeholder(tf.int32, [hps.batch_size, hps.max_dec_steps], name='dec_batch')
         self._target_batch = tf.placeholder(tf.int32, [hps.batch_size, hps.max_dec_steps], name='target_batch')
@@ -142,13 +161,17 @@ class SummarizationModel(object):
         feed_dict[self._enc_batch] = batch.enc_batch
         feed_dict[self._enc_lens] = batch.enc_lens
         feed_dict[self._enc_padding_mask] = batch.enc_padding_mask
+        
+        if FLAGS.query_encoder:
+            feed_dict[self._que_batch] = batch.que_batch
+            feed_dict[self._que_lens] = batch.que_lens
+            feed_dict[self._que_padding_mask] = batch.que_padding_mask
+
         if FLAGS.pointer_gen:
             feed_dict[self._enc_batch_extend_vocab] = batch.enc_batch_extend_vocab
             feed_dict[self._max_art_oovs] = batch.max_art_oovs
 
         if FLAGS.word_gcn:
-            #      tf.logging.info('batch_len_max_word')
-            #     tf.logging.info(batch.max_word_len)
             feed_dict[self._max_word_seq_len] = batch.max_word_len
 
             word_adj_in = batch.word_adj_in
@@ -164,7 +187,22 @@ class SummarizationModel(object):
                         indices=np.array([word_adj_out[i][lbl].row, word_adj_out[i][lbl].col]).T,
                         values=word_adj_out[i][lbl].data,
                         dense_shape=word_adj_out[i][lbl].shape)
+   
+        if FLAGS.query_gcn:
+            feed_dict[self._max_query_seq_len] = batch.max_query_len
+            query_adj_in = batch.query_adj_in
+            query_adj_out = batch.query_adj_out
+            for i in range(hps.batch_size):
+                for lbl in range(hps.num_word_dependency_labels):
+                    feed_dict[self._query_adj_in[i][lbl]] = tf.SparseTensorValue(
+                        indices=np.array([query_adj_in[i][lbl].row, query_adj_in[i][lbl].col]).T,
+                        values=query_adj_in[i][lbl].data,
+                        dense_shape=query_adj_in[i][lbl].shape)
 
+                    feed_dict[self._query_adj_out[i][lbl]] = tf.SparseTensorValue(
+                        indices=np.array([query_adj_out[i][lbl].row, query_adj_out[i][lbl].col]).T,
+                        values=query_adj_out[i][lbl].data,
+                        dense_shape=query_adj_out[i][lbl].shape)
             '''
 
       feed_dict[self._word_adj_in] = batch.word_adj_in
@@ -200,6 +238,27 @@ class SummarizationModel(object):
                                                                                 swap_memory=True)
             encoder_outputs = tf.concat(axis=2, values=encoder_outputs)  # concatenate the forwards and backwards states
         return encoder_outputs, fw_st, bw_st
+
+    def _add_query_encoder(self, encoder_inputs, seq_len):
+        """Add a single-layer bidirectional LSTM encoder to the graph.
+
+        Args:
+            encoder_inputs: A tensor of shape [batch_size, <=max_enc_steps, emb_size].
+            seq_len: Lengths of encoder_inputs (before padding). A tensor of shape [batch_size].
+
+        Returns:
+            encoder_outputs:
+                A tensor of shape [batch_size, <=max_enc_steps, 2*hidden_dim]. It's 2*hidden_dim because it's the concatenation of the forwards and backwards states.
+            fw_state, bw_state:
+                Each are LSTMStateTuples of shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
+        """
+        with tf.variable_scope('query_encoder'):
+            cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=self.rand_unif_init, state_is_tuple=True)
+            cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=self.rand_unif_init, state_is_tuple=True)
+            (encoder_outputs, (fw_st, bw_st)) = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs, dtype=tf.float32, sequence_length=seq_len, swap_memory=True)
+            encoder_outputs = tf.concat(axis=2, values=encoder_outputs) # concatenate the forwards and backwards states
+        return encoder_outputs, fw_st, bw_st   
+    
 
     def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, num_layers=1,
                        use_gating=False, dropout=1.0, name="GCN"):
@@ -688,7 +747,7 @@ class SummarizationModel(object):
             to_return['p_gens'] = self.p_gens
 
         if FLAGS.word_gcn:
-            feed[self._max_word_seq_len] = batch.max_word_seq_len
+            feed[self._max_word_seq_len] = batch.max_word_len
 
         if self._hps.coverage:
             feed[self.prev_coverage] = np.stack(prev_coverage, axis=0)
