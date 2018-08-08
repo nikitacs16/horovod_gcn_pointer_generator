@@ -63,13 +63,13 @@ class Example(object):
 		if hps.query_encoder:
 			query_words = query.split()
 			#query_words = word_features.get_tokens(query)
-			if len(query_words) > hps.max_que_steps:
-				#tf.logging.info('Before_query: %d Hps: %d'%(len(query_words),hps.max_que_steps))
-				query_words = query_words[len(query_words)- hps.max_que_steps:]
+			if len(query_words) > hps.max_query_steps:
+				#tf.logging.info('Before_query: %d Hps: %d'%(len(query_words),hps.max_query_steps))
+				query_words = query_words[len(query_words)- hps.max_query_steps:]
 				#tf.logging.info('Big_query : %d'%(len(query_words)))
 				query = " ".join(q for q in query_words)
-			self.que_len = len(query_words) # store the length after truncation but before padding
-			self.que_input = [vocab.word2id(w) for w in query_words] # list of word ids; OOVs are represented by the id for UNK token
+			self.query_len = len(query_words) # store the length after truncation but before padding
+			self.query_input = [vocab.word2id(w) for w in query_words] # list of word ids; OOVs are represented by the id for UNK token
 
 		# Get the decoder input sequence and target sequence
 		self.dec_input, self.target = self.get_dec_inp_targ_seqs(abs_ids, hps.max_dec_steps, start_decoding,
@@ -140,8 +140,8 @@ class Example(object):
 				self.enc_input_extend_vocab.append(pad_id)
 	def pad_query_input(self, max_len, pad_id):
 		"""Pad the query input sequence with pad_id up to max_len."""
-		while len(self.que_input) < max_len:
-			self.que_input.append(pad_id)
+		while len(self.query_input) < max_len:
+			self.query_input.append(pad_id)
 
 
 class Batch(object):
@@ -224,42 +224,42 @@ class Batch(object):
 	def init_query_seq(self, example_list, hps):
 		
 	#	"""Initializes the following:
-	#			self.que_batch:
-	#				numpy array of shape (batch_size, <=max_que_steps) containing integer ids (all OOVs represented by UNK id), padded to length of longest sequence in the batch
-	#			self.que_lens:
+	#			self.query_batch:
+	#				numpy array of shape (batch_size, <=max_query_steps) containing integer ids (all OOVs represented by UNK id), padded to length of longest sequence in the batch
+	#			self.query_lens:
 	#				numpy array of shape (batch_size) containing integers. The (truncated) length of each encoder input sequence (pre-padding).
-	#			self.que_padding_mask:
-	#				numpy array of shape (batch_size, <=max_que_steps), containing 1s and 0s. 1s correspond to real tokens in enc_batch and target_batch; 0s correspond to padding.
+	#			self.query_padding_mask:
+	#				numpy array of shape (batch_size, <=max_query_steps), containing 1s and 0s. 1s correspond to real tokens in enc_batch and target_batch; 0s correspond to padding.
 	#
 	#		
 	#	"""
 		# Determine the maximum length of the encoder input sequence in this batch
-			max_que_seq_len = max([ex.que_len for ex in example_list])
-			self.max_query_len = max_que_seq_len
-			#tf.logging.info("QUe : %d"%(max_que_seq_len))
+			max_query_seq_len = max([ex.query_len for ex in example_list])
+			self.max_query_len = max_query_seq_len
+			#tf.logging.info("QUe : %d"%(max_query_seq_len))
 			# Pad the encoder input sequences up to the length of the longest sequence
 			for ex in example_list:
-				ex.pad_query_input(max_que_seq_len, self.pad_id)
+				ex.pad_query_input(max_query_seq_len, self.pad_id)
 
 			# Initialize the numpy arrays
 			# Note: our enc_batch can have different length (second dimension) for each batch because we use dynamic_rnn for the encoder.
-			self.que_batch = np.zeros((hps.batch_size, max_que_seq_len), dtype=np.int32)
-			self.que_lens = np.zeros((hps.batch_size), dtype=np.int32)
-			self.que_padding_mask = np.zeros((hps.batch_size, max_que_seq_len), dtype=np.float32)
+			self.query_batch = np.zeros((hps.batch_size, max_query_seq_len), dtype=np.int32)
+			self.query_lens = np.zeros((hps.batch_size), dtype=np.int32)
+			self.query_padding_mask = np.zeros((hps.batch_size, max_query_seq_len), dtype=np.float32)
 
 			# Fill in the numpy arrays
 			for i, ex in enumerate(example_list):
-				self.que_batch[i, :] = ex.que_input[:]
-				self.que_lens[i] = ex.que_len
-				for j in xrange(ex.que_len):
-					self.que_padding_mask[i][j] = 1
+				self.query_batch[i, :] = ex.query_input[:]
+				self.query_lens[i] = ex.query_len
+				for j in xrange(ex.query_len):
+					self.query_padding_mask[i][j] = 1
 
 			if hps.query_gcn:
 				query_edge_list = []
 				for ex in example_list:
 					query_edge_list.append(ex.query_edge_list)
 				#note query_edge_list is list of query edge lists. The length is equal to the batch size
-				self.query_adj_in, self.query_adj_out = data.get_adj(query_edge_list, hps.batch_size, max_que_seq_len,
+				self.query_adj_in, self.query_adj_out = data.get_adj(query_edge_list, hps.batch_size, max_query_seq_len,
 																   hps.num_word_dependency_labels)
 
 

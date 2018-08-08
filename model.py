@@ -107,9 +107,9 @@ class SummarizationModel(object):
         self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size], name='enc_lens')
         self._enc_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, None], name='enc_padding_mask')
         if FLAGS.query_encoder:
-            self._que_batch = tf.placeholder(tf.int32, [hps.batch_size, None], name='que_batch')
-            self._que_lens = tf.placeholder(tf.int32, [hps.batch_size], name='que_lens')
-            self._que_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, None], name='que_padding_mask')
+            self._query_batch = tf.placeholder(tf.int32, [hps.batch_size, None], name='query_batch')
+            self._query_lens = tf.placeholder(tf.int32, [hps.batch_size], name='query_lens')
+            self._query_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, None], name='query_padding_mask')
 
         if FLAGS.pointer_gen:
             self._enc_batch_extend_vocab = tf.placeholder(tf.int32, [hps.batch_size, None],
@@ -163,9 +163,9 @@ class SummarizationModel(object):
         feed_dict[self._enc_padding_mask] = batch.enc_padding_mask
         
         if FLAGS.query_encoder:
-            feed_dict[self._que_batch] = batch.que_batch
-            feed_dict[self._que_lens] = batch.que_lens
-            feed_dict[self._que_padding_mask] = batch.que_padding_mask
+            feed_dict[self._query_batch] = batch.query_batch
+            feed_dict[self._query_lens] = batch.query_lens
+            feed_dict[self._query_padding_mask] = batch.query_padding_mask
 
         if FLAGS.pointer_gen:
             feed_dict[self._enc_batch_extend_vocab] = batch.enc_batch_extend_vocab
@@ -443,7 +443,15 @@ class SummarizationModel(object):
 
         prev_coverage = self.prev_coverage if hps.mode == "decode" and hps.coverage else None  # In decode mode, we run attention_decoder one step at a time and so need to pass in the previous step's coverage vector each time
 
-        outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
+        if hps.query_encoder:
+          outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
+                                                                             self._enc_states, self._enc_padding_mask,
+                                                                             cell, use_query=True, query_states=self._query_states, query_padding_mask=self._query_padding_mask
+                                                                             initial_state_attention=(
+                        hps.mode == "decode"), pointer_gen=hps.pointer_gen, use_coverage=hps.coverage,
+                                                                             prev_coverage=prev_coverage)
+        else:
+          outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
                                                                              self._enc_states, self._enc_padding_mask,
                                                                              cell, initial_state_attention=(
                         hps.mode == "decode"), pointer_gen=hps.pointer_gen, use_coverage=hps.coverage,
@@ -525,9 +533,13 @@ class SummarizationModel(object):
                 if hps.mode == "train": self._add_emb_vis(embedding)  # add to tensorboard
                 emb_enc_inputs = tf.nn.embedding_lookup(embedding,
                                                         self._enc_batch)  # tensor with shape (batch_size, max_enc_steps, emb_size)
+                if hps.query_encoder:
+                  emb_query_inputs = tf.nn.embedding_lookup(embedding, self._query_batch) # tensor with shape (batch_size, max_query_steps, emb_size)
+                
                 emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
                                                                                            axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 
+            
             if self._hps.no_lstm_encoder:  # use gcn directly
                 self._enc_states = emb_enc_inputs
                 in_dim = hps.emb_dim
@@ -540,6 +552,7 @@ class SummarizationModel(object):
                 # Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
                 self._dec_in_state = self._reduce_states(fw_st, bw_st)
 
+
             if self._hps.word_gcn:
                 gcn_outputs = self._add_gcn_layer(gcn_in=self._enc_states, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
                                                   batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
@@ -548,6 +561,27 @@ class SummarizationModel(object):
                                                   use_gating=hps.word_gcn_gating, dropout=self._word_gcn_dropout,
                                                   name="gcn_word")
                 self._enc_states = gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
+    
+
+            if query_encoder:
+              if self._hps.no_lstm_query_encoder:
+                self._query_states = emb_query_inputs
+                q_in_dim = hps.emb_dim
+              else:    
+                query_outputs, fw_st_q, bw_st_q = self._add_query_encoder(emb_query_inputs, self._query_lens)
+                self._query_states = que_outputs
+                q_in_dim = self._hps.hidden_dim * 2
+
+
+              if self._hps.query_gcn:
+                  q_gcn_outputs = self._add_gcn_layer(gcn_in=self._query_states, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
+                                                    batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
+                                                    max_labels=hps.num_word_dependency_labels, adj_in=self._query_adj_in,
+                                                    adj_out=self._query_adj_out, num_layers=hps.query_gcn_layers,
+                                                    use_gating=hps.query_gcn_gating, dropout=self._query_gcn_dropout,
+                                                    name="gcn_query")
+                  self._query_states = q_gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
+
 
             # Add the decoder.
             with tf.variable_scope('decoder'):

@@ -76,6 +76,8 @@ tf.app.flags.DEFINE_integer('word_gcn_dim', 256, 'output of gcn ')
 
 #Query model addition
 tf.app.flags.DEFINE_boolean('query_encoder',True,'Keep true for the query based problems')
+tf.app.flags.DEFINE_boolean('no_lstm_query_encoder', False, 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
+
 tf.app.flags.DEFINE_boolean('no_lstm_query_encoder', False, 'Removes LSTM layer for query from the seq2seq model. query_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('query_gcn', False, 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('query_gcn_gating', True, 'If True, use gating at query level')
@@ -302,6 +304,11 @@ def main(unused_argv):
   tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))
   if FLAGS.no_lstm_encoder and FLAGS.word_gcn!=True:
     raise Exception("Set word_gcn to True to continue")
+  if FLAGS.no_lstm_query_encoder and FLAGS.query_gcn!=True:
+    raise Exception("Set query_gcn to True to continue")
+  if (FLAGS.no_lstm_query_encoder=True or FLAGS.query_gcn=True) and FLAGS.query_encoder=False:
+    raise Exception("Set query_encoder to True to continue")
+
     
   # Change log_root to FLAGS.log_root/FLAGS.exp_name and create the dir if necessary
   FLAGS.log_root = os.path.join(FLAGS.log_root, FLAGS.exp_name)
