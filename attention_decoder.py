@@ -49,12 +49,9 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
     coverage: Coverage vector on the last step computed. None if use_coverage=False.
   """
   with variable_scope.variable_scope("attention_decoder") as scope:
-#    tf.logging.info('Attention decoder - encoder states as input')
- #   tf.logging.info(tf.shape(encoder_states))
-  #  tf.logging.info(encoder_states.get_shape()[2].value)
     batch_size = encoder_states.get_shape()[0].value # if this line fails, it's because the batch size isn't defined
     attn_size = encoder_states.get_shape()[2].value # if this line fails, it's because the attention length isn't defined
-    #tf.logging.info(attn_size)	
+
     # Reshape encoder_states (need to insert a dim)
     encoder_states = tf.expand_dims(encoder_states, axis=2) # now is shape (batch_size, attn_len, 1, attn_size)
     
@@ -72,6 +69,8 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
 
     # Get the weight vectors v and w_c (w_c is for coverage)
     v = variable_scope.get_variable("v", [attention_vec_size])
+
+
     if use_coverage:
       with variable_scope.variable_scope("coverage"):
         w_c = variable_scope.get_variable("w_c", [1, 1, 1, attention_vec_size])
@@ -79,6 +78,7 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
     if prev_coverage is not None: # for beam search mode with coverage
       # reshape from (batch_size, attn_length) to (batch_size, attn_len, 1, 1)
       prev_coverage = tf.expand_dims(tf.expand_dims(prev_coverage,2),3)
+
     if use_query:
       query_attn_size = query_states.get_shape()[2].value # if this line fails, it's because the attention length isn't defined
       query_states = tf.expand_dims(query_states, axis=2)
@@ -107,10 +107,10 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
         coverage: new coverage vector. shape (batch_size, attn_len, 1, 1)
       """
       with variable_scope.variable_scope("Attention"):
-        def masked_attention(e):
+        def masked_attention(e,padding_mask):
           """Take softmax of e then apply enc_padding_mask and re-normalize"""
           attn_dist = nn_ops.softmax(e) # take softmax. shape (batch_size, attn_length)
-          attn_dist *= enc_padding_mask # apply mask
+          attn_dist *= padding_mask # apply mask
           masked_sums = tf.reduce_sum(attn_dist, axis=1) # shape (batch_size)
           return attn_dist / tf.reshape(masked_sums, [-1, *1]) # re-normalize
 
@@ -119,8 +119,12 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
           decoder_q_features = linear(decoder_state, query_attn_size,True) # W_s_q s_t +b
           decoder_q_features = tf.expand_dims(tf.expand_dims(decoder_q_features, 1), 1) # reshape to (batch_size, 1, 1, q_attention_vec_size)
           q = math_ops.reduce_sum(v_q * math_ops.tanh(query_features + decoder_q_features), [2, 3]) # calculate q v^t tanh(W_q q_i + W_s_q s_t + b)
-          q_dist = masked_attention(q)
+          q_dist = masked_attention(q,query_padding_mask)
+          tf.logging.info('q dist')
+          tf.logging.info(q_dist.shape())
           query_vector = math_ops.reduce_sum(array_ops.reshape(q_dist, [batch_size, -1, 1, 1]) * query_states, [1, 2]) # shape (batch_size, q_attn_size). q*
+          tf.logging.info('q *')
+          tf.logging.info(query.shape())
           #query_vector = array_ops.reshape(query_vector, [-1, attn_size])
           decoder_features = linear([decoder_state]+[query_vector],attention_vec_size,True) #W_s s_t + W_q q* + b
         else:
@@ -140,7 +144,7 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
           e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features + coverage_features), [2, 3])  # shape (batch_size,attn_length)
 
           # Calculate attention distribution
-          attn_dist = masked_attention(e)
+          attn_dist = masked_attention(e,enc_padding_mask)
 
           # Update coverage vector
           coverage += array_ops.reshape(attn_dist, [batch_size, -1, 1, 1])

@@ -96,7 +96,7 @@ class SummarizationModel(object):
     def __init__(self, hps, vocab):
         self._hps = hps
         self._vocab = vocab
-        self.regularizer = None
+        self.regularizer = None #called globally. L2 Norm is used.
 
     def _add_placeholders(self):
         """Add placeholders to the graph. These are entry points for any input data."""
@@ -106,6 +106,7 @@ class SummarizationModel(object):
         self._enc_batch = tf.placeholder(tf.int32, [hps.batch_size, None], name='enc_batch')
         self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size], name='enc_lens')
         self._enc_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, None], name='enc_padding_mask')
+        
         if FLAGS.query_encoder:
             self._query_batch = tf.placeholder(tf.int32, [hps.batch_size, None], name='query_batch')
             self._query_lens = tf.placeholder(tf.int32, [hps.batch_size], name='query_lens')
@@ -128,7 +129,6 @@ class SummarizationModel(object):
             self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
 
         if FLAGS.query_gcn:
-            # tf.logging.info(hps.num_word_dependency_labels)
             self._query_adj_in = [
                 {lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_in_{}'.format(lbl)) for lbl
                  in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
@@ -152,10 +152,10 @@ class SummarizationModel(object):
     def _make_feed_dict(self, batch, just_enc=False):
         """Make a feed dictionary mapping parts of the batch to the appropriate placeholders.
 
-    Args:
-      batch: Batch object
-      just_enc: Boolean. If True, only feed the parts needed for the encoder.
-    """
+        Args:
+          batch: Batch object
+          just_enc: Boolean. If True, only feed the parts needed for the encoder.
+        """
         hps = self._hps
         feed_dict = {}
         feed_dict[self._enc_batch] = batch.enc_batch
@@ -203,31 +203,29 @@ class SummarizationModel(object):
                         indices=np.array([query_adj_out[i][lbl].row, query_adj_out[i][lbl].col]).T,
                         values=query_adj_out[i][lbl].data,
                         dense_shape=query_adj_out[i][lbl].shape)
-            '''
-
-      feed_dict[self._word_adj_in] = batch.word_adj_in
-      feed_dict[self._word_adj_out] = batch.word_adj_out
-      '''
+      
         if not just_enc:
             feed_dict[self._dec_batch] = batch.dec_batch
             feed_dict[self._target_batch] = batch.target_batch
             feed_dict[self._dec_padding_mask] = batch.dec_padding_mask
+
         return feed_dict
 
-    def _add_encoder(self, encoder_inputs, seq_len):
+
+    def _add_encoder(self, encoder_inputs, seq_len,name='encoder'):
         """Add a single-layer bidirectional LSTM encoder to the graph.
 
-    Args:
-      encoder_inputs: A tensor of shape [batch_size, <=max_enc_steps, emb_size].
-      seq_len: Lengths of encoder_inputs (before padding). A tensor of shape [batch_size].
+        Args:
+          encoder_inputs: A tensor of shape [batch_size, <=max_enc_steps, emb_size].
+          seq_len: Lengths of encoder_inputs (before padding). A tensor of shape [batch_size].
 
-    Returns:
-      encoder_outputs:
-        A tensor of shape [batch_size, <=max_enc_steps, 2*hidden_dim]. It's 2*hidden_dim because it's the concatenation of the forwards and backwards states.
-      fw_state, bw_state:
-        Each are LSTMStateTuples of shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
-    """
-        with tf.variable_scope('encoder'):
+        Returns:
+          encoder_outputs:
+            A tensor of shape [batch_size, <=max_enc_steps, 2*hidden_dim]. It's 2*hidden_dim because it's the concatenation of the forwards and backwards states.
+          fw_state, bw_state:
+            Each are LSTMStateTuples of shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
+        """
+        with tf.variable_scope(name):
             cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=self.rand_unif_init,
                                               state_is_tuple=True)
             cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=self.rand_unif_init,
@@ -239,31 +237,12 @@ class SummarizationModel(object):
             encoder_outputs = tf.concat(axis=2, values=encoder_outputs)  # concatenate the forwards and backwards states
         return encoder_outputs, fw_st, bw_st
 
-    def _add_query_encoder(self, encoder_inputs, seq_len):
-        """Add a single-layer bidirectional LSTM encoder to the graph.
 
-        Args:
-            encoder_inputs: A tensor of shape [batch_size, <=max_enc_steps, emb_size].
-            seq_len: Lengths of encoder_inputs (before padding). A tensor of shape [batch_size].
-
-        Returns:
-            encoder_outputs:
-                A tensor of shape [batch_size, <=max_enc_steps, 2*hidden_dim]. It's 2*hidden_dim because it's the concatenation of the forwards and backwards states.
-            fw_state, bw_state:
-                Each are LSTMStateTuples of shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
-        """
-        with tf.variable_scope('query_encoder'):
-            cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=self.rand_unif_init, state_is_tuple=True)
-            cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=self.rand_unif_init, state_is_tuple=True)
-            (encoder_outputs, (fw_st, bw_st)) = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs, dtype=tf.float32, sequence_length=seq_len, swap_memory=True)
-            encoder_outputs = tf.concat(axis=2, values=encoder_outputs) # concatenate the forwards and backwards states
-        return encoder_outputs, fw_st, bw_st   
-    
 
     def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, num_layers=1,
-                       use_gating=False, dropout=1.0, name="GCN"):
+                       use_gating=False, use_normalization=True, dropout=1.0, name="GCN"):
 
-        """ Adds GCN layers to the graph. This is a directed GCN
+    """ Adds GCN layers to the graph. This is a directed GCN
     
     Args:
      gcn_in: Input to GCN Layer
@@ -292,13 +271,9 @@ class SummarizationModel(object):
 
                 act_sum = tf.zeros([batch_size, max_nodes, gcn_dim])
 
-                w_in = tf.get_variable('w_in', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(),
-                                       regularizer=self.regularizer)
-                w_out = tf.get_variable('w_out', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(),
-                                        regularizer=self.regularizer)
-                w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],
-                                         initializer=tf.contrib.layers.xavier_initializer(),
-                                         regularizer=self.regularizer)
+                w_in = tf.get_variable('w_in', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer())                           
+                w_out = tf.get_variable('w_out', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer())
+                w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],  initializer=tf.contrib.layers.xavier_initializer())
 
                 # for code optimisation only
                 pre_com_o_in = tf.tensordot(gcn_in, w_in, axes=[[2], [0]])
@@ -306,13 +281,10 @@ class SummarizationModel(object):
                 pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2], [0]])
 
                 if use_gating:
-                    w_gin = tf.get_variable('w_gin', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer(),
-                                            regularizer=self.regularizer)
-                    w_gout = tf.get_variable('w_gout', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer(),
-                                             regularizer=self.regularizer)
-                    w_gloop = tf.get_variable('w_gloop', [in_dim, 1],
-                                              initializer=tf.contrib.layers.xavier_initializer(),
-                                              regularizer=self.regularizer)
+                    w_gin = tf.get_variable('w_gin', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer())
+                    w_gout = tf.get_variable('w_gout', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer())
+                    w_gloop = tf.get_variable('w_gloop', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer())
+                                              
 
                     # for code optimisation only
                     pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2], [0]])
@@ -323,28 +295,13 @@ class SummarizationModel(object):
 
                     with tf.variable_scope('label-%d_name-%s_layer-%d' % (lbl, name, layer)) as scope:
 
-                        # w_in   = tf.get_variable('w_in',   [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
-                        # b_in   = tf.get_variable('b_in',   [1, gcn_dim],    initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
-
-                        # w_out  = tf.get_variable('w_out',  [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
-                        b_out = tf.get_variable('b_out', [1, gcn_dim], initializer=tf.constant_initializer(0.0),
-                                                regularizer=self.regularizer)
-
-                        # w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
-
+                        b_out = tf.get_variable('b_out', [1, gcn_dim], initializer=tf.constant_initializer(0.0))
+             
                         if use_gating:
-                            # w_gin  = tf.get_variable('w_gin',  [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
-                            # b_gin  = tf.get_variable('b_gin',  [1],       initializer=tf.constant_initializer(0.0),     regularizer=self.regularizer)
-
-                            # w_gout = tf.get_variable('w_gout', [in_dim, 1],   initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
-                            b_gout = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0),
-                                                     regularizer=self.regularizer)
-
-                            # w_gloop = tf.get_variable('w_gloop',[in_dim, 1],  initializer=tf.contrib.layers.xavier_initializer(),   regularizer=self.regularizer)
+                            b_gout = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0))
 
                     with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
-                        inp_in = pre_com_o_in + tf.expand_dims(b_out,
-                                                               axis=0)  # syntax changed for version compatibility
+                        inp_in = pre_com_o_in + tf.expand_dims(b_out,axis=0)  
                         in_t = tf.stack(
                             [tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_in[i]) for i in range(batch_size)])
                         if dropout != 1.0: in_t = tf.nn.dropout(in_t, keep_prob=dropout)
@@ -388,6 +345,15 @@ class SummarizationModel(object):
 
                 act_sum += loop_act
                 gcn_out = tf.nn.relu(act_sum)
+                
+                if use_normalization:
+                    tf.logging.info('before')
+                    tf.logging.info(gcn_out.shape())
+                    gcn_norm = tf.norm(gcn_out,axis=2,keepdims=True)
+                    gcn_out = gcn_out / gcn_out
+                    tf.logging.info('after')
+                    tf.logging.info(gcn_out.shape())
+                
                 out.append(gcn_out)
 
         return gcn_out
@@ -447,14 +413,14 @@ class SummarizationModel(object):
           outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
                                                                              self._enc_states, self._enc_padding_mask,
                                                                              cell, use_query=True, query_states=self._query_states, query_padding_mask=self._query_padding_mask
-                                                                             initial_state_attention=(
-                        hps.mode == "decode"), pointer_gen=hps.pointer_gen, use_coverage=hps.coverage,
+                                                                             initial_state_attention=( hps.mode == "decode"), 
+                                                                             pointer_gen=hps.pointer_gen, use_coverage=hps.coverage,
                                                                              prev_coverage=prev_coverage)
         else:
           outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
                                                                              self._enc_states, self._enc_padding_mask,
-                                                                             cell, initial_state_attention=(
-                        hps.mode == "decode"), pointer_gen=hps.pointer_gen, use_coverage=hps.coverage,
+                                                                             cell, initial_state_attention=( hps.mode == "decode"), 
+                                                                             pointer_gen=hps.pointer_gen, use_coverage=hps.coverage,
                                                                              prev_coverage=prev_coverage)
 
         return outputs, out_state, attn_dists, p_gens, coverage
@@ -568,10 +534,9 @@ class SummarizationModel(object):
                 self._query_states = emb_query_inputs
                 q_in_dim = hps.emb_dim
               else:    
-                query_outputs, fw_st_q, bw_st_q = self._add_query_encoder(emb_query_inputs, self._query_lens)
+                query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens,name='query_encoder')
                 self._query_states = que_outputs
                 q_in_dim = self._hps.hidden_dim * 2
-
 
               if self._hps.query_gcn:
                   q_gcn_outputs = self._add_gcn_layer(gcn_in=self._query_states, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
