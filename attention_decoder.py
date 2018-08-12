@@ -118,17 +118,13 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
         if use_query:
           decoder_q_features = linear(decoder_state, query_attn_size,True) # W_s_q s_t +b
           decoder_q_features = tf.expand_dims(tf.expand_dims(decoder_q_features, 1), 1) # reshape to (batch_size, 1, 1, q_attention_vec_size)
+          query_vector = array_ops.zeros([batch_size, query_attn_size])
+          query_vector.set_shape([None, attn_size])  # Ensure the second shape of attention vectors is set.
           q = math_ops.reduce_sum(v_q * math_ops.tanh(query_features + decoder_q_features), [2, 3]) # calculate q v^t tanh(W_q q_i + W_s_q s_t + b)
           q_dist = masked_attention(q,query_padding_mask)
-          tf.logging.info('q dist')
-          tf.logging.info(q_dist.get_shape())
           query_vector = math_ops.reduce_sum(array_ops.reshape(q_dist, [batch_size, -1, 1, 1]) * query_states, [1, 2]) # shape (batch_size, q_attn_size). q*
-          tf.logging.info('q *')
-          tf.logging.info(query_vector.get_shape())
-          query_vector = array_ops.reshape(query_vector, [-1, attn_size])
-          tf.logging.info('post shape')
-	  tf.logging.info(query_vector.get_shape())
-          decoder_features = linear([decoder_state]+[query_vector],attention_vec_size,True) #W_s s_t + W_q q* + b
+          query_vector = array_ops.reshape(query_vector, [-1, query_attn_size])
+          decoder_features = linear([decoder_state]+[query_vector],query_attention_vec_size,True) #W_s s_t + W_q q* + b
         else:
           # Pass the decoder state through a linear layer (this is W_s s_t + b_attn in the paper)
 
