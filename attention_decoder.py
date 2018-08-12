@@ -114,7 +114,6 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
           masked_sums = tf.reduce_sum(attn_dist, axis=1) # shape (batch_size)
           return attn_dist / tf.reshape(masked_sums, [-1, 1]) # re-normalize
 
-        
         if use_query:
           decoder_q_features = linear(decoder_state, query_attn_size,True) # W_s_q s_t +b
           decoder_q_features = tf.expand_dims(tf.expand_dims(decoder_q_features, 1), 1) # reshape to (batch_size, 1, 1, q_attention_vec_size)
@@ -124,8 +123,9 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
           q_dist = masked_attention(q,query_padding_mask)
           query_vector = math_ops.reduce_sum(array_ops.reshape(q_dist, [batch_size, -1, 1, 1]) * query_states, [1, 2]) # shape (batch_size, q_attn_size). q*
           query_vector = array_ops.reshape(query_vector, [-1, query_attn_size])
-          decoder_features = linear([decoder_state]+[query_vector],query_attention_vec_size,True) #W_s s_t + W_q q* + b
-        else:
+	  query_z = linear(query_vector, attention_vec_size, False)   
+	  query_features = tf.expand_dims(tf.expand_dims(query_z),     
+        
           # Pass the decoder state through a linear layer (this is W_s s_t + b_attn in the paper)
 
           decoder_features = linear(decoder_state, attention_vec_size, True) # shape (batch_size, attention_vec_size)
@@ -137,6 +137,8 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
         if use_coverage and coverage is not None: # non-first step of coverage
           # Multiply coverage vector by w_c to get coverage_features.
           coverage_features = nn_ops.conv2d(coverage, w_c, [1, 1, 1, 1], "SAME") # c has shape (batch_size, attn_length, 1, attention_vec_size)
+          if use_query:
+
 
           # Calculate v^T tanh(W_h h_i + W_s s_t + w_c c_i^t + b_attn)
           e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features + coverage_features), [2, 3])  # shape (batch_size,attn_length)
@@ -239,6 +241,8 @@ def linear(args, output_size, bias, bias_start=0.0, scope=None):
 
   # Calculate the total size of arguments on dimension 1.
   total_arg_size = 0
+  for a in args:
+    tf.logging.info(type(a))
   shapes = [a.get_shape().as_list() for a in args]
   for shape in shapes:
     if len(shape) != 2:
