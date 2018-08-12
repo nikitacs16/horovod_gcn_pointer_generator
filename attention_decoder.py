@@ -117,19 +117,18 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
         if use_query:
           decoder_q_features = linear(decoder_state, query_attn_size,True) # W_s_q s_t +b
           decoder_q_features = tf.expand_dims(tf.expand_dims(decoder_q_features, 1), 1) # reshape to (batch_size, 1, 1, q_attention_vec_size)
-          query_vector = array_ops.zeros([batch_size, query_attn_size])
-          query_vector.set_shape([None, attn_size])  # Ensure the second shape of attention vectors is set.
           q = math_ops.reduce_sum(v_q * math_ops.tanh(query_features + decoder_q_features), [2, 3]) # calculate q v^t tanh(W_q q_i + W_s_q s_t + b)
           q_dist = masked_attention(q,query_padding_mask)
           query_vector = math_ops.reduce_sum(array_ops.reshape(q_dist, [batch_size, -1, 1, 1]) * query_states, [1, 2]) # shape (batch_size, q_attn_size). q*
-          query_vector = array_ops.reshape(query_vector, [-1, query_attn_size])
-	  query_z = linear(query_vector, attention_vec_size, False)   
-	  query_features = tf.expand_dims(tf.expand_dims(query_z),     
+          query_vector = array_ops.reshape(query_vector, [-1, query_attn_size]) #This is q* 
+	        
+          query_z = linear(query_vector, attention_vec_size, False)   #This is qz
+	        query_features = tf.expand_dims(tf.expand_dims(query_z, 1),1)   
         
-          # Pass the decoder state through a linear layer (this is W_s s_t + b_attn in the paper)
+        
+        # Pass the decoder state through a linear layer (this is W_s s_t + b_attn in the paper)
 
-          decoder_features = linear(decoder_state, attention_vec_size, True) # shape (batch_size, attention_vec_size)
-        
+        decoder_features = linear(decoder_state, attention_vec_size, True) # shape (batch_size, attention_vec_size)
         decoder_features = tf.expand_dims(tf.expand_dims(decoder_features, 1), 1) # reshape to (batch_size, 1, 1, attention_vec_size)  
 
           
@@ -138,19 +137,26 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
           # Multiply coverage vector by w_c to get coverage_features.
           coverage_features = nn_ops.conv2d(coverage, w_c, [1, 1, 1, 1], "SAME") # c has shape (batch_size, attn_length, 1, attention_vec_size)
           if use_query:
+            e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features + query_features + coverage_features), [2, 3])  # shape (batch_size,attn_length)
+
+          else:
+            # Calculate v^T tanh(W_h h_i + W_s s_t + w_c c_i^t + b_attn)
+            e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features + coverage_features), [2, 3])  # shape (batch_size,attn_length)
 
 
-          # Calculate v^T tanh(W_h h_i + W_s s_t + w_c c_i^t + b_attn)
-          e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features + coverage_features), [2, 3])  # shape (batch_size,attn_length)
 
+          
           # Calculate attention distribution
           attn_dist = masked_attention(e,enc_padding_mask)
 
           # Update coverage vector
           coverage += array_ops.reshape(attn_dist, [batch_size, -1, 1, 1])
         else:
-          # Calculate v^T tanh(W_h h_i + W_s s_t + b_attn)
-          e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features), [2, 3]) # calculate e
+          if use_query:
+            e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features + query_features), [2, 3]) # calculate e
+          else:
+            # Calculate v^T tanh(W_h h_i + W_s s_t + b_attn)
+            e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features), [2, 3]) # calculate e
 
           # Calculate attention distribution
           attn_dist = masked_attention(e)
