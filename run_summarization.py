@@ -53,7 +53,7 @@ tf.app.flags.DEFINE_integer('emb_dim', 128, 'dimension of word embeddings')
 tf.app.flags.DEFINE_integer('batch_size', 16, 'minibatch size')
 tf.app.flags.DEFINE_integer('max_enc_steps', 400, 'max timesteps of encoder (max source text tokens)')
 tf.app.flags.DEFINE_integer('max_dec_steps', 100, 'max timesteps of decoder (max summary tokens)')
-tf.app.flags.DEFINE_integer('max_que_steps', 60, 'max timesteps of query encoder (max source query tokens)')
+tf.app.flags.DEFINE_integer('max_query_steps', 60, 'max timesteps of query encoder (max source query tokens)')
 tf.app.flags.DEFINE_integer('beam_size', 4, 'beam size for beam search decoding.')
 tf.app.flags.DEFINE_integer('min_dec_steps', 35, 'Minimum sequence length of generated summary. Applies only for beam search decoding mode')
 tf.app.flags.DEFINE_integer('vocab_size', 50000, 'Size of vocabulary. These will be read from the vocabulary file in order. If the vocabulary file contains fewer words than this number, or if this number is set to 0, will take all words in the vocabulary file.')
@@ -76,7 +76,7 @@ tf.app.flags.DEFINE_integer('word_gcn_dim', 256, 'output of gcn ')
 
 #Query model addition
 tf.app.flags.DEFINE_boolean('query_encoder',True,'Keep true for the query based problems')
-tf.app.flags.DEFINE_boolean('no_lstm_query_encoder', False, 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
+#tf.app.flags.DEFINE_boolean('no_lstm_query_encoder', False, 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
 
 tf.app.flags.DEFINE_boolean('no_lstm_query_encoder', False, 'Removes LSTM layer for query from the seq2seq model. query_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('query_gcn', False, 'If True, use pointer-generator with gcn at word level. If False, use other options.')
@@ -306,7 +306,7 @@ def main(unused_argv):
     raise Exception("Set word_gcn to True to continue")
   if FLAGS.no_lstm_query_encoder and FLAGS.query_gcn!=True:
     raise Exception("Set query_gcn to True to continue")
-  if (FLAGS.no_lstm_query_encoder=True or FLAGS.query_gcn=True) and FLAGS.query_encoder=False:
+  if (FLAGS.no_lstm_query_encoder==True or FLAGS.query_gcn==True) and FLAGS.query_encoder==False:
     raise Exception("Set query_encoder to True to continue")
 
     
@@ -331,7 +331,7 @@ def main(unused_argv):
     raise Exception("The single_pass flag should only be True in decode mode")
 
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
-  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'rand_unif_init_mag', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_que_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder']
+  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'rand_unif_init_mag', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder']
   hps_dict = {}
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list

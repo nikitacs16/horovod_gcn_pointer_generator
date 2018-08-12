@@ -242,24 +242,6 @@ class SummarizationModel(object):
     def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, num_layers=1,
                        use_gating=False, use_normalization=True, dropout=1.0, name="GCN"):
 
-    """ Adds GCN layers to the graph. This is a directed GCN
-    
-    Args:
-     gcn_in: Input to GCN Layer
-     in_dim: Dimension of input to GCN Layer 
-     gcn_dim: Hidden state dimension of GCN
-     batch_size: Batch size
-     max_nodes: Maximum number of nodes in graph
-     max_labels: Maximum number of edge labels
-     adj_in: Adjacency matrix for in edges
-     adj_out: Adjacency matrix for out edges
-     num_layers: Number of GCN Layers
-     use_gating: Edge level gating if True
-     dropout: Rate of dropout within the layer
-    Returns
-     out: Outputs from GCN layers. Appended at the index is the final output         
-    """
-
         out = []
         out.append(gcn_in)
         #    return tf.nn.relu(tf.zeros([batch_size, max_nodes, gcn_dim]))
@@ -412,7 +394,7 @@ class SummarizationModel(object):
         if hps.query_encoder:
           outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
                                                                              self._enc_states, self._enc_padding_mask,
-                                                                             cell, use_query=True, query_states=self._query_states, query_padding_mask=self._query_padding_mask
+                                                                             cell, use_query=True, query_states=self._query_states, query_padding_mask=self._query_padding_mask,
                                                                              initial_state_attention=( hps.mode == "decode"), 
                                                                              pointer_gen=hps.pointer_gen, use_coverage=hps.coverage,
                                                                              prev_coverage=prev_coverage)
@@ -529,13 +511,13 @@ class SummarizationModel(object):
                 self._enc_states = gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
     
 
-            if query_encoder:
+            if self._hps.query_encoder:
               if self._hps.no_lstm_query_encoder:
                 self._query_states = emb_query_inputs
                 q_in_dim = hps.emb_dim
               else:    
                 query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens,name='query_encoder')
-                self._query_states = que_outputs
+                self._query_states = query_outputs
                 q_in_dim = self._hps.hidden_dim * 2
 
               if self._hps.query_gcn:

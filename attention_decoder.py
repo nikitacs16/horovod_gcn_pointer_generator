@@ -112,7 +112,7 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
           attn_dist = nn_ops.softmax(e) # take softmax. shape (batch_size, attn_length)
           attn_dist *= padding_mask # apply mask
           masked_sums = tf.reduce_sum(attn_dist, axis=1) # shape (batch_size)
-          return attn_dist / tf.reshape(masked_sums, [-1, *1]) # re-normalize
+          return attn_dist / tf.reshape(masked_sums, [-1, 1]) # re-normalize
 
         
         if use_query:
@@ -121,11 +121,13 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
           q = math_ops.reduce_sum(v_q * math_ops.tanh(query_features + decoder_q_features), [2, 3]) # calculate q v^t tanh(W_q q_i + W_s_q s_t + b)
           q_dist = masked_attention(q,query_padding_mask)
           tf.logging.info('q dist')
-          tf.logging.info(q_dist.shape())
+          tf.logging.info(q_dist.get_shape())
           query_vector = math_ops.reduce_sum(array_ops.reshape(q_dist, [batch_size, -1, 1, 1]) * query_states, [1, 2]) # shape (batch_size, q_attn_size). q*
           tf.logging.info('q *')
-          tf.logging.info(query.shape())
-          #query_vector = array_ops.reshape(query_vector, [-1, attn_size])
+          tf.logging.info(query_vector.get_shape())
+          query_vector = array_ops.reshape(query_vector, [-1, attn_size])
+          tf.logging.info('post shape')
+	  tf.logging.info(query_vector.get_shape())
           decoder_features = linear([decoder_state]+[query_vector],attention_vec_size,True) #W_s s_t + W_q q* + b
         else:
           # Pass the decoder state through a linear layer (this is W_s s_t + b_attn in the paper)

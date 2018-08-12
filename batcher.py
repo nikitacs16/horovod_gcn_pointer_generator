@@ -391,7 +391,7 @@ class Batcher(object):
 					word_edge_list = curr_data['word_edge_list']
 				if self._hps.query_encoder:
 					query = curr_data['query']
-				if self._hps.query_gcn
+				if self._hps.query_gcn:
 					query_edge_list = curr_data['query_edge_list']
 
 			#				tf.logging.info("%d\t%s\t%s\n"%(count,str(threading.currentThread().getName()),article[0:40]))
