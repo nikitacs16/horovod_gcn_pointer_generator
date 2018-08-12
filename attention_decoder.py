@@ -115,15 +115,16 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
           return attn_dist / tf.reshape(masked_sums, [-1, 1]) # re-normalize
 
         if use_query:
-          decoder_q_features = linear(decoder_state, query_attn_size,True,name='query') # W_s_q s_t +b
-          decoder_q_features = tf.expand_dims(tf.expand_dims(decoder_q_features, 1), 1) # reshape to (batch_size, 1, 1, q_attention_vec_size)
-          q = math_ops.reduce_sum(v_q * math_ops.tanh(query_features + decoder_q_features), [2, 3]) # calculate q v^t tanh(W_q q_i + W_s_q s_t + b)
-          q_dist = masked_attention(q,query_padding_mask)
-          query_vector = math_ops.reduce_sum(array_ops.reshape(q_dist, [batch_size, -1, 1, 1]) * query_states, [1, 2]) # shape (batch_size, q_attn_size). q*
-          query_vector = array_ops.reshape(query_vector, [-1, query_attn_size]) #This is q* 
-	        
-          query_z = linear(query_vector, attention_vec_size, False,name='query_z')   #This is qz
-	  query_z = tf.expand_dims(tf.expand_dims(query_z, 1),1)   
+          with variable_scope.variable_scope("query"):
+            decoder_q_features = linear(decoder_state, query_attn_size,True,name='query') # W_s_q s_t +b
+            decoder_q_features = tf.expand_dims(tf.expand_dims(decoder_q_features, 1), 1) # reshape to (batch_size, 1, 1, q_attention_vec_size)
+            q = math_ops.reduce_sum(v_q * math_ops.tanh(query_features + decoder_q_features), [2, 3]) # calculate q v^t tanh(W_q q_i + W_s_q s_t + b)
+            q_dist = masked_attention(q,query_padding_mask)
+            query_vector = math_ops.reduce_sum(array_ops.reshape(q_dist, [batch_size, -1, 1, 1]) * query_states, [1, 2]) # shape (batch_size, q_attn_size). q*
+            query_vector = array_ops.reshape(query_vector, [-1, query_attn_size]) #This is q* 
+	        with variable_scope.variable_scope("query_z")
+            query_z = linear(query_vector, attention_vec_size, False,name='query_z')   #This is qz
+	          query_z = tf.expand_dims(tf.expand_dims(query_z, 1),1)   
         
         
         # Pass the decoder state through a linear layer (this is W_s s_t + b_attn in the paper)
