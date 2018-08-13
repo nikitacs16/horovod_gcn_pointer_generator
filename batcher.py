@@ -163,6 +163,7 @@ class Batch(object):
 			self.init_query_seq(example_list, hps) #initialize the input to query_encoder
 		self.init_decoder_seq(example_list, hps)  # initialize the input and targets for the decoder
 		self.store_orig_strings(example_list)  # store the original strings
+#		self.query_encoder = hps.query_encoder
 
 	# self.max_word_len = 400
 
@@ -294,7 +295,8 @@ class Batch(object):
 		self.original_articles = [ex.original_article for ex in example_list]  # list of lists
 		self.original_abstracts = [ex.original_abstract for ex in example_list]  # list of lists
 		self.original_abstracts_sents = [ex.original_abstract_sents for ex in example_list]  # list of list of lists
-		self.original_queries = [ex.original_query for ex in example_list] # list of lists
+ #               if self.query_encoder:
+#		 	self.original_queries = [ex.original_query for ex in example_list] # list of lists
 
 
 class Batcher(object):

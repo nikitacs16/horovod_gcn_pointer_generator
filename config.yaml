@@ -25,7 +25,7 @@ max_grad_norm: 2.0 #for gradient clipping
 
 #other_options
 pointer_gen: True #If True, use pointer-generator model. If False, use baseline model.
-query_encoder: True
+query_encoder: False
 max_to_keep: 3
 gpu_device_id: '0'
 
@@ -40,7 +40,7 @@ word_gcn_dim: 256 #output of gcn
 
 #query gcn
 no_lstm_query_encoder: False #Removes LSTM layer from the seq2seq model. word_gcn flag should be true.
-query_gcn: True #If True, use pointer-generator with gcn at query level. If False, use other options.
+query_gcn: False #If True, use pointer-generator with gcn at query level. If False, use other options.
 query_gcn_gating: False #If True, use gating at word level
 query_gcn_dropout: 1.0 #dropout keep probability for the gcn layer
 query_gcn_layers: 1 #Layers at gcn

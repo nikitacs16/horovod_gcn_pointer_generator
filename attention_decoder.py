@@ -25,7 +25,7 @@ from tensorflow.python.ops import math_ops
 # Note: this function is based on tf.contrib.legacy_seq2seq_attention_decoder, which is now outdated.
 # In the future, it would make more sense to write variants on the attention mechanism using the new seq2seq library for tensorflow 1.0: https://www.tensorflow.org/api_guides/python/contrib.seq2seq#Attention
 def masked_attention(e,padding_mask):
-          """Take softmax of e then apply enc_padding_mask and re-normalize"""
+  "Take e softmax of e then apply enc_padding_mask and re-normalize"""
   attn_dist = nn_ops.softmax(e) # take softmax. shape (batch_size, attn_length). Better way of computing attention.
   attn_dist *= padding_mask # apply mask
   masked_sums = tf.reduce_sum(attn_dist, axis=1) # shape (batch_size)
