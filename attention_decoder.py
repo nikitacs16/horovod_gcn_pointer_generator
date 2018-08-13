@@ -24,6 +24,13 @@ from tensorflow.python.ops import math_ops
 
 # Note: this function is based on tf.contrib.legacy_seq2seq_attention_decoder, which is now outdated.
 # In the future, it would make more sense to write variants on the attention mechanism using the new seq2seq library for tensorflow 1.0: https://www.tensorflow.org/api_guides/python/contrib.seq2seq#Attention
+def masked_attention(e,padding_mask):
+          """Take softmax of e then apply enc_padding_mask and re-normalize"""
+  attn_dist = nn_ops.softmax(e) # take softmax. shape (batch_size, attn_length). Better way of computing attention.
+  attn_dist *= padding_mask # apply mask
+  masked_sums = tf.reduce_sum(attn_dist, axis=1) # shape (batch_size)
+  return attn_dist / tf.reshape(masked_sums, [-1, 1]) # re-normalize
+
 def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding_mask, cell, use_query=False,query_states=None, query_padding_mask=None, initial_state_attention=False, pointer_gen=True, use_coverage=False, prev_coverage=None):
   """
   Args:
@@ -107,16 +114,7 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
         coverage: new coverage vector. shape (batch_size, attn_len, 1, 1)
       """
       with variable_scope.variable_scope("Attention"):
-        def masked_attention(e,padding_mask):
-          """Take softmax of e then apply enc_padding_mask and re-normalize"""
-          #tf.logging.info(tf.shape(e))
-          #tf.logging.info(tf.shape(padding_mask))
-          #e = e * padding_mask
-          attn_dist = nn_ops.softmax(e) # take softmax. shape (batch_size, attn_length). Better way of computing attention.
-          #return attn_dist
-          attn_dist *= padding_mask # apply mask
-          masked_sums = tf.reduce_sum(attn_dist, axis=1) # shape (batch_size)
-          return attn_dist / tf.reshape(masked_sums, [-1, 1]) # re-normalize
+        
 
         if use_query:
           with variable_scope.variable_scope("query"):
@@ -147,13 +145,9 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
           else:
             # Calculate v^T tanh(W_h h_i + W_s s_t + w_c c_i^t + b_attn)
             e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features + coverage_features), [2, 3])  # shape (batch_size,attn_length)
-
-
-
-          
+      
           # Calculate attention distribution
           attn_dist = masked_attention(e,enc_padding_mask)
-
           # Update coverage vector
           coverage += array_ops.reshape(attn_dist, [batch_size, -1, 1, 1])
         else:
