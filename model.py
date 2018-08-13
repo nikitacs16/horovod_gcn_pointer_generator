@@ -330,7 +330,11 @@ class SummarizationModel(object):
                         loop_act = inp_loop
 
                 act_sum += loop_act
-                act_sum = act_sum/neighbour_count
+		#tf.logging.info('act sum dim')
+                #tf.logging.info(tf.shape(act_sum))
+#                act_sum = act_sum/neighbour_count
+                neighbour_count = tf.expand_dims(neighbour_count,-1)
+		act_sum = act_sum/neighbour_count 
                 gcn_out = tf.nn.relu(act_sum)
                 
                 '''
