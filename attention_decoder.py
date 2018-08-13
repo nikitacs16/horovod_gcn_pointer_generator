@@ -24,12 +24,7 @@ from tensorflow.python.ops import math_ops
 
 # Note: this function is based on tf.contrib.legacy_seq2seq_attention_decoder, which is now outdated.
 # In the future, it would make more sense to write variants on the attention mechanism using the new seq2seq library for tensorflow 1.0: https://www.tensorflow.org/api_guides/python/contrib.seq2seq#Attention
-def masked_attention(e,padding_mask):
-  "Take e softmax of e then apply enc_padding_mask and re-normalize"""
-  attn_dist = nn_ops.softmax(e) # take softmax. shape (batch_size, attn_length). Better way of computing attention.
-  attn_dist *= padding_mask # apply mask
-  masked_sums = tf.reduce_sum(attn_dist, axis=1) # shape (batch_size)
-  return attn_dist / tf.reshape(masked_sums, [-1, 1]) # re-normalize
+
 
 def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding_mask, cell, use_query=False,query_states=None, query_padding_mask=None, initial_state_attention=False, pointer_gen=True, use_coverage=False, prev_coverage=None):
   """
@@ -114,26 +109,34 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
         coverage: new coverage vector. shape (batch_size, attn_len, 1, 1)
       """
       with variable_scope.variable_scope("Attention"):
-        
+        # Pass the decoder state through a linear layer (this is W_s s_t + b_attn in the paper)
+
+        decoder_features = linear(decoder_state, attention_vec_size, True) # shape (batch_size, attention_vec_size)
+        decoder_features = tf.expand_dims(tf.expand_dims(decoder_features, 1), 1) # reshape to (batch_size, 1, 1, attention_vec_size)  
+
+
+        def masked_attention(e):
+          "Take e softmax of e then apply enc_padding_mask and re-normalize"""
+          attn_dist = nn_ops.softmax(e) # take softmax. shape (batch_size, attn_length). Better way of computing attention.
+          attn_dist *= enc_padding_mask # apply mask
+          masked_sums = tf.reduce_sum(attn_dist, axis=1) # shape (batch_size)
+          return attn_dist / tf.reshape(masked_sums, [-1, 1]) # re-normalize
+                
 
         if use_query:
           with variable_scope.variable_scope("query"):
             decoder_q_features = linear(decoder_state, query_attn_size,True,name='query') # W_s_q s_t +b
             decoder_q_features = tf.expand_dims(tf.expand_dims(decoder_q_features, 1), 1) # reshape to (batch_size, 1, 1, q_attention_vec_size)
             q = math_ops.reduce_sum(v_q * math_ops.tanh(query_features + decoder_q_features), [2, 3]) # calculate q v^t tanh(W_q q_i + W_s_q s_t + b)
-            q_dist = masked_attention(q,query_padding_mask)
+            #q_dist = masked_attention(q,query_padding_mask)
             query_vector = math_ops.reduce_sum(array_ops.reshape(q_dist, [batch_size, -1, 1, 1]) * query_states, [1, 2]) # shape (batch_size, q_attn_size). q*
             query_vector = array_ops.reshape(query_vector, [-1, query_attn_size]) #This is q* 
-	  with variable_scope.variable_scope("query_z"):
+	         with variable_scope.variable_scope("query_z"):
             query_z = linear(query_vector, attention_vec_size, False,name='query_z')   #This is qz
-	    query_z = tf.expand_dims(tf.expand_dims(query_z, 1),1)   
+	          query_z = tf.expand_dims(tf.expand_dims(query_z, 1),1)   
         
         
-        # Pass the decoder state through a linear layer (this is W_s s_t + b_attn in the paper)
-
-        decoder_features = linear(decoder_state, attention_vec_size, True) # shape (batch_size, attention_vec_size)
-        decoder_features = tf.expand_dims(tf.expand_dims(decoder_features, 1), 1) # reshape to (batch_size, 1, 1, attention_vec_size)  
-
+        
           
 
         if use_coverage and coverage is not None: # non-first step of coverage
@@ -147,7 +150,7 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
             e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features + coverage_features), [2, 3])  # shape (batch_size,attn_length)
       
           # Calculate attention distribution
-          attn_dist = masked_attention(e,enc_padding_mask)
+          attn_dist = masked_attention(e)
           # Update coverage vector
           coverage += array_ops.reshape(attn_dist, [batch_size, -1, 1, 1])
         else:
@@ -158,7 +161,7 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
             e = math_ops.reduce_sum(v * math_ops.tanh(encoder_features + decoder_features), [2, 3]) # calculate e
 
           # Calculate attention distribution
-          attn_dist = masked_attention(e, enc_padding_mask)
+          attn_dist = masked_attention(e)
 
           if use_coverage: # first step of training
             coverage = tf.expand_dims(tf.expand_dims(attn_dist,2),2) # initialize coverage
