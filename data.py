@@ -358,7 +358,7 @@ def get_adj(batch_list, batch_size, max_nodes, max_labels=45, label_dict=dep_dic
             if lbl!='ROOT':
               neighbour_count[count][dest] += 1 
 
-            count = count + 1
+        count = count + 1
 
         for lbl in range(max_labels):
             if lbl not in out_ind and lbl not in in_ind:

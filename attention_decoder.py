@@ -109,12 +109,14 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
       with variable_scope.variable_scope("Attention"):
         def masked_attention(e,padding_mask):
           """Take softmax of e then apply enc_padding_mask and re-normalize"""
-          e = e * padding_mask + ((1.0 - padding_mask) * tf.float32.min) 
+          #tf.logging.info(tf.shape(e))
+          #tf.logging.info(tf.shape(padding_mask))
+          #e = e * padding_mask
           attn_dist = nn_ops.softmax(e) # take softmax. shape (batch_size, attn_length). Better way of computing attention.
-          return attn_dist
-          #attn_dist *= padding_mask # apply mask
-          #masked_sums = tf.reduce_sum(attn_dist, axis=1) # shape (batch_size)
-          #return attn_dist / tf.reshape(masked_sums, [-1, 1]) # re-normalize
+          #return attn_dist
+          attn_dist *= padding_mask # apply mask
+          masked_sums = tf.reduce_sum(attn_dist, axis=1) # shape (batch_size)
+          return attn_dist / tf.reshape(masked_sums, [-1, 1]) # re-normalize
 
         if use_query:
           with variable_scope.variable_scope("query"):
@@ -250,8 +252,8 @@ def linear(args, output_size, bias, bias_start=0.0,scope=None,name=""):
 
   # Calculate the total size of arguments on dimension 1.
   total_arg_size = 0
-  for a in args:
-    tf.logging.info(type(a))
+#  for a in args:
+ #   tf.logging.info(type(a))
   shapes = [a.get_shape().as_list() for a in args]
   for shape in shapes:
     if len(shape) != 2:

@@ -39,7 +39,7 @@ config = yaml.load(open(FLAGS.config_file,'r'))
 
 # GPU device 
 tf.app.flags.DEFINE_string('gpu_device_id','0','allocate gpu to which device')
-os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpu_device_id
+os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
 
 # Where to find data
 tf.app.flags.DEFINE_string('data_path',config['train_path'], 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
@@ -74,7 +74,7 @@ tf.app.flags.DEFINE_boolean('pointer_gen', config['pointer_gen'], 'If True, use 
 
 #GCN model
 tf.app.flags.DEFINE_boolean('no_lstm_encoder', config['no_lstm_encoder'], 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
-tf.app.flags.DEFINE_boolean('word_gcn', config['word_gcn'], If True, use pointer-generator with gcn at word level. If False, use other options.')
+tf.app.flags.DEFINE_boolean('word_gcn', config['word_gcn'], 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('word_gcn_gating', config['word_gcn_gating'], 'If True, use gating at word level')
 tf.app.flags.DEFINE_float('word_gcn_dropout', config['word_gcn_dropout'], 'dropout keep probability for the gcn layer')
 tf.app.flags.DEFINE_integer('word_gcn_layers', config['word_gcn_layers'], 'Layers at gcn')
