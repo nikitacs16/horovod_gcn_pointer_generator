@@ -127,6 +127,7 @@ class SummarizationModel(object):
                  in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
             self._word_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout, shape=(), name='dropout')
             self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
+            self._word_neighbour_count = tf.placeholder(tf.int32, [hps.batch_size, None], name='word_neighbour_count')
 
         if FLAGS.query_gcn:
             self._query_adj_in = [
@@ -137,6 +138,8 @@ class SummarizationModel(object):
                  in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
             self._query_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout, shape=(), name='query_dropout')
             self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
+            self._query_neighbour_count = tf.placeholder(tf.int32, [hps.batch_size, None], name='query_neighbour_count')
+
         
 
 
@@ -173,7 +176,7 @@ class SummarizationModel(object):
 
         if FLAGS.word_gcn:
             feed_dict[self._max_word_seq_len] = batch.max_word_len
-
+            feed_dict[self._word_neighbour_count] = batch.word_neighbour_count
             word_adj_in = batch.word_adj_in
             word_adj_out = batch.word_adj_out
             for i in range(hps.batch_size):
@@ -190,6 +193,7 @@ class SummarizationModel(object):
    
         if FLAGS.query_gcn:
             feed_dict[self._max_query_seq_len] = batch.max_query_len
+            feed_dict[self._query_neighbour_count] = batch.query_neighbour_count
             query_adj_in = batch.query_adj_in
             query_adj_out = batch.query_adj_out
             for i in range(hps.batch_size):
@@ -239,7 +243,7 @@ class SummarizationModel(object):
 
 
 
-    def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, num_layers=1,
+    def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, neighbour_count, num_layers=1,
                        use_gating=False, use_normalization=True, dropout=1.0, name="GCN"):
 
         out = []
@@ -326,8 +330,10 @@ class SummarizationModel(object):
                         loop_act = inp_loop
 
                 act_sum += loop_act
+                act_sum = act_sum/neighbour_count
                 gcn_out = tf.nn.relu(act_sum)
                 
+                '''
                 if use_normalization:
                     tf.logging.info('before')
                     tf.logging.info(gcn_out.shape())
@@ -335,7 +341,7 @@ class SummarizationModel(object):
                     gcn_out = gcn_out / gcn_out
                     tf.logging.info('after')
                     tf.logging.info(gcn_out.shape())
-                
+                '''
                 out.append(gcn_out)
 
         return gcn_out
@@ -505,7 +511,8 @@ class SummarizationModel(object):
                 gcn_outputs = self._add_gcn_layer(gcn_in=self._enc_states, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
                                                   batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
                                                   max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
-                                                  adj_out=self._word_adj_out, num_layers=hps.word_gcn_layers,
+                                                  adj_out=self._word_adj_out,neighbour_count=self._word_neighbour_count, 
+                                                  num_layers=hps.word_gcn_layers,
                                                   use_gating=hps.word_gcn_gating, dropout=self._word_gcn_dropout,
                                                   name="gcn_word")
                 self._enc_states = gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
@@ -524,7 +531,8 @@ class SummarizationModel(object):
                   q_gcn_outputs = self._add_gcn_layer(gcn_in=self._query_states, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
                                                     batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
                                                     max_labels=hps.num_word_dependency_labels, adj_in=self._query_adj_in,
-                                                    adj_out=self._query_adj_out, num_layers=hps.query_gcn_layers,
+                                                    adj_out=self._query_adj_out, neighbour_count=self._query_neighbour_count, 
+                                                    num_layers=hps.query_gcn_layers,
                                                     use_gating=hps.query_gcn_gating, dropout=self._query_gcn_dropout,
                                                     name="gcn_query")
                   self._query_states = q_gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
