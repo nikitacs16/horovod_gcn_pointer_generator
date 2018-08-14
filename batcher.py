@@ -98,8 +98,8 @@ class Example(object):
 		self.original_article = article
 		self.original_abstract = abstract
 		self.original_abstract_sents = abstract_sentences
-		if hps.query_encoder:
-			self.original_query = query
+		#if hps.query_encoder:
+		self.original_query = query
 
 	def get_dec_inp_targ_seqs(self, sequence, max_len, start_id, stop_id):
 		"""Given the reference summary as a sequence of tokens, return the input sequence for the decoder, and the target sequence which we will use to calculate loss. The sequence will be truncated if it is longer than max_len. The input sequence must start with the start_id and the target sequence must end with the stop_id (but not if it's been truncated).
@@ -160,6 +160,7 @@ class Batch(object):
 		# self.word_adj_out = None
 		self.init_encoder_seq(example_list, hps)  # initialize the input to the encoder
 		if hps.query_encoder:
+			tf.logging.info('Exec')
 			self.init_query_seq(example_list, hps) #initialize the input to query_encoder
 		self.init_decoder_seq(example_list, hps)  # initialize the input and targets for the decoder
 		self.store_orig_strings(example_list)  # store the original strings
