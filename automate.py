@@ -24,8 +24,8 @@ for i in range(folds):
 	with open(file_name, 'w') as f:
         yaml.dump(doc, f)	
 	os.system('python -u run_summarization.py --mode=train --convert_to_coverage_model=True --coverage=True --config '+str(file_name) + ' &> out_c')
-	os.system('python -u run_summarization.py --mode=train --coverage=True --config '+str(file_name) + ' &> out')
-	os.system('python -u run_summarization.py --mode=decode --coverage=True --config '+str(file_name) +  ' &> out_t' +' & python -u run_summarization.py --coverage=True --use_val_as_test=True --mode=decode --config '+str(file_name) + ' &> out_v')
+	#os.system('python -u run_summarization.py --mode=train --coverage=True --config '+str(file_name) + ' &> out')
+	#os.system('python -u run_summarization.py --mode=decode --coverage=True --config '+str(file_name) +  ' &> out_t' +' & python -u run_summarization.py --coverage=True --use_val_as_test=True --mode=decode --config '+str(file_name) + ' &> out_v')
 	print(i)
 
 print('Completed!')

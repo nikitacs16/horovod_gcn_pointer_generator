@@ -1,14 +1,16 @@
 #data_paths
 train_path: '/home/ubuntu/preksha_abs_summ/train*.pkl'
-dev_path: '/home/ubuntu/preksha_abs_summ/val*'
-test_path: '/home/ubuntu/preksha_abs_summ/test*'
-vocab_path: '/home/ubuntu/preksha_abs_summ/finished_files/vocab'
-glove_path: ''
+dev_path: '/home/ubuntu/preksha_abs_summ/val*.pkl'
+test_path: '/home/ubuntu/preksha_abs_summ/test*.pkl'
+vocab_path: '/home/ubuntu/preksha_abs_summ/vocab'
+glove_path: '/home/ubuntu/glove/glove.6B.100d.txt'
 
 #glove options
 use_glove: True
+optimizer: adam
 #output paths
 log_root: '/home/ubuntu/gttp_logs' #Root directory for all logging.
+base_experiment: ''
 exp_name: 'q_test' #Name for experiment. Logs will be saved in a directory with this name, under log_root
 #Hyperparameters
 hidden_dim: 256 #dimension of RNN hidden states
@@ -39,7 +41,7 @@ stop_steps: 7000
 
 #word gcn
 no_lstm_encoder: False #Removes LSTM layer from the seq2seq model. word_gcn flag should be true.
-word_gcn: True #If True, use pointer-generator with gcn at word level. If False, use other options.
+word_gcn: False #If True, use pointer-generator with gcn at word level. If False, use other options.
 word_gcn_gating: False #If True, use gating at word level
 word_gcn_dropout: 1.0 #dropout keep probability for the gcn layer
 word_gcn_layers: 1 #Layers at gcn
@@ -47,9 +49,10 @@ word_gcn_dim: 256 #output of gcn
 
 #query gcn
 no_lstm_query_encoder: False #Removes LSTM layer from the seq2seq model. word_gcn flag should be true.
-query_gcn: True #If True, use pointer-generator with gcn at query level. If False, use other options.
+query_gcn: False #If True, use pointer-generator with gcn at query level. If False, use other options.
 query_gcn_gating: False #If True, use gating at word level
 query_gcn_dropout: 1.0 #dropout keep probability for the gcn layer
 query_gcn_layers: 1 #Layers at gcn
 query_gcn_dim: 256 #output of gcn query_
 
+hidden_state_representation: ''#lstm_gcn, gcn_lstm, concat_lstm_gcn, concat_gcn_lstm, gcn_w_lstm
