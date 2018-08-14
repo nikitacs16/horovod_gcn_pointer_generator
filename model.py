@@ -491,7 +491,8 @@ class SummarizationModel(object):
             # Add embedding matrix (shared by the encoder and decoder inputs)
             with tf.variable_scope('embedding'):
                 if self.use_glove:
-                    embedding = tf.get_variable('embedding',[vsize, hps.emb_dim], dtype=tf.float32, initializer=self._vocab.glove_emb)
+		    tf.logging.info('glove')
+                    embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32))
                 else:
                     embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init)
                 if hps.mode == "train": self._add_emb_vis(embedding)  # add to tensorboard
@@ -632,9 +633,9 @@ class SummarizationModel(object):
         tf.summary.scalar('global_norm', global_norm)
 
         # Apply adagrad optimizer
-        if self._hps.optimizer='adagrad':
+        if self._hps.optimizer=='adagrad':
             optimizer = tf.train.AdagradOptimizer(self._hps.lr, initial_accumulator_value=self._hps.adagrad_init_acc)
-        if self._hps.optimizer='adam':
+        if self._hps.optimizer=='adam':
             optimizer = tf.train.AdamOptimizer(learning_rate=self._hps.adam_lr)
         with tf.device("/gpu:0"):
             self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step,

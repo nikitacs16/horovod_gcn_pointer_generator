@@ -35,6 +35,9 @@ import yaml
 FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_string('config_file', 'config.yaml', 'pass the config_file through command line if new expt')
+print('before')
+print(FLAGS.config_file)
+tf.logging.info(FLAGS.config_file)
 config = yaml.load(open(FLAGS.config_file,'r'))
 
 # GPU device 
@@ -44,17 +47,18 @@ os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
 # Where to find data
 tf.app.flags.DEFINE_string('data_path',config['train_path'], 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
 tf.app.flags.DEFINE_string('vocab_path', config['vocab_path'], 'Path expression to text vocabulary file.')
+tf.app.flags.DEFINE_string('glove_path',config['glove_path'], 'glpb')
 tf.app.flags.DEFINE_string('use_val_as_test',False,'For automation only')
 # Important settings
 tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
-tf.app.flags.DEFINE_string('optimizer','adagrad','must be adam/adagrad')
+tf.app.flags.DEFINE_string('optimizer',config['optimizer'],'must be adam/adagrad')
 tf.app.flags.DEFINE_boolean('single_pass', False, 'For decode mode only. If True, run eval on the full dataset using a fixed checkpoint, i.e. take the current checkpoint, and use it to produce one summary for each example in the dataset, write the summaries to file and then get ROUGE scores for the whole dataset. If False (default), run concurrent decoding, i.e. repeatedly load latest checkpoint, use it to produce summaries for randomly-chosen examples and log the results to screen, indefinitely.')
 
 #stop after flags
 tf.app.flags.DEFINE_boolean('use_stop_after', config['use_stop_after'], 'should you train for a fixed number of epochs?')
 tf.app.flags.DEFINE_integer('stop_steps', config['stop_steps'], 'iterations after which you should stop trainig')
 
-
+tf.app.flags.DEFINE_string('use_glove',config['use_glove'],'use glove or not')
 # Where to save output
 tf.app.flags.DEFINE_string('log_root', config['log_root'], 'Root directory for all logging.')
 tf.app.flags.DEFINE_string('exp_name', config['exp_name'], 'Name for experiment. Logs will be saved in a directory with this name, under log_root.')
@@ -231,7 +235,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
       batch = batcher.next_batch()
       batch_count = batch_count + 1
       if FLAGS.use_stop_after:
-        if model.global_step > FLAGS.stop_steps:
+        if batch_count > FLAGS.stop_steps:
           tf.logging.info('Stopping as epoch limit completed')
           exit()
           
@@ -325,7 +329,7 @@ def main(unused_argv):
   if FLAGS.mode == 'decode':
     FLAGS.single_pass = True
     FLAGS.data_path = config['test_path']
-    if FLAGS.use_eval_as_test
+    if FLAGS.use_eval_as_test:
       FLAGS.data_path = config['dev_path']
 
   
@@ -368,7 +372,7 @@ def main(unused_argv):
     raise Exception("The single_pass flag should only be True in decode mode")
 
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
-  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder']
+  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove','trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder']
   hps_dict = {}
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list

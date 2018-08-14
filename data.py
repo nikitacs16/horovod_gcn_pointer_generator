@@ -113,10 +113,10 @@ class Vocab(object):
             for i in xrange(self.size()):
                 writer.writerow({"word": self._id_to_word[i]})
     
-    def get_glove_embedding(self,fpath,emb_dim):
+    def set_glove_embedding(self,fpath,embedding_dim):
         """ Creates glove embedding_matrix from file path"""
-        emb = np.random.rand(self._count,emb_dim)
-        with open(fpath,encoding='utf-8') as f: #python 3.x support 
+        emb = np.random.rand(self._count,embedding_dim)
+        with open(fpath) as f: #python 3.x support 
             for line in f:
                 fields = line.split()
                 if len(fields) - 1 != embedding_dim:
