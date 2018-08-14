@@ -112,6 +112,33 @@ class Vocab(object):
             writer = csv.DictWriter(f, delimiter="\t", fieldnames=fieldnames)
             for i in xrange(self.size()):
                 writer.writerow({"word": self._id_to_word[i]})
+    
+    def get_glove_embedding(self,fpath,emb_dim):
+        """ Creates glove embedding_matrix from file path"""
+        emb = np.random.rand(self._count,emb_dim)
+        with open(fpath,encoding='utf-8') as f: #python 3.x support 
+            for line in f:
+                fields = line.split()
+                if len(fields) - 1 != embedding_dim:
+                    # Sometimes there are funny unicode parsing problems that lead to different
+                    # fields lengths (e.g., a word with a unicode space character that splits
+                    # into more than one colum      n).  We skip those lines.  Note that if you have
+                    # some kind of long header, this could result in all of your lines getting
+                    # skipped.  It's hard to check for that here; you just have to look in the
+                    # embedding_misses_file and at the model summary to make sure things look
+                    # like they are supposed to.
+                    #logger.warning("Found line with wrong number of dimensions (expected %d, was %d): %s",
+                            #                  embedding_dim, len(fields) - 1, line)
+                    raise Exception("Found line with wrong number of dimensions (expected %d, was %d): %s",
+                                               embedding_dim, len(fields) - 1, line)
+                    continue
+                word = fields[0]
+                if word in self._word_to_id:
+                    vector = np.asarray(fields[1:], dtype='float32')
+                    emb[self._word_to_id[word]] = vector
+        self.glove_emb = emb
+    
+
 
 
 def example_generator(data_path, single_pass, word_gcn=True):
@@ -373,3 +400,33 @@ def get_adj(batch_list, batch_size, max_nodes, max_labels=45, label_dict=dep_dic
         # print(adj_main_in)
 
     return adj_main_in, adj_main_out, neighbour_count
+
+
+def create_glove_embedding_matrix (vocab,vocab_size,emb_dim,glove_path):
+    emb = np.random.rand(vocab_size,emb_dim)
+    count = 0
+    with open(args['glove_path'],encoding='utf-8') as f: #python 3.x support 
+        #all_lines = []
+    #with codecs.open(args['glove_path'],'r',encoding='utf-8') as f: #python 2.x support
+        for line in f:
+            fields = line.split()
+            if len(fields) - 1 != embedding_dim:
+                # Sometimes there are funny unicode parsing problems that lead to different
+                # fields lengths (e.g., a word with a unicode space character that splits
+                # into more than one colum      n).  We skip those lines.  Note that if you have
+                # some kind of long header, this could result in all of your lines getting
+                # skipped.  It's hard to check for that here; you just have to look in the
+                # embedding_misses_file and at the model summary to make sure things look
+                # like they are supposed to.
+                #logger.warning("Found line with wrong number of dimensions (expected %d, was %d): %s",
+                        #                  embedding_dim, len(fields) - 1, line)
+                raise Exception("Found line with wrong number of dimensions (expected %d, was %d): %s",
+                                           embedding_dim, len(fields) - 1, line)
+                continue
+            word = fields[0]
+            if word in w2id:
+                vector = np.asarray(fields[1:], dtype='float32')
+
+    
+    return emb
+

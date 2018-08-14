@@ -97,11 +97,15 @@ class SummarizationModel(object):
         self._hps = hps
         self._vocab = vocab
         self.regularizer = None #called globally. L2 Norm is used.
+        self.use_glove = hps.use_glove
+
+        
+
 
     def _add_placeholders(self):
         """Add placeholders to the graph. These are entry points for any input data."""
         hps = self._hps
-
+       
         # encoder part
         self._enc_batch = tf.placeholder(tf.int32, [hps.batch_size, None], name='enc_batch')
         self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size], name='enc_lens')
@@ -486,8 +490,10 @@ class SummarizationModel(object):
 
             # Add embedding matrix (shared by the encoder and decoder inputs)
             with tf.variable_scope('embedding'):
-                embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32,
-                                            initializer=self.trunc_norm_init)
+                if self.use_glove:
+                    embedding = tf.get_variable('embedding',[vsize, hps.emb_dim], dtype=tf.float32, initializer=self._vocab.glove_emb)
+                else:
+                    embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init)
                 if hps.mode == "train": self._add_emb_vis(embedding)  # add to tensorboard
                 emb_enc_inputs = tf.nn.embedding_lookup(embedding,
                                                         self._enc_batch)  # tensor with shape (batch_size, max_enc_steps, emb_size)

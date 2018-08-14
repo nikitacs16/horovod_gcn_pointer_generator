@@ -3,7 +3,10 @@ train_path: '/home/ubuntu/preksha_abs_summ/train*.pkl'
 dev_path: '/home/ubuntu/preksha_abs_summ/val*'
 test_path: '/home/ubuntu/preksha_abs_summ/test*'
 vocab_path: '/home/ubuntu/preksha_abs_summ/finished_files/vocab'
+glove_path: ''
 
+#glove options
+use_glove: True
 #output paths
 log_root: '/home/ubuntu/gttp_logs' #Root directory for all logging.
 exp_name: 'q_test' #Name for experiment. Logs will be saved in a directory with this name, under log_root
