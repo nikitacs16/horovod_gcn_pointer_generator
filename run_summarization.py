@@ -329,7 +329,7 @@ def main(unused_argv):
   if FLAGS.mode == 'decode':
     FLAGS.single_pass = True
     FLAGS.data_path = config['test_path']
-    if FLAGS.use_eval_as_test:
+    if FLAGS.use_val_as_test:
       FLAGS.data_path = config['dev_path']
 
   
