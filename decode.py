@@ -63,6 +63,11 @@ class BeamSearchDecoder(object):
     else: # Generic decode dir name
       self._decode_dir = os.path.join(FLAGS.log_root, "decode")
 
+    if FLAGS.query_encoder:
+      self._use_query = True
+    else:
+      self._use_query = False
+
     # Make the decode dir if necessary
     if not os.path.exists(self._decode_dir): os.mkdir(self._decode_dir)
 
@@ -96,7 +101,7 @@ class BeamSearchDecoder(object):
       abstract_withunks = data.show_abs_oovs(original_abstract, self._vocab, (batch.art_oovs[0] if FLAGS.pointer_gen else None)) # string
 
       # Run beam search to get best Hypothesis
-      best_hyp = beam_search.run_beam_search(self._sess, self._model, self._vocab, batch)
+      best_hyp = beam_search.run_beam_search(self._sess, self._model, self._vocab, batch,self._use_query)
 
       # Extract the output ids from the hypothesis and convert back to words
       output_ids = [int(t) for t in best_hyp.tokens[1:]]

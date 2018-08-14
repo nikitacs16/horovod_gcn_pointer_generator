@@ -670,7 +670,7 @@ class SummarizationModel(object):
             to_return['coverage_loss'] = self._coverage_loss
         return sess.run(to_return, feed_dict)
 
-    def run_encoder(self, sess, batch):
+    def run_encoder(self, sess, batch,use_query=False):
         """For beam search decoding. Run the encoder on the batch and return the encoder states and decoder initial state.
 
     Args:
@@ -682,15 +682,23 @@ class SummarizationModel(object):
       dec_in_state: A LSTMStateTuple of shape ([1,hidden_dim],[1,hidden_dim])
     """
         feed_dict = self._make_feed_dict(batch, just_enc=True)  # feed the batch into the placeholders
-        (enc_states, dec_in_state, global_step) = sess.run([self._enc_states, self._dec_in_state, self.global_step],
+        if use_query:
+        
+            (enc_states, query_states, dec_in_state, global_step) = sess.run([self._enc_states, self._query_states, self._dec_in_state, self.global_step],
                                                            feed_dict)  # run the encoder
+        else:
+            (enc_states, dec_in_state, global_step) = sess.run([self._enc_states, self._dec_in_state, self.global_step], feed_dict)
 
+            
         # dec_in_state is LSTMStateTuple shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
         # Given that the batch is a single example repeated, dec_in_state is identical across the batch so we just take the top row.
         dec_in_state = tf.contrib.rnn.LSTMStateTuple(dec_in_state.c[0], dec_in_state.h[0])
-        return enc_states, dec_in_state
+        if use_query:
+            return enc_states, dec_in_state, query_states
+        else:
+            return enc_states, dec_in_state
 
-    def decode_onestep(self, sess, batch, latest_tokens, enc_states, dec_init_states, prev_coverage):
+    def decode_onestep(self, sess, batch, latest_tokens, enc_states, dec_init_states, prev_coverage, query_states=None):
         """For beam search decoding. Run the decoder for one step.
 
     Args:
@@ -700,6 +708,7 @@ class SummarizationModel(object):
       enc_states: The encoder states.
       dec_init_states: List of beam_size LSTMStateTuples; the decoder states from the previous timestep
       prev_coverage: List of np arrays. The coverage vectors from the previous timestep. List of None if not using coverage.
+      query_states : The query states
 
     Returns:
       ids: top 2k ids. shape [beam_size, 2*beam_size]
@@ -741,6 +750,13 @@ class SummarizationModel(object):
 
         if FLAGS.word_gcn:
             feed[self._max_word_seq_len] = batch.max_word_len
+        
+        if FLAGS.query_encoder:
+            feed[self._query_states] = query_states
+            feed[self._query_padding_mask] = batch.query_padding_mask
+
+        if FLAGS.query_gcn:
+            feed[self._max_query_seq_len] = batch.max_query_len
 
         if self._hps.coverage:
             feed[self.prev_coverage] = np.stack(prev_coverage, axis=0)
