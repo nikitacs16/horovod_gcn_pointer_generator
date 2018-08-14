@@ -30,6 +30,9 @@ query_encoder: True
 max_to_keep: 3
 gpu_device_id: '0'
 
+#stop_after
+use_stop_after: True
+stop_steps: 7000
 
 #word gcn
 no_lstm_encoder: False #Removes LSTM layer from the seq2seq model. word_gcn flag should be true.

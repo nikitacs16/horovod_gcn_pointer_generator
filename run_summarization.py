@@ -50,6 +50,11 @@ tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
 tf.app.flags.DEFINE_string('optimizer','adagrad','must be adam/adagrad')
 tf.app.flags.DEFINE_boolean('single_pass', False, 'For decode mode only. If True, run eval on the full dataset using a fixed checkpoint, i.e. take the current checkpoint, and use it to produce one summary for each example in the dataset, write the summaries to file and then get ROUGE scores for the whole dataset. If False (default), run concurrent decoding, i.e. repeatedly load latest checkpoint, use it to produce summaries for randomly-chosen examples and log the results to screen, indefinitely.')
 
+#stop after flags
+tf.app.flags.DEFINE_boolean('use_stop_after', config['use_stop_after'], 'should you train for a fixed number of epochs?')
+tf.app.flags.DEFINE_integer('stop_steps', config['stop_steps'], 'iterations after which you should stop trainig')
+
+
 # Where to save output
 tf.app.flags.DEFINE_string('log_root', config['log_root'], 'Root directory for all logging.')
 tf.app.flags.DEFINE_string('exp_name', config['exp_name'], 'Name for experiment. Logs will be saved in a directory with this name, under log_root.')
@@ -225,6 +230,11 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
     while True: # repeats until interrupted
       batch = batcher.next_batch()
       batch_count = batch_count + 1
+      if FLAGS.use_stop_after:
+        if model.global_step > FLAGS.stop_steps:
+          tf.logging.info('Stopping as epoch limit completed')
+          exit()
+          
       tf.logging.info('running training step...')
       t0=time.time()
       results = model.run_train_step(sess, batch)
