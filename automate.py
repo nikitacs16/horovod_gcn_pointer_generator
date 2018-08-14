@@ -20,7 +20,7 @@ for i in range(folds):
 	os.system('python -u run_summarization.py --mode=restore_best_model --config ' + str(file_name) +' &> out_s')
 	os.system('python -u run_summarization.py --mode=decode --config '+str(file_name) +  ' &> out_t' + ' & python -u run_summarization.py --mode=decode --use_val_as_test=True --config '+str(file_name) + ' &> out_v')
 	doc['use_stop_after'] = True
-	doc['stop_steps'] = 300
+	doc['stop_steps'] = 400
 	with open(file_name, 'w') as f:
         yaml.dump(doc, f)	
 	os.system('python -u run_summarization.py --mode=train --convert_to_coverage_model=True --coverage=True --config '+str(file_name) + ' &> out_c')

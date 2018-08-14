@@ -44,7 +44,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
 # Where to find data
 tf.app.flags.DEFINE_string('data_path',config['train_path'], 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
 tf.app.flags.DEFINE_string('vocab_path', config['vocab_path'], 'Path expression to text vocabulary file.')
-tf.app.flags.DEFINE_string('use_eval_as_test',False,'For automation only')
+tf.app.flags.DEFINE_string('use_val_as_test',False,'For automation only')
 # Important settings
 tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
 tf.app.flags.DEFINE_string('optimizer','adagrad','must be adam/adagrad')
