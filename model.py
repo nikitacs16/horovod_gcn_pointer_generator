@@ -477,7 +477,7 @@ class SummarizationModel(object):
         """Add the whole sequence-to-sequence model to the graph."""
         hps = self._hps
         vsize = self._vocab.size()  # size of the vocabulary
-
+        
         with tf.variable_scope('seq2seq'):
             # Some initializers
             self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag, hps.rand_unif_init_mag,
@@ -626,7 +626,10 @@ class SummarizationModel(object):
         tf.summary.scalar('global_norm', global_norm)
 
         # Apply adagrad optimizer
-        optimizer = tf.train.AdagradOptimizer(self._hps.lr, initial_accumulator_value=self._hps.adagrad_init_acc)
+        if self._hps.optimizer='adagrad':
+            optimizer = tf.train.AdagradOptimizer(self._hps.lr, initial_accumulator_value=self._hps.adagrad_init_acc)
+        if self._hps.optimizer='adam':
+            optimizer = tf.train.AdamOptimizer(learning_rate=self._hps.adam_lr)
         with tf.device("/gpu:0"):
             self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step,
                                                        name='train_step')

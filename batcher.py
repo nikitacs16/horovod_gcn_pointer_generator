@@ -160,7 +160,6 @@ class Batch(object):
 		# self.word_adj_out = None
 		self.init_encoder_seq(example_list, hps)  # initialize the input to the encoder
 		if hps.query_encoder:
-			tf.logging.info('Exec')
 			self.init_query_seq(example_list, hps) #initialize the input to query_encoder
 		self.init_decoder_seq(example_list, hps)  # initialize the input and targets for the decoder
 		self.store_orig_strings(example_list)  # store the original strings

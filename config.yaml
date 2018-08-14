@@ -18,6 +18,7 @@ beam_size: 4  #beam size for beam search decoding.
 min_dec_steps: 3 #Minimum sequence length of generated summary. Applies only for beam search decoding mode
 vocab_size: 25000  #'Size of vocabulary. These will be read from the vocabulary file in order. If the vocabulary file contains fewer words than this number, or if this number is set to 0, will take all words in the vocabulary file.
 lr: 0.15 #learning rate
+adam_lr: 0.0004
 adagrad_init_acc: 0.01 #initial accumulator value for Adagrad
 rand_unif_init_mag: 0.02 #magnitude for lstm cells random uniform inititalization
 trunc_norm_init_std: 1e-4 #std of trunc norm init, used for initializing everything else
