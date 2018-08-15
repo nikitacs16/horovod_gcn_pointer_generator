@@ -234,10 +234,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
     while True: # repeats until interrupted
       batch = batcher.next_batch()
       batch_count = batch_count + 1
-      if FLAGS.use_stop_after:
-        if batch_count > FLAGS.stop_steps:
-          tf.logging.info('Stopping as epoch limit completed')
-          exit()
+      
           
       tf.logging.info('running training step...')
       t0=time.time()
@@ -262,6 +259,11 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
       summary_writer.add_summary(summaries, train_step) # write the summaries
       if train_step % 100 == 0: # flush the summary writer every so often
         summary_writer.flush()
+
+      if FLAGS.use_stop_after:
+        if batch_count > FLAGS.stop_steps:
+          tf.logging.info('Stopping as epoch limit completed')
+          exit()
 
 
 def run_eval(model, batcher, vocab):
@@ -295,6 +297,7 @@ def run_eval(model, batcher, vocab):
     # add summaries
     summaries = results['summaries']
     train_step = results['global_step']
+   
     summary_writer.add_summary(summaries, train_step)
 
     # calculate running avg loss
@@ -310,6 +313,11 @@ def run_eval(model, batcher, vocab):
     # flush the summary writer every so often
     if train_step % 100 == 0:
       summary_writer.flush()
+
+    if FLAGS.use_stop_after:
+        if FLAGS.stop_steps - train_step < 500:
+          tf.logging.info('Stopping as epoch limit completed')
+          exit()
 
 def get_data(data_path):
   new_data = []
