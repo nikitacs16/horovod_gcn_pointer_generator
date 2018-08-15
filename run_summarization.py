@@ -210,7 +210,7 @@ def setup_training(model, batcher):
                      saver=saver,
                      summary_op=None,
                      save_summaries_secs=60, # save summaries for tensorboard every 60 secs
-                     save_model_secs=600, # checkpoint every 60 secs
+                     save_model_secs=60, # checkpoint every 60 secs
                      global_step=model.global_step)
   summary_writer = sv.summary_writer
   tf.logging.info("Preparing or waiting for session...")

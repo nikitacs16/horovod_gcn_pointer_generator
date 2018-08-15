@@ -1,0 +1,363 @@
+qbas_glove_no_optimizer_adam_batch_size_16_1
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcublas.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcudnn.so.5 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcufft.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcuda.so.1 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcurand.so.8.0 locally
+INFO:tensorflow:Starting seq2seq_attention in train mode...
+INFO:tensorflow:10157
+INFO:tensorflow:{'vocab_size': 25000, 'gpu_device_id': '0', 'data_path': '/home/ubuntu/original_qbas/1/train*.pkl', 'convert_to_coverage_model': False, 'trunc_norm_init_std': 0.0001, 'use_val_as_test': False, 'optimizer': 'adam', 'query_gcn_layers': 1, 'word_gcn_layers': 1, 'restore_best_model': False, 'no_lstm_encoder': False, 'exp_name': 'qbas_glove_no_optimizer_adam_batch_size_16_1', 'beam_size': 4, 'max_dec_steps': 25, 'cov_loss_wt': 1.0, 'lr': 0.15, 'max_query_steps': 25, 'rand_unif_init_mag': 0.02, 'use_glove': False, 'hidden_dim': 256, 'log_root': '/home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1', 'max_enc_steps': 200, 'query_encoder': True, 'stop_steps': 7000, 'vocab_path': '/home/ubuntu/original_qbas/1/vocab', 'query_gcn_gating': False, 'batch_size': 16, 'use_stop_after': True, 'adagrad_init_acc': 0.01, 'query_gcn_dropout': 1.0, 'coverage': False, 'max_grad_norm': 2.0, 'glove_path': '', 'min_dec_steps': 3, 'pointer_gen': True, 'query_gcn_dim': 256, 'single_pass': False, 'word_gcn': False, 'word_gcn_gating': False, 'no_lstm_query_encoder': False, 'config_file': '/home/ubuntu/yaml_files/config_3.yaml', 'adam_lr': 0.0004, 'emb_dim': 100, 'word_gcn_dropout': 1.0, 'word_gcn_dim': 256, 'query_gcn': False, 'mode': 'train', 'debug': False}
+INFO:tensorflow:Building graph...
+INFO:tensorflow:Adding attention_decoder timestep 0 of 25
+INFO:tensorflow:Adding attention_decoder timestep 1 of 25
+INFO:tensorflow:Adding attention_decoder timestep 2 of 25
+INFO:tensorflow:Adding attention_decoder timestep 3 of 25
+INFO:tensorflow:Adding attention_decoder timestep 4 of 25
+INFO:tensorflow:Adding attention_decoder timestep 5 of 25
+INFO:tensorflow:Adding attention_decoder timestep 6 of 25
+INFO:tensorflow:Adding attention_decoder timestep 7 of 25
+INFO:tensorflow:Adding attention_decoder timestep 8 of 25
+INFO:tensorflow:Adding attention_decoder timestep 9 of 25
+INFO:tensorflow:Adding attention_decoder timestep 10 of 25
+INFO:tensorflow:Adding attention_decoder timestep 11 of 25
+INFO:tensorflow:Adding attention_decoder timestep 12 of 25
+INFO:tensorflow:Adding attention_decoder timestep 13 of 25
+INFO:tensorflow:Adding attention_decoder timestep 14 of 25
+INFO:tensorflow:Adding attention_decoder timestep 15 of 25
+INFO:tensorflow:Adding attention_decoder timestep 16 of 25
+INFO:tensorflow:Adding attention_decoder timestep 17 of 25
+INFO:tensorflow:Adding attention_decoder timestep 18 of 25
+INFO:tensorflow:Adding attention_decoder timestep 19 of 25
+INFO:tensorflow:Adding attention_decoder timestep 20 of 25
+INFO:tensorflow:Adding attention_decoder timestep 21 of 25
+INFO:tensorflow:Adding attention_decoder timestep 22 of 25
+INFO:tensorflow:Adding attention_decoder timestep 23 of 25
+INFO:tensorflow:Adding attention_decoder timestep 24 of 25
+INFO:tensorflow:Time to build graph: 19 seconds
+INFO:tensorflow:Preparing or waiting for session...
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE3 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:910] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:885] Found device 0 with properties: 
+name: Tesla K80
+major: 3 minor: 7 memoryClockRate (GHz) 0.8235
+pciBusID 0000:00:1e.0
+Total memory: 11.17GiB
+Free memory: 3.49GiB
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:906] DMA: 0 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:916] 0:   Y 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:975] Creating TensorFlow device (/gpu:0) -> (device: 0, name: Tesla K80, pci bus id: 0000:00:1e.0)
+INFO:tensorflow:Created session.
+INFO:tensorflow:starting run_training
+INFO:tensorflow:running training step...
+INFO:tensorflow:global_step/sec: 0
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 3800 get requests, put_count=3189 evicted_count=1000 eviction_rate=0.313578 and unsatisfied allocation rate=0.450263
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:259] Raising pool_size_limit_ from 100 to 110
+INFO:tensorflow:seconds for training step: 6.262
+INFO:tensorflow:Batch count: 1
+INFO:tensorflow:loss: 7.728354
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.069
+INFO:tensorflow:Batch count: 2
+INFO:tensorflow:loss: 7.612719
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.491
+INFO:tensorflow:Batch count: 3
+INFO:tensorflow:loss: 6.876364
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.176
+INFO:tensorflow:Batch count: 4
+INFO:tensorflow:loss: 7.632197
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 3.025
+INFO:tensorflow:Batch count: 5
+INFO:tensorflow:loss: 7.652272
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.031
+INFO:tensorflow:Batch count: 6
+INFO:tensorflow:loss: 8.132910
+INFO:tensorflow:running training step...
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 5389 get requests, put_count=5745 evicted_count=2000 eviction_rate=0.348129 and unsatisfied allocation rate=0.308035
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:259] Raising pool_size_limit_ from 176 to 193
+INFO:tensorflow:seconds for training step: 1.923
+INFO:tensorflow:Batch count: 7
+INFO:tensorflow:loss: 8.215645
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.817
+INFO:tensorflow:Batch count: 8
+INFO:tensorflow:loss: 7.659731
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.601
+INFO:tensorflow:Batch count: 9
+INFO:tensorflow:loss: 8.140331
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.890
+INFO:tensorflow:Batch count: 10
+INFO:tensorflow:loss: 8.028338
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.745
+INFO:tensorflow:Batch count: 11
+INFO:tensorflow:loss: 7.755014
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.835
+INFO:tensorflow:Batch count: 12
+INFO:tensorflow:loss: 7.643832
+INFO:tensorflow:running training step...
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 1458 get requests, put_count=2488 evicted_count=1000 eviction_rate=0.401929 and unsatisfied allocation rate=0
+INFO:tensorflow:seconds for training step: 2.685
+INFO:tensorflow:Batch count: 13
+INFO:tensorflow:loss: 8.337116
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.648
+INFO:tensorflow:Batch count: 14
+INFO:tensorflow:loss: 7.849184
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.229
+INFO:tensorflow:Batch count: 15
+INFO:tensorflow:loss: 8.243752
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.104
+INFO:tensorflow:Batch count: 16
+INFO:tensorflow:loss: 8.116889
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.359
+INFO:tensorflow:Batch count: 17
+INFO:tensorflow:loss: 8.055875
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.121
+INFO:tensorflow:Batch count: 18
+INFO:tensorflow:loss: 8.093490
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.712
+INFO:tensorflow:Batch count: 19
+INFO:tensorflow:loss: 7.107677
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.978
+INFO:tensorflow:Batch count: 20
+INFO:tensorflow:loss: 7.669327
+INFO:tensorflow:running training step...
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 5889 get requests, put_count=5716 evicted_count=1000 eviction_rate=0.174948 and unsatisfied allocation rate=0.209204
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:259] Raising pool_size_limit_ from 655 to 720
+INFO:tensorflow:seconds for training step: 1.939
+INFO:tensorflow:Batch count: 21
+INFO:tensorflow:loss: 8.082924
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.802
+INFO:tensorflow:Batch count: 22
+INFO:tensorflow:loss: 8.589554
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.449
+INFO:tensorflow:Batch count: 23
+INFO:tensorflow:loss: 8.324406
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.119
+INFO:tensorflow:Batch count: 24
+INFO:tensorflow:loss: 7.477623
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.635
+INFO:tensorflow:Batch count: 25
+INFO:tensorflow:loss: 7.649072
+INFO:tensorflow:running training step...
+INFO:tensorflow:global_step/sec: 0.422225
+INFO:tensorflow:seconds for training step: 1.644
+INFO:tensorflow:Batch count: 26
+INFO:tensorflow:loss: 8.193563
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.677
+INFO:tensorflow:Batch count: 27
+INFO:tensorflow:loss: 7.840683
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.133
+INFO:tensorflow:Batch count: 28
+INFO:tensorflow:loss: 7.411927
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.535
+INFO:tensorflow:Batch count: 29
+INFO:tensorflow:loss: 9.071568
+INFO:tensorflow:running training step...
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcublas.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcudnn.so.5 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcufft.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcuda.so.1 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcurand.so.8.0 locally
+INFO:tensorflow:seconds for training step: 2.539
+INFO:tensorflow:Batch count: 30
+INFO:tensorflow:loss: 8.226854
+INFO:tensorflow:running training step...
+INFO:tensorflow:Starting seq2seq_attention in eval mode...
+INFO:tensorflow:1269
+INFO:tensorflow:{'vocab_size': 25000, 'gpu_device_id': '0', 'data_path': '/home/ubuntu/original_qbas/1/val*.pkl', 'convert_to_coverage_model': False, 'trunc_norm_init_std': 0.0001, 'use_val_as_test': False, 'optimizer': 'adam', 'query_gcn_layers': 1, 'word_gcn_layers': 1, 'restore_best_model': False, 'no_lstm_encoder': False, 'exp_name': 'qbas_glove_no_optimizer_adam_batch_size_16_1', 'beam_size': 4, 'max_dec_steps': 25, 'cov_loss_wt': 1.0, 'lr': 0.15, 'max_query_steps': 25, 'rand_unif_init_mag': 0.02, 'use_glove': False, 'hidden_dim': 256, 'log_root': '/home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1', 'max_enc_steps': 200, 'query_encoder': True, 'stop_steps': 7000, 'vocab_path': '/home/ubuntu/original_qbas/1/vocab', 'query_gcn_gating': False, 'batch_size': 16, 'use_stop_after': True, 'adagrad_init_acc': 0.01, 'query_gcn_dropout': 1.0, 'coverage': False, 'max_grad_norm': 2.0, 'glove_path': '', 'min_dec_steps': 3, 'pointer_gen': True, 'query_gcn_dim': 256, 'single_pass': False, 'word_gcn': False, 'word_gcn_gating': False, 'no_lstm_query_encoder': False, 'config_file': '/home/ubuntu/yaml_files/config_3.yaml', 'adam_lr': 0.0004, 'emb_dim': 100, 'word_gcn_dropout': 1.0, 'word_gcn_dim': 256, 'query_gcn': False, 'mode': 'eval', 'debug': False}
+INFO:tensorflow:Building graph...
+INFO:tensorflow:seconds for training step: 3.653
+INFO:tensorflow:Batch count: 31
+INFO:tensorflow:loss: 7.805407
+INFO:tensorflow:running training step...
+INFO:tensorflow:Adding attention_decoder timestep 0 of 25
+INFO:tensorflow:Adding attention_decoder timestep 1 of 25
+INFO:tensorflow:Adding attention_decoder timestep 2 of 25
+INFO:tensorflow:Adding attention_decoder timestep 3 of 25
+INFO:tensorflow:Adding attention_decoder timestep 4 of 25
+INFO:tensorflow:Adding attention_decoder timestep 5 of 25
+INFO:tensorflow:Adding attention_decoder timestep 6 of 25
+INFO:tensorflow:Adding attention_decoder timestep 7 of 25
+INFO:tensorflow:Adding attention_decoder timestep 8 of 25
+INFO:tensorflow:seconds for training step: 2.419
+INFO:tensorflow:Batch count: 32
+INFO:tensorflow:loss: 7.497967
+INFO:tensorflow:running training step...
+INFO:tensorflow:Adding attention_decoder timestep 10 of 25
+INFO:tensorflow:Adding attention_decoder timestep 11 of 25
+INFO:tensorflow:Adding attention_decoder timestep 12 of 25
+INFO:tensorflow:Adding attention_decoder timestep 13 of 25
+INFO:tensorflow:Adding attention_decoder timestep 14 of 25
+INFO:tensorflow:Adding attention_decoder timestep 15 of 25
+INFO:tensorflow:Adding attention_decoder timestep 16 of 25
+INFO:tensorflow:Adding attention_decoder timestep 17 of 25
+INFO:tensorflow:Adding attention_decoder timestep 18 of 25
+INFO:tensorflow:Adding attention_decoder timestep 19 of 25
+INFO:tensorflow:Adding attention_decoder timestep 20 of 25
+INFO:tensorflow:Adding attention_decoder timestep 21 of 25
+INFO:tensorflow:Adding attention_decoder timestep 22 of 25
+INFO:tensorflow:Adding attention_decoder timestep 23 of 25
+INFO:tensorflow:Adding attention_decoder timestep 24 of 25
+INFO:tensorflow:seconds for training step: 2.476
+INFO:tensorflow:Batch count: 33
+INFO:tensorflow:loss: 7.702200
+INFO:tensorflow:running training step...
+INFO:tensorflow:Time to build graph: 8 seconds
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE3 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:910] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:885] Found device 0 with properties: 
+name: Tesla K80
+major: 3 minor: 7 memoryClockRate (GHz) 0.8235
+pciBusID 0000:00:1e.0
+Total memory: 11.17GiB
+Free memory: 1.38GiB
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:906] DMA: 0 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:916] 0:   Y 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:975] Creating TensorFlow device (/gpu:0) -> (device: 0, name: Tesla K80, pci bus id: 0000:00:1e.0)
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/train/model.ckpt-25
+INFO:tensorflow:seconds for training step: 3.056
+INFO:tensorflow:Batch count: 34
+INFO:tensorflow:loss: 7.280231
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.559
+INFO:tensorflow:Batch count: 35
+INFO:tensorflow:loss: 7.080995
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.966
+INFO:tensorflow:Batch count: 36
+INFO:tensorflow:loss: 7.241353
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 4.25
+INFO:tensorflow:loss: 8.572910
+INFO:tensorflow:running_avg_loss: 8.572910
+INFO:tensorflow:Found new best model with 8.573 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/train/model.ckpt-25
+INFO:tensorflow:seconds for training step: 3.488
+INFO:tensorflow:Batch count: 37
+INFO:tensorflow:loss: 8.818994
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.56
+INFO:tensorflow:loss: 7.723428
+INFO:tensorflow:running_avg_loss: 8.564415
+INFO:tensorflow:Found new best model with 8.564 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/eval/bestmodel
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 19905 get requests, put_count=20179 evicted_count=1000 eviction_rate=0.0495565 and unsatisfied allocation rate=0.04421
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:259] Raising pool_size_limit_ from 1694 to 1863
+INFO:tensorflow:seconds for training step: 3.305
+INFO:tensorflow:Batch count: 38
+INFO:tensorflow:loss: 7.717412
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.473
+INFO:tensorflow:Batch count: 39
+INFO:tensorflow:loss: 7.033699
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.420
+INFO:tensorflow:Batch count: 40
+INFO:tensorflow:loss: 6.940021
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/train/model.ckpt-25
+INFO:tensorflow:seconds for training step: 1.865
+INFO:tensorflow:Batch count: 41
+INFO:tensorflow:loss: 6.714103
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.28
+INFO:tensorflow:loss: 7.599747
+INFO:tensorflow:running_avg_loss: 8.554769
+INFO:tensorflow:Found new best model with 8.555 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.997
+INFO:tensorflow:Batch count: 42
+INFO:tensorflow:loss: 6.974142
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.645
+INFO:tensorflow:Batch count: 43
+INFO:tensorflow:loss: 7.530533
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.129
+INFO:tensorflow:Batch count: 44
+INFO:tensorflow:loss: 6.458322
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.702
+INFO:tensorflow:Batch count: 45
+INFO:tensorflow:loss: 6.707572
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.878
+INFO:tensorflow:Batch count: 46
+INFO:tensorflow:loss: 5.958266
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/train/model.ckpt-25
+INFO:tensorflow:seconds for batch: 1.62
+INFO:tensorflow:loss: 7.709887
+INFO:tensorflow:running_avg_loss: 8.546320
+INFO:tensorflow:Found new best model with 8.546 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.771
+INFO:tensorflow:Batch count: 47
+INFO:tensorflow:loss: 6.320509
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.313
+INFO:tensorflow:Batch count: 48
+INFO:tensorflow:loss: 6.516529
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.715
+INFO:tensorflow:Batch count: 49
+INFO:tensorflow:loss: 6.153305
+INFO:tensorflow:running training step...
+INFO:tensorflow:global_step/sec: 0.399993
+INFO:tensorflow:seconds for training step: 2.005
+INFO:tensorflow:Batch count: 50
+INFO:tensorflow:loss: 6.435444
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/train/model.ckpt-49
+INFO:tensorflow:seconds for training step: 2.186
+INFO:tensorflow:seconds for batch: 0.81
+INFO:tensorflow:loss: 7.263780
+INFO:tensorflow:running_avg_loss: 8.533495
+INFO:tensorflow:Found new best model with 8.533 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/eval/bestmodel
+INFO:tensorflow:loss: 6.364934
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/train/model.ckpt-49
+INFO:tensorflow:seconds for training step: 3.163
+INFO:tensorflow:Batch count: 52
+INFO:tensorflow:loss: 6.509623
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.91
+INFO:tensorflow:loss: 6.688011
+INFO:tensorflow:running_avg_loss: 8.515040
+INFO:tensorflow:Found new best model with 8.515 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_16_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.225
+INFO:tensorflow:Batch count: 53
+INFO:tensorflow:loss: 6.597233
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.837
+INFO:tensorflow:Batch count: 54
+INFO:tensorflow:loss: 7.037766
+INFO:tensorflow:running training step...

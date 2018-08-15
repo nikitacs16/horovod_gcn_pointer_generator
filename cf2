@@ -1,0 +1,1421 @@
+qbas_glove_no_optimizer_adam_batch_size_64_1
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcublas.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcudnn.so.5 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcufft.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcuda.so.1 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcurand.so.8.0 locally
+INFO:tensorflow:Starting seq2seq_attention in train mode...
+INFO:tensorflow:10157
+INFO:tensorflow:{'vocab_size': 25000, 'gpu_device_id': '0', 'data_path': '/home/ubuntu/original_qbas/1/train*.pkl', 'convert_to_coverage_model': False, 'trunc_norm_init_std': 0.0001, 'use_val_as_test': False, 'optimizer': 'adam', 'query_gcn_layers': 1, 'word_gcn_layers': 1, 'restore_best_model': False, 'no_lstm_encoder': False, 'exp_name': 'qbas_glove_no_optimizer_adam_batch_size_64_1', 'beam_size': 4, 'max_dec_steps': 25, 'cov_loss_wt': 1.0, 'lr': 0.15, 'max_query_steps': 25, 'rand_unif_init_mag': 0.02, 'use_glove': False, 'hidden_dim': 256, 'log_root': '/home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1', 'max_enc_steps': 200, 'query_encoder': True, 'stop_steps': 1750, 'vocab_path': '/home/ubuntu/original_qbas/1/vocab', 'query_gcn_gating': False, 'batch_size': 64, 'use_stop_after': True, 'adagrad_init_acc': 0.01, 'query_gcn_dropout': 1.0, 'coverage': False, 'max_grad_norm': 2.0, 'glove_path': '', 'min_dec_steps': 3, 'pointer_gen': True, 'query_gcn_dim': 256, 'single_pass': False, 'word_gcn': False, 'word_gcn_gating': False, 'no_lstm_query_encoder': False, 'config_file': '/home/ubuntu/yaml_files/config_2.yaml', 'adam_lr': 0.0004, 'emb_dim': 100, 'word_gcn_dropout': 1.0, 'word_gcn_dim': 256, 'query_gcn': False, 'mode': 'train', 'debug': False}
+INFO:tensorflow:Building graph...
+INFO:tensorflow:Adding attention_decoder timestep 0 of 25
+INFO:tensorflow:Adding attention_decoder timestep 1 of 25
+INFO:tensorflow:Adding attention_decoder timestep 2 of 25
+INFO:tensorflow:Adding attention_decoder timestep 3 of 25
+INFO:tensorflow:Adding attention_decoder timestep 4 of 25
+INFO:tensorflow:Adding attention_decoder timestep 5 of 25
+INFO:tensorflow:Adding attention_decoder timestep 6 of 25
+INFO:tensorflow:Adding attention_decoder timestep 7 of 25
+INFO:tensorflow:Adding attention_decoder timestep 8 of 25
+INFO:tensorflow:Adding attention_decoder timestep 9 of 25
+INFO:tensorflow:Adding attention_decoder timestep 10 of 25
+INFO:tensorflow:Adding attention_decoder timestep 11 of 25
+INFO:tensorflow:Adding attention_decoder timestep 12 of 25
+INFO:tensorflow:Adding attention_decoder timestep 13 of 25
+INFO:tensorflow:Adding attention_decoder timestep 14 of 25
+INFO:tensorflow:Adding attention_decoder timestep 15 of 25
+INFO:tensorflow:Adding attention_decoder timestep 16 of 25
+INFO:tensorflow:Adding attention_decoder timestep 17 of 25
+INFO:tensorflow:Adding attention_decoder timestep 18 of 25
+INFO:tensorflow:Adding attention_decoder timestep 19 of 25
+INFO:tensorflow:Adding attention_decoder timestep 20 of 25
+INFO:tensorflow:Adding attention_decoder timestep 21 of 25
+INFO:tensorflow:Adding attention_decoder timestep 22 of 25
+INFO:tensorflow:Adding attention_decoder timestep 23 of 25
+INFO:tensorflow:Adding attention_decoder timestep 24 of 25
+INFO:tensorflow:Time to build graph: 25 seconds
+INFO:tensorflow:Preparing or waiting for session...
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE3 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:910] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:885] Found device 0 with properties: 
+name: Tesla K80
+major: 3 minor: 7 memoryClockRate (GHz) 0.8235
+pciBusID 0000:00:1e.0
+Total memory: 11.17GiB
+Free memory: 8.63GiB
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:906] DMA: 0 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:916] 0:   Y 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:975] Creating TensorFlow device (/gpu:0) -> (device: 0, name: Tesla K80, pci bus id: 0000:00:1e.0)
+INFO:tensorflow:Created session.
+INFO:tensorflow:starting run_training
+INFO:tensorflow:running training step...
+INFO:tensorflow:global_step/sec: 0
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 4568 get requests, put_count=3803 evicted_count=1000 eviction_rate=0.26295 and unsatisfied allocation rate=0.408275
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:259] Raising pool_size_limit_ from 100 to 110
+INFO:tensorflow:seconds for training step: 3.691
+INFO:tensorflow:Batch count: 1
+INFO:tensorflow:loss: 7.731206
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.251
+INFO:tensorflow:Batch count: 2
+INFO:tensorflow:loss: 7.975582
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.411
+INFO:tensorflow:Batch count: 3
+INFO:tensorflow:loss: 7.827178
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.210
+INFO:tensorflow:Batch count: 4
+INFO:tensorflow:loss: 8.086807
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.526
+INFO:tensorflow:Batch count: 5
+INFO:tensorflow:loss: 7.519767
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.213
+INFO:tensorflow:Batch count: 6
+INFO:tensorflow:loss: 7.960066
+INFO:tensorflow:running training step...
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 5167 get requests, put_count=5349 evicted_count=2000 eviction_rate=0.373902 and unsatisfied allocation rate=0.354945
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:259] Raising pool_size_limit_ from 176 to 193
+INFO:tensorflow:seconds for training step: 1.333
+INFO:tensorflow:Batch count: 7
+INFO:tensorflow:loss: 7.645769
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.739
+INFO:tensorflow:Batch count: 8
+INFO:tensorflow:loss: 7.868580
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.553
+INFO:tensorflow:Batch count: 9
+INFO:tensorflow:loss: 7.586246
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.239
+INFO:tensorflow:Batch count: 10
+INFO:tensorflow:loss: 8.533772
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 0.849
+INFO:tensorflow:Batch count: 11
+INFO:tensorflow:loss: 7.982687
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.656
+INFO:tensorflow:Batch count: 12
+INFO:tensorflow:loss: 8.140438
+INFO:tensorflow:running training step...
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 7185 get requests, put_count=7620 evicted_count=2000 eviction_rate=0.262467 and unsatisfied allocation rate=0.221712
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:259] Raising pool_size_limit_ from 309 to 339
+INFO:tensorflow:seconds for training step: 1.112
+INFO:tensorflow:Batch count: 13
+INFO:tensorflow:loss: 7.806178
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.517
+INFO:tensorflow:Batch count: 14
+INFO:tensorflow:loss: 7.905924
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.438
+INFO:tensorflow:Batch count: 15
+INFO:tensorflow:loss: 8.124281
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.723
+INFO:tensorflow:Batch count: 16
+INFO:tensorflow:loss: 7.905078
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.104
+INFO:tensorflow:Batch count: 17
+INFO:tensorflow:loss: 7.893388
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.544
+INFO:tensorflow:Batch count: 18
+INFO:tensorflow:loss: 7.664268
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.595
+INFO:tensorflow:Batch count: 19
+INFO:tensorflow:loss: 7.767137
+INFO:tensorflow:running training step...
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 5315 get requests, put_count=5120 evicted_count=1000 eviction_rate=0.195312 and unsatisfied allocation rate=0.234995
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:259] Raising pool_size_limit_ from 596 to 655
+INFO:tensorflow:seconds for training step: 1.515
+INFO:tensorflow:Batch count: 20
+INFO:tensorflow:loss: 7.826908
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.704
+INFO:tensorflow:Batch count: 21
+INFO:tensorflow:loss: 7.631274
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.043
+INFO:tensorflow:Batch count: 22
+INFO:tensorflow:loss: 7.783096
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.500
+INFO:tensorflow:Batch count: 23
+INFO:tensorflow:loss: 7.796053
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.397
+INFO:tensorflow:Batch count: 24
+INFO:tensorflow:loss: 7.919827
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.467
+INFO:tensorflow:Batch count: 25
+INFO:tensorflow:loss: 8.052029
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.988
+INFO:tensorflow:Batch count: 26
+INFO:tensorflow:loss: 7.520195
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.756
+INFO:tensorflow:Batch count: 27
+INFO:tensorflow:loss: 7.596428
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.518
+INFO:tensorflow:Batch count: 28
+INFO:tensorflow:loss: 7.990232
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.964
+INFO:tensorflow:Batch count: 29
+INFO:tensorflow:loss: 7.761650
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.355
+INFO:tensorflow:Batch count: 30
+INFO:tensorflow:loss: 7.690659
+INFO:tensorflow:running training step...
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 9666 get requests, put_count=9612 evicted_count=1000 eviction_rate=0.104037 and unsatisfied allocation rate=0.122181
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:259] Raising pool_size_limit_ from 1400 to 1540
+INFO:tensorflow:seconds for training step: 1.532
+INFO:tensorflow:Batch count: 31
+INFO:tensorflow:loss: 7.723107
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.418
+INFO:tensorflow:Batch count: 32
+INFO:tensorflow:loss: 7.691733
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.179
+INFO:tensorflow:Batch count: 33
+INFO:tensorflow:loss: 7.534105
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.590
+INFO:tensorflow:Batch count: 34
+INFO:tensorflow:loss: 7.231063
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.696
+INFO:tensorflow:Batch count: 35
+INFO:tensorflow:loss: 7.343511
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.738
+INFO:tensorflow:Batch count: 36
+INFO:tensorflow:loss: 7.150109
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.729
+INFO:tensorflow:Batch count: 37
+INFO:tensorflow:loss: 6.654347
+INFO:tensorflow:running training step...
+INFO:tensorflow:global_step/sec: 0.62278
+INFO:tensorflow:seconds for training step: 1.888
+INFO:tensorflow:Batch count: 38
+INFO:tensorflow:loss: 6.817969
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.691
+INFO:tensorflow:Batch count: 39
+INFO:tensorflow:loss: 6.794738
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.513
+INFO:tensorflow:Batch count: 40
+INFO:tensorflow:loss: 6.708243
+INFO:tensorflow:running training step...
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcublas.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcudnn.so.5 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcufft.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcuda.so.1 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcurand.so.8.0 locally
+INFO:tensorflow:seconds for training step: 1.530
+INFO:tensorflow:Batch count: 41
+INFO:tensorflow:loss: 6.590569
+INFO:tensorflow:running training step...
+INFO:tensorflow:Starting seq2seq_attention in eval mode...
+INFO:tensorflow:1269
+INFO:tensorflow:{'vocab_size': 25000, 'gpu_device_id': '0', 'data_path': '/home/ubuntu/original_qbas/1/val*.pkl', 'convert_to_coverage_model': False, 'trunc_norm_init_std': 0.0001, 'use_val_as_test': False, 'optimizer': 'adam', 'query_gcn_layers': 1, 'word_gcn_layers': 1, 'restore_best_model': False, 'no_lstm_encoder': False, 'exp_name': 'qbas_glove_no_optimizer_adam_batch_size_64_1', 'beam_size': 4, 'max_dec_steps': 25, 'cov_loss_wt': 1.0, 'lr': 0.15, 'max_query_steps': 25, 'rand_unif_init_mag': 0.02, 'use_glove': False, 'hidden_dim': 256, 'log_root': '/home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1', 'max_enc_steps': 200, 'query_encoder': True, 'stop_steps': 1750, 'vocab_path': '/home/ubuntu/original_qbas/1/vocab', 'query_gcn_gating': False, 'batch_size': 64, 'use_stop_after': True, 'adagrad_init_acc': 0.01, 'query_gcn_dropout': 1.0, 'coverage': False, 'max_grad_norm': 2.0, 'glove_path': '', 'min_dec_steps': 3, 'pointer_gen': True, 'query_gcn_dim': 256, 'single_pass': False, 'word_gcn': False, 'word_gcn_gating': False, 'no_lstm_query_encoder': False, 'config_file': '/home/ubuntu/yaml_files/config_2.yaml', 'adam_lr': 0.0004, 'emb_dim': 100, 'word_gcn_dropout': 1.0, 'word_gcn_dim': 256, 'query_gcn': False, 'mode': 'eval', 'debug': False}
+INFO:tensorflow:Building graph...
+INFO:tensorflow:seconds for training step: 1.732
+INFO:tensorflow:Batch count: 42
+INFO:tensorflow:loss: 6.288576
+INFO:tensorflow:running training step...
+INFO:tensorflow:Adding attention_decoder timestep 0 of 25
+INFO:tensorflow:Adding attention_decoder timestep 1 of 25
+INFO:tensorflow:Adding attention_decoder timestep 2 of 25
+INFO:tensorflow:Adding attention_decoder timestep 3 of 25
+INFO:tensorflow:Adding attention_decoder timestep 4 of 25
+INFO:tensorflow:Adding attention_decoder timestep 5 of 25
+INFO:tensorflow:Adding attention_decoder timestep 6 of 25
+INFO:tensorflow:Adding attention_decoder timestep 7 of 25
+INFO:tensorflow:Adding attention_decoder timestep 8 of 25
+INFO:tensorflow:Adding attention_decoder timestep 9 of 25
+INFO:tensorflow:seconds for training step: 1.869
+INFO:tensorflow:Batch count: 43
+INFO:tensorflow:loss: 6.467185
+INFO:tensorflow:running training step...
+INFO:tensorflow:Adding attention_decoder timestep 10 of 25
+INFO:tensorflow:Adding attention_decoder timestep 11 of 25
+INFO:tensorflow:Adding attention_decoder timestep 12 of 25
+INFO:tensorflow:Adding attention_decoder timestep 13 of 25
+INFO:tensorflow:Adding attention_decoder timestep 14 of 25
+INFO:tensorflow:Adding attention_decoder timestep 15 of 25
+INFO:tensorflow:seconds for training step: 1.534
+INFO:tensorflow:Batch count: 44
+INFO:tensorflow:loss: 6.418001
+INFO:tensorflow:running training step...
+INFO:tensorflow:Adding attention_decoder timestep 16 of 25
+INFO:tensorflow:Adding attention_decoder timestep 17 of 25
+INFO:tensorflow:Adding attention_decoder timestep 18 of 25
+INFO:tensorflow:Adding attention_decoder timestep 19 of 25
+INFO:tensorflow:Adding attention_decoder timestep 20 of 25
+INFO:tensorflow:Adding attention_decoder timestep 21 of 25
+INFO:tensorflow:Adding attention_decoder timestep 22 of 25
+INFO:tensorflow:Adding attention_decoder timestep 23 of 25
+INFO:tensorflow:seconds for training step: 2.108
+INFO:tensorflow:Batch count: 45
+INFO:tensorflow:loss: 6.737804
+INFO:tensorflow:running training step...
+INFO:tensorflow:Adding attention_decoder timestep 24 of 25
+INFO:tensorflow:seconds for training step: 1.322
+INFO:tensorflow:Batch count: 46
+INFO:tensorflow:loss: 6.495937
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.288
+INFO:tensorflow:Batch count: 47
+INFO:tensorflow:loss: 6.642567
+INFO:tensorflow:running training step...
+INFO:tensorflow:Time to build graph: 9 seconds
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE3 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:910] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:885] Found device 0 with properties: 
+name: Tesla K80
+major: 3 minor: 7 memoryClockRate (GHz) 0.8235
+pciBusID 0000:00:1e.0
+Total memory: 11.17GiB
+Free memory: 6.53GiB
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:906] DMA: 0 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:916] 0:   Y 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:975] Creating TensorFlow device (/gpu:0) -> (device: 0, name: Tesla K80, pci bus id: 0000:00:1e.0)
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.334
+INFO:tensorflow:Batch count: 48
+INFO:tensorflow:loss: 6.158200
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.482
+INFO:tensorflow:Batch count: 49
+INFO:tensorflow:loss: 6.592654
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.774
+INFO:tensorflow:Batch count: 50
+INFO:tensorflow:loss: 6.711587
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 2.84
+INFO:tensorflow:loss: 6.719624
+INFO:tensorflow:running_avg_loss: 6.719624
+INFO:tensorflow:Found new best model with 6.720 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 2.664
+INFO:tensorflow:Batch count: 51
+INFO:tensorflow:loss: 6.684640
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.86
+INFO:tensorflow:loss: 6.944460
+INFO:tensorflow:running_avg_loss: 6.721872
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 1.12
+INFO:tensorflow:loss: 6.786551
+INFO:tensorflow:running_avg_loss: 6.722519
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.876
+INFO:tensorflow:Batch count: 52
+INFO:tensorflow:loss: 6.315230
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.87
+INFO:tensorflow:loss: 7.087870
+INFO:tensorflow:running_avg_loss: 6.726172
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 0.91
+INFO:tensorflow:loss: 7.049233
+INFO:tensorflow:running_avg_loss: 6.729403
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 2.171
+INFO:tensorflow:Batch count: 53
+INFO:tensorflow:loss: 6.358606
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.21
+INFO:tensorflow:loss: 7.027904
+INFO:tensorflow:running_avg_loss: 6.732388
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 1.20
+INFO:tensorflow:loss: 6.891161
+INFO:tensorflow:running_avg_loss: 6.733976
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 2.122
+INFO:tensorflow:Batch count: 54
+INFO:tensorflow:loss: 6.529816
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.86
+INFO:tensorflow:loss: 7.481082
+INFO:tensorflow:running_avg_loss: 6.741447
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:247] PoolAllocator: After 8280 get requests, put_count=8272 evicted_count=1000 eviction_rate=0.12089 and unsatisfied allocation rate=0.133816
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:259] Raising pool_size_limit_ from 100 to 110
+INFO:tensorflow:seconds for batch: 1.07
+INFO:tensorflow:loss: 6.698258
+INFO:tensorflow:running_avg_loss: 6.741015
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.938
+INFO:tensorflow:Batch count: 55
+INFO:tensorflow:loss: 6.225804
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.20
+INFO:tensorflow:loss: 6.928252
+INFO:tensorflow:running_avg_loss: 6.742887
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 1.07
+INFO:tensorflow:loss: 6.763181
+INFO:tensorflow:running_avg_loss: 6.743090
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 2.722
+INFO:tensorflow:Batch count: 56
+INFO:tensorflow:loss: 6.272628
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.79
+INFO:tensorflow:loss: 6.863671
+INFO:tensorflow:running_avg_loss: 6.744296
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 0.89
+INFO:tensorflow:loss: 6.878720
+INFO:tensorflow:running_avg_loss: 6.745640
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.856
+INFO:tensorflow:Batch count: 57
+INFO:tensorflow:loss: 6.010534
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.85
+INFO:tensorflow:loss: 6.756194
+INFO:tensorflow:running_avg_loss: 6.745746
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 1.00
+INFO:tensorflow:loss: 6.968211
+INFO:tensorflow:running_avg_loss: 6.747970
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 2.449
+INFO:tensorflow:Batch count: 58
+INFO:tensorflow:loss: 6.070527
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.89
+INFO:tensorflow:loss: 7.076959
+INFO:tensorflow:running_avg_loss: 6.751260
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 0.84
+INFO:tensorflow:loss: 7.366406
+INFO:tensorflow:running_avg_loss: 6.757412
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.788
+INFO:tensorflow:Batch count: 59
+INFO:tensorflow:loss: 6.017226
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.82
+INFO:tensorflow:loss: 6.867090
+INFO:tensorflow:running_avg_loss: 6.758508
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 0.95
+INFO:tensorflow:loss: 6.659145
+INFO:tensorflow:running_avg_loss: 6.757515
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 2.424
+INFO:tensorflow:Batch count: 60
+INFO:tensorflow:loss: 6.359820
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.11
+INFO:tensorflow:loss: 7.131336
+INFO:tensorflow:running_avg_loss: 6.761253
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 0.94
+INFO:tensorflow:loss: 6.726149
+INFO:tensorflow:running_avg_loss: 6.760902
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.502
+INFO:tensorflow:Batch count: 61
+INFO:tensorflow:loss: 6.380273
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.04
+INFO:tensorflow:loss: 6.754912
+INFO:tensorflow:running_avg_loss: 6.760842
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.505
+INFO:tensorflow:Batch count: 62
+INFO:tensorflow:loss: 6.630789
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.75
+INFO:tensorflow:loss: 7.021120
+INFO:tensorflow:running_avg_loss: 6.763445
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 0.98
+INFO:tensorflow:loss: 7.035736
+INFO:tensorflow:running_avg_loss: 6.766168
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.838
+INFO:tensorflow:Batch count: 63
+INFO:tensorflow:loss: 6.375440
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.94
+INFO:tensorflow:loss: 6.961432
+INFO:tensorflow:running_avg_loss: 6.768120
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 0.95
+INFO:tensorflow:loss: 7.372789
+INFO:tensorflow:running_avg_loss: 6.774167
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.963
+INFO:tensorflow:Batch count: 64
+INFO:tensorflow:loss: 6.207390
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.01
+INFO:tensorflow:loss: 7.036507
+INFO:tensorflow:running_avg_loss: 6.776791
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 0.99
+INFO:tensorflow:loss: 7.395461
+INFO:tensorflow:running_avg_loss: 6.782977
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 2.848
+INFO:tensorflow:Batch count: 65
+INFO:tensorflow:loss: 6.454772
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.03
+INFO:tensorflow:loss: 6.966878
+INFO:tensorflow:running_avg_loss: 6.784816
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 0.93
+INFO:tensorflow:loss: 6.652145
+INFO:tensorflow:running_avg_loss: 6.783490
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.686
+INFO:tensorflow:Batch count: 66
+INFO:tensorflow:loss: 6.327479
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.90
+INFO:tensorflow:loss: 6.813931
+INFO:tensorflow:running_avg_loss: 6.783794
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 0.89
+INFO:tensorflow:loss: 7.160782
+INFO:tensorflow:running_avg_loss: 6.787564
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 2.008
+INFO:tensorflow:Batch count: 67
+INFO:tensorflow:loss: 5.976057
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.91
+INFO:tensorflow:loss: 7.329169
+INFO:tensorflow:running_avg_loss: 6.792980
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.721
+INFO:tensorflow:Batch count: 68
+INFO:tensorflow:loss: 6.371900
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.03
+INFO:tensorflow:loss: 6.848884
+INFO:tensorflow:running_avg_loss: 6.793539
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for batch: 1.00
+INFO:tensorflow:loss: 6.327971
+INFO:tensorflow:running_avg_loss: 6.788883
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 1.426
+INFO:tensorflow:Batch count: 69
+INFO:tensorflow:loss: 6.728353
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.93
+INFO:tensorflow:loss: 7.217298
+INFO:tensorflow:running_avg_loss: 6.793167
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:global_step/sec: 0.53333
+INFO:tensorflow:seconds for batch: 0.89
+INFO:tensorflow:loss: 7.510249
+INFO:tensorflow:running_avg_loss: 6.800338
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-37
+INFO:tensorflow:seconds for training step: 2.181
+INFO:tensorflow:Batch count: 70
+INFO:tensorflow:loss: 6.238966
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.08
+INFO:tensorflow:loss: 7.038152
+INFO:tensorflow:running_avg_loss: 6.802716
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 0.99
+INFO:tensorflow:loss: 5.936882
+INFO:tensorflow:running_avg_loss: 6.794058
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 0.79
+INFO:tensorflow:loss: 6.301352
+INFO:tensorflow:running_avg_loss: 6.789131
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 3.656
+INFO:tensorflow:Batch count: 71
+INFO:tensorflow:loss: 6.017169
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.93
+INFO:tensorflow:loss: 6.101907
+INFO:tensorflow:running_avg_loss: 6.782259
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.10
+INFO:tensorflow:loss: 6.131412
+INFO:tensorflow:running_avg_loss: 6.775750
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 2.068
+INFO:tensorflow:Batch count: 72
+INFO:tensorflow:loss: 5.920724
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.95
+INFO:tensorflow:loss: 6.079456
+INFO:tensorflow:running_avg_loss: 6.768787
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.09
+INFO:tensorflow:loss: 6.286918
+INFO:tensorflow:running_avg_loss: 6.763969
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 2.177
+INFO:tensorflow:Batch count: 73
+INFO:tensorflow:loss: 6.002992
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.04
+INFO:tensorflow:loss: 6.592694
+INFO:tensorflow:running_avg_loss: 6.762256
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.03
+INFO:tensorflow:loss: 5.972088
+INFO:tensorflow:running_avg_loss: 6.754354
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 2.378
+INFO:tensorflow:Batch count: 74
+INFO:tensorflow:loss: 6.120900
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.00
+INFO:tensorflow:loss: 6.016646
+INFO:tensorflow:running_avg_loss: 6.746977
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.06
+INFO:tensorflow:loss: 6.024178
+INFO:tensorflow:running_avg_loss: 6.739749
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 2.742
+INFO:tensorflow:Batch count: 75
+INFO:tensorflow:loss: 5.975273
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.97
+INFO:tensorflow:loss: 6.446531
+INFO:tensorflow:running_avg_loss: 6.736817
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.17
+INFO:tensorflow:loss: 5.957763
+INFO:tensorflow:running_avg_loss: 6.729026
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 2.101
+INFO:tensorflow:Batch count: 76
+INFO:tensorflow:loss: 6.263328
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.19
+INFO:tensorflow:loss: 6.386467
+INFO:tensorflow:running_avg_loss: 6.725601
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 1.889
+INFO:tensorflow:Batch count: 77
+INFO:tensorflow:loss: 6.000585
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.74
+INFO:tensorflow:loss: 5.889999
+INFO:tensorflow:running_avg_loss: 6.717245
+INFO:tensorflow:Found new best model with 6.717 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 1.535
+INFO:tensorflow:Batch count: 78
+INFO:tensorflow:loss: 5.937025
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.72
+INFO:tensorflow:loss: 6.468700
+INFO:tensorflow:running_avg_loss: 6.714759
+INFO:tensorflow:Found new best model with 6.715 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 1.763
+INFO:tensorflow:Batch count: 79
+INFO:tensorflow:loss: 6.053672
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.94
+INFO:tensorflow:loss: 6.067045
+INFO:tensorflow:running_avg_loss: 6.708282
+INFO:tensorflow:Found new best model with 6.708 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.012
+INFO:tensorflow:Batch count: 80
+INFO:tensorflow:loss: 6.324412
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 0.95
+INFO:tensorflow:loss: 6.199425
+INFO:tensorflow:running_avg_loss: 6.703194
+INFO:tensorflow:Found new best model with 6.703 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.688
+INFO:tensorflow:Batch count: 81
+INFO:tensorflow:loss: 5.845532
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 1.513
+INFO:tensorflow:Batch count: 82
+INFO:tensorflow:loss: 6.124391
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.20
+INFO:tensorflow:loss: 6.542030
+INFO:tensorflow:running_avg_loss: 6.701582
+INFO:tensorflow:Found new best model with 6.702 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.220
+INFO:tensorflow:Batch count: 83
+INFO:tensorflow:loss: 6.088925
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.09
+INFO:tensorflow:loss: 6.442425
+INFO:tensorflow:running_avg_loss: 6.698990
+INFO:tensorflow:Found new best model with 6.699 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.826
+INFO:tensorflow:Batch count: 84
+INFO:tensorflow:loss: 5.701962
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 1.724
+INFO:tensorflow:Batch count: 85
+INFO:tensorflow:loss: 6.365525
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.00
+INFO:tensorflow:loss: 6.168983
+INFO:tensorflow:running_avg_loss: 6.693690
+INFO:tensorflow:Found new best model with 6.694 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 1.834
+INFO:tensorflow:Batch count: 86
+INFO:tensorflow:loss: 6.160115
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.04
+INFO:tensorflow:loss: 6.091584
+INFO:tensorflow:running_avg_loss: 6.687669
+INFO:tensorflow:Found new best model with 6.688 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.002
+INFO:tensorflow:Batch count: 87
+INFO:tensorflow:loss: 5.898063
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.07
+INFO:tensorflow:loss: 6.216654
+INFO:tensorflow:running_avg_loss: 6.682959
+INFO:tensorflow:Found new best model with 6.683 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.632
+INFO:tensorflow:Batch count: 88
+INFO:tensorflow:loss: 6.204247
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 2.366
+INFO:tensorflow:Batch count: 89
+INFO:tensorflow:loss: 6.318637
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.11
+INFO:tensorflow:loss: 6.370298
+INFO:tensorflow:running_avg_loss: 6.679832
+INFO:tensorflow:Found new best model with 6.680 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 1.797
+INFO:tensorflow:Batch count: 90
+INFO:tensorflow:loss: 5.755972
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.88
+INFO:tensorflow:loss: 6.461690
+INFO:tensorflow:running_avg_loss: 6.677651
+INFO:tensorflow:Found new best model with 6.678 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 1.887
+INFO:tensorflow:Batch count: 91
+INFO:tensorflow:loss: 5.880652
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.80
+INFO:tensorflow:loss: 5.833598
+INFO:tensorflow:running_avg_loss: 6.669211
+INFO:tensorflow:Found new best model with 6.669 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.660
+INFO:tensorflow:Batch count: 92
+INFO:tensorflow:loss: 6.207499
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 1.581
+INFO:tensorflow:Batch count: 93
+INFO:tensorflow:loss: 6.021537
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.29
+INFO:tensorflow:loss: 6.414380
+INFO:tensorflow:running_avg_loss: 6.666662
+INFO:tensorflow:Found new best model with 6.667 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.338
+INFO:tensorflow:Batch count: 94
+INFO:tensorflow:loss: 6.166374
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.20
+INFO:tensorflow:loss: 6.464920
+INFO:tensorflow:running_avg_loss: 6.664645
+INFO:tensorflow:Found new best model with 6.665 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.845
+INFO:tensorflow:Batch count: 95
+INFO:tensorflow:loss: 5.856147
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.19
+INFO:tensorflow:loss: 6.802534
+INFO:tensorflow:running_avg_loss: 6.666024
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for training step: 2.186
+INFO:tensorflow:Batch count: 96
+INFO:tensorflow:loss: 6.053966
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.65
+INFO:tensorflow:loss: 6.385134
+INFO:tensorflow:running_avg_loss: 6.663215
+INFO:tensorflow:Found new best model with 6.663 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.990
+INFO:tensorflow:Batch count: 97
+INFO:tensorflow:loss: 6.767352
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.54
+INFO:tensorflow:loss: 6.632835
+INFO:tensorflow:running_avg_loss: 6.662911
+INFO:tensorflow:Found new best model with 6.663 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.357
+INFO:tensorflow:Batch count: 98
+INFO:tensorflow:loss: 6.012952
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:seconds for batch: 1.30
+INFO:tensorflow:loss: 6.048489
+INFO:tensorflow:running_avg_loss: 6.656767
+INFO:tensorflow:Found new best model with 6.657 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.313
+INFO:tensorflow:Batch count: 99
+INFO:tensorflow:loss: 6.176060
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-69
+INFO:tensorflow:global_step/sec: 0.500002
+INFO:tensorflow:seconds for training step: 2.220
+INFO:tensorflow:Batch count: 100
+INFO:tensorflow:loss: 5.904116
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.41
+INFO:tensorflow:loss: 6.319978
+INFO:tensorflow:running_avg_loss: 6.653399
+INFO:tensorflow:Found new best model with 6.653 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.067
+INFO:tensorflow:Batch count: 101
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:loss: 5.900307
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.21
+INFO:tensorflow:loss: 5.861056
+INFO:tensorflow:running_avg_loss: 6.645475
+INFO:tensorflow:Found new best model with 6.645 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for training step: 2.810
+INFO:tensorflow:Batch count: 102
+INFO:tensorflow:loss: 5.959475
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.29
+INFO:tensorflow:loss: 6.251848
+INFO:tensorflow:running_avg_loss: 6.641539
+INFO:tensorflow:Found new best model with 6.642 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.39
+INFO:tensorflow:loss: 6.579402
+INFO:tensorflow:running_avg_loss: 6.640918
+INFO:tensorflow:Found new best model with 6.641 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 3.296
+INFO:tensorflow:Batch count: 103
+INFO:tensorflow:loss: 6.327200
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.54
+INFO:tensorflow:loss: 6.797291
+INFO:tensorflow:running_avg_loss: 6.642482
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for training step: 2.790
+INFO:tensorflow:Batch count: 104
+INFO:tensorflow:loss: 5.907064
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.36
+INFO:tensorflow:loss: 6.277483
+INFO:tensorflow:running_avg_loss: 6.638832
+INFO:tensorflow:Found new best model with 6.639 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 3.049
+INFO:tensorflow:Batch count: 105
+INFO:tensorflow:loss: 6.109381
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.24
+INFO:tensorflow:loss: 5.627863
+INFO:tensorflow:running_avg_loss: 6.628722
+INFO:tensorflow:Found new best model with 6.629 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.785
+INFO:tensorflow:Batch count: 106
+INFO:tensorflow:loss: 6.496603
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.19
+INFO:tensorflow:loss: 6.065187
+INFO:tensorflow:running_avg_loss: 6.623087
+INFO:tensorflow:Found new best model with 6.623 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.346
+INFO:tensorflow:Batch count: 107
+INFO:tensorflow:loss: 5.941374
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.32
+INFO:tensorflow:loss: 6.090858
+INFO:tensorflow:running_avg_loss: 6.617764
+INFO:tensorflow:Found new best model with 6.618 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.940
+INFO:tensorflow:Batch count: 108
+INFO:tensorflow:loss: 6.131826
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.29
+INFO:tensorflow:loss: 6.229494
+INFO:tensorflow:running_avg_loss: 6.613882
+INFO:tensorflow:Found new best model with 6.614 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.110
+INFO:tensorflow:Batch count: 109
+INFO:tensorflow:loss: 5.898293
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.27
+INFO:tensorflow:loss: 6.042856
+INFO:tensorflow:running_avg_loss: 6.608171
+INFO:tensorflow:Found new best model with 6.608 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for training step: 2.966
+INFO:tensorflow:Batch count: 110
+INFO:tensorflow:loss: 5.714319
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.40
+INFO:tensorflow:loss: 6.756123
+INFO:tensorflow:running_avg_loss: 6.609651
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.03
+INFO:tensorflow:loss: 6.187900
+INFO:tensorflow:running_avg_loss: 6.605433
+INFO:tensorflow:Found new best model with 6.605 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.452
+INFO:tensorflow:Batch count: 111
+INFO:tensorflow:loss: 6.071781
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for training step: 2.164
+INFO:tensorflow:Batch count: 112
+INFO:tensorflow:loss: 6.016060
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.30
+INFO:tensorflow:loss: 6.477221
+INFO:tensorflow:running_avg_loss: 6.604151
+INFO:tensorflow:Found new best model with 6.604 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for training step: 2.138
+INFO:tensorflow:Batch count: 113
+INFO:tensorflow:loss: 6.036622
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.44
+INFO:tensorflow:loss: 6.125078
+INFO:tensorflow:running_avg_loss: 6.599360
+INFO:tensorflow:Found new best model with 6.599 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for training step: 2.372
+INFO:tensorflow:Batch count: 114
+INFO:tensorflow:loss: 6.138309
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.36
+INFO:tensorflow:loss: 5.901361
+INFO:tensorflow:running_avg_loss: 6.592380
+INFO:tensorflow:Found new best model with 6.592 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for training step: 2.458
+INFO:tensorflow:Batch count: 115
+INFO:tensorflow:loss: 6.145884
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.17
+INFO:tensorflow:loss: 6.107316
+INFO:tensorflow:running_avg_loss: 6.587530
+INFO:tensorflow:Found new best model with 6.588 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.918
+INFO:tensorflow:Batch count: 116
+INFO:tensorflow:loss: 5.980812
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.10
+INFO:tensorflow:loss: 6.133078
+INFO:tensorflow:running_avg_loss: 6.582985
+INFO:tensorflow:Found new best model with 6.583 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 3.017
+INFO:tensorflow:Batch count: 117
+INFO:tensorflow:loss: 6.207375
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.50
+INFO:tensorflow:loss: 6.145978
+INFO:tensorflow:running_avg_loss: 6.578615
+INFO:tensorflow:Found new best model with 6.579 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.752
+INFO:tensorflow:Batch count: 118
+INFO:tensorflow:loss: 6.039041
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for training step: 2.178
+INFO:tensorflow:Batch count: 119
+INFO:tensorflow:loss: 5.795610
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.50
+INFO:tensorflow:loss: 6.543702
+INFO:tensorflow:running_avg_loss: 6.578266
+INFO:tensorflow:Found new best model with 6.578 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for training step: 2.571
+INFO:tensorflow:Batch count: 120
+INFO:tensorflow:loss: 5.905811
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.35
+INFO:tensorflow:loss: 6.287506
+INFO:tensorflow:running_avg_loss: 6.575358
+INFO:tensorflow:Found new best model with 6.575 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for training step: 2.531
+INFO:tensorflow:Batch count: 121
+INFO:tensorflow:loss: 5.947302
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.09
+INFO:tensorflow:loss: 6.224859
+INFO:tensorflow:running_avg_loss: 6.571853
+INFO:tensorflow:Found new best model with 6.572 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.215
+INFO:tensorflow:Batch count: 122
+INFO:tensorflow:loss: 6.367042
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:seconds for batch: 1.25
+INFO:tensorflow:loss: 6.159816
+INFO:tensorflow:running_avg_loss: 6.567733
+INFO:tensorflow:Found new best model with 6.568 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.095
+INFO:tensorflow:Batch count: 123
+INFO:tensorflow:loss: 6.140840
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-99
+INFO:tensorflow:global_step/sec: 0.399999
+INFO:tensorflow:seconds for batch: 1.19
+INFO:tensorflow:loss: 6.292470
+INFO:tensorflow:running_avg_loss: 6.564980
+INFO:tensorflow:Found new best model with 6.565 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.587
+INFO:tensorflow:Batch count: 124
+INFO:tensorflow:loss: 5.962104
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-123
+INFO:tensorflow:seconds for training step: 2.365
+INFO:tensorflow:Batch count: 125
+INFO:tensorflow:loss: 5.906523
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.23
+INFO:tensorflow:loss: 6.084906
+INFO:tensorflow:running_avg_loss: 6.560180
+INFO:tensorflow:Found new best model with 6.560 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-123
+INFO:tensorflow:seconds for training step: 2.957
+INFO:tensorflow:Batch count: 126
+INFO:tensorflow:loss: 5.873405
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 0.97
+INFO:tensorflow:loss: 6.480699
+INFO:tensorflow:running_avg_loss: 6.559385
+INFO:tensorflow:Found new best model with 6.559 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-123
+INFO:tensorflow:seconds for training step: 3.437
+INFO:tensorflow:Batch count: 127
+INFO:tensorflow:loss: 6.029051
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.75
+INFO:tensorflow:loss: 6.016501
+INFO:tensorflow:running_avg_loss: 6.553956
+INFO:tensorflow:Found new best model with 6.554 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.984
+INFO:tensorflow:Batch count: 128
+INFO:tensorflow:loss: 6.045658
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.464
+INFO:tensorflow:Batch count: 129
+INFO:tensorflow:loss: 5.788000
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-123
+INFO:tensorflow:seconds for training step: 1.966
+INFO:tensorflow:Batch count: 130
+INFO:tensorflow:loss: 5.864222
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.63
+INFO:tensorflow:loss: 6.046810
+INFO:tensorflow:running_avg_loss: 6.548885
+INFO:tensorflow:Found new best model with 6.549 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 3.073
+INFO:tensorflow:Batch count: 131
+INFO:tensorflow:loss: 5.846530
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.771
+INFO:tensorflow:Batch count: 132
+INFO:tensorflow:loss: 5.875516
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-123
+INFO:tensorflow:seconds for training step: 2.749
+INFO:tensorflow:Batch count: 133
+INFO:tensorflow:loss: 6.070281
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.25
+INFO:tensorflow:loss: 6.067891
+INFO:tensorflow:running_avg_loss: 6.544075
+INFO:tensorflow:Found new best model with 6.544 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.154
+INFO:tensorflow:Batch count: 134
+INFO:tensorflow:loss: 6.010653
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-123
+INFO:tensorflow:seconds for training step: 2.263
+INFO:tensorflow:Batch count: 135
+INFO:tensorflow:loss: 5.901236
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.22
+INFO:tensorflow:loss: 6.101665
+INFO:tensorflow:running_avg_loss: 6.539651
+INFO:tensorflow:Found new best model with 6.540 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.878
+INFO:tensorflow:Batch count: 136
+INFO:tensorflow:loss: 6.030497
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-123
+INFO:tensorflow:seconds for training step: 2.171
+INFO:tensorflow:Batch count: 137
+INFO:tensorflow:loss: 6.018649
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.24
+INFO:tensorflow:loss: 5.828315
+INFO:tensorflow:running_avg_loss: 6.532537
+INFO:tensorflow:Found new best model with 6.533 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.635
+INFO:tensorflow:Batch count: 138
+INFO:tensorflow:loss: 6.090272
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.306
+INFO:tensorflow:Batch count: 139
+INFO:tensorflow:loss: 6.163671
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.098
+INFO:tensorflow:Batch count: 140
+INFO:tensorflow:loss: 5.883230
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.756
+INFO:tensorflow:Batch count: 141
+INFO:tensorflow:loss: 5.716023
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.813
+INFO:tensorflow:Batch count: 142
+INFO:tensorflow:loss: 5.976581
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-123
+INFO:tensorflow:seconds for batch: 1.17
+INFO:tensorflow:loss: 5.674187
+INFO:tensorflow:running_avg_loss: 6.523954
+INFO:tensorflow:Found new best model with 6.524 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 1.872
+INFO:tensorflow:Batch count: 143
+INFO:tensorflow:loss: 5.768263
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.978
+INFO:tensorflow:Batch count: 144
+INFO:tensorflow:loss: 5.910493
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-123
+INFO:tensorflow:seconds for training step: 2.822
+INFO:tensorflow:Batch count: 145
+INFO:tensorflow:loss: 6.041368
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.44
+INFO:tensorflow:loss: 5.829247
+INFO:tensorflow:running_avg_loss: 6.517007
+INFO:tensorflow:Found new best model with 6.517 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 3.004
+INFO:tensorflow:Batch count: 146
+INFO:tensorflow:loss: 5.869864
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-123
+INFO:tensorflow:seconds for training step: 2.598
+INFO:tensorflow:Batch count: 147
+INFO:tensorflow:loss: 6.230601
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.96
+INFO:tensorflow:loss: 5.906440
+INFO:tensorflow:running_avg_loss: 6.510901
+INFO:tensorflow:Found new best model with 6.511 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.705
+INFO:tensorflow:Batch count: 148
+INFO:tensorflow:loss: 5.848227
+INFO:tensorflow:running training step...
+INFO:tensorflow:global_step/sec: 0.416669
+INFO:tensorflow:seconds for training step: 3.051
+INFO:tensorflow:Batch count: 149
+INFO:tensorflow:loss: 5.838249
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-148
+INFO:tensorflow:seconds for batch: 1.74
+INFO:tensorflow:loss: 6.029561
+INFO:tensorflow:running_avg_loss: 6.506088
+INFO:tensorflow:Found new best model with 6.506 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-148
+INFO:tensorflow:seconds for training step: 4.101
+INFO:tensorflow:Batch count: 150
+INFO:tensorflow:loss: 6.192621
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.29
+INFO:tensorflow:loss: 5.611346
+INFO:tensorflow:running_avg_loss: 6.497140
+INFO:tensorflow:Found new best model with 6.497 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.768
+INFO:tensorflow:Batch count: 151
+INFO:tensorflow:loss: 6.102565
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.168
+INFO:tensorflow:Batch count: 152
+INFO:tensorflow:loss: 6.033026
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-148
+INFO:tensorflow:seconds for training step: 2.554
+INFO:tensorflow:Batch count: 153
+INFO:tensorflow:loss: 6.285993
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.57
+INFO:tensorflow:loss: 6.277486
+INFO:tensorflow:running_avg_loss: 6.494944
+INFO:tensorflow:Found new best model with 6.495 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 3.447
+INFO:tensorflow:Batch count: 154
+INFO:tensorflow:loss: 5.724496
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.802
+INFO:tensorflow:Batch count: 155
+INFO:tensorflow:loss: 6.039475
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-148
+INFO:tensorflow:seconds for training step: 2.475
+INFO:tensorflow:Batch count: 156
+INFO:tensorflow:loss: 5.883333
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.79
+INFO:tensorflow:loss: 5.738708
+INFO:tensorflow:running_avg_loss: 6.487381
+INFO:tensorflow:Found new best model with 6.487 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.812
+INFO:tensorflow:Batch count: 157
+INFO:tensorflow:loss: 5.716703
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.028
+INFO:tensorflow:Batch count: 158
+INFO:tensorflow:loss: 6.018518
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 3.137
+INFO:tensorflow:Batch count: 159
+INFO:tensorflow:loss: 6.000369
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-148
+INFO:tensorflow:seconds for training step: 2.802
+INFO:tensorflow:Batch count: 160
+INFO:tensorflow:loss: 5.833654
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.28
+INFO:tensorflow:loss: 6.058294
+INFO:tensorflow:running_avg_loss: 6.483090
+INFO:tensorflow:Found new best model with 6.483 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.998
+INFO:tensorflow:Batch count: 161
+INFO:tensorflow:loss: 5.747331
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 3.025
+INFO:tensorflow:Batch count: 162
+INFO:tensorflow:loss: 5.622307
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-148
+INFO:tensorflow:seconds for training step: 2.931
+INFO:tensorflow:Batch count: 163
+INFO:tensorflow:loss: 5.633193
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.52
+INFO:tensorflow:loss: 5.888024
+INFO:tensorflow:running_avg_loss: 6.477140
+INFO:tensorflow:Found new best model with 6.477 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.705
+INFO:tensorflow:Batch count: 164
+INFO:tensorflow:loss: 5.851130
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.521
+INFO:tensorflow:Batch count: 165
+INFO:tensorflow:loss: 6.138261
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-148
+INFO:tensorflow:seconds for training step: 2.643
+INFO:tensorflow:Batch count: 166
+INFO:tensorflow:loss: 6.215313
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.37
+INFO:tensorflow:loss: 6.520459
+INFO:tensorflow:running_avg_loss: 6.477573
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-148
+INFO:tensorflow:seconds for training step: 2.504
+INFO:tensorflow:Batch count: 167
+INFO:tensorflow:loss: 6.072618
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.50
+INFO:tensorflow:loss: 6.301441
+INFO:tensorflow:running_avg_loss: 6.475812
+INFO:tensorflow:Found new best model with 6.476 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.538
+INFO:tensorflow:Batch count: 168
+INFO:tensorflow:loss: 5.608720
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.296
+INFO:tensorflow:Batch count: 169
+INFO:tensorflow:loss: 5.875748
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-148
+INFO:tensorflow:global_step/sec: 0.349998
+INFO:tensorflow:seconds for training step: 2.897
+INFO:tensorflow:Batch count: 170
+INFO:tensorflow:loss: 6.106596
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 2.01
+INFO:tensorflow:loss: 6.587225
+INFO:tensorflow:running_avg_loss: 6.476926
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-148
+INFO:tensorflow:seconds for batch: 1.81
+INFO:tensorflow:loss: 5.936243
+INFO:tensorflow:running_avg_loss: 6.471519
+INFO:tensorflow:Found new best model with 6.472 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.839
+INFO:tensorflow:Batch count: 171
+INFO:tensorflow:loss: 5.705475
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 3.013
+INFO:tensorflow:Batch count: 172
+INFO:tensorflow:loss: 6.255735
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-169
+INFO:tensorflow:seconds for training step: 2.984
+INFO:tensorflow:Batch count: 173
+INFO:tensorflow:loss: 5.677683
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.83
+INFO:tensorflow:loss: 6.043587
+INFO:tensorflow:running_avg_loss: 6.467240
+INFO:tensorflow:Found new best model with 6.467 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-169
+INFO:tensorflow:seconds for training step: 3.446
+INFO:tensorflow:Batch count: 174
+INFO:tensorflow:loss: 5.999154
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.98
+INFO:tensorflow:loss: 6.073195
+INFO:tensorflow:running_avg_loss: 6.463299
+INFO:tensorflow:Found new best model with 6.463 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 3.515
+INFO:tensorflow:Batch count: 175
+INFO:tensorflow:loss: 5.945191
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.484
+INFO:tensorflow:Batch count: 176
+INFO:tensorflow:loss: 6.137406
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-169
+INFO:tensorflow:seconds for training step: 2.892
+INFO:tensorflow:Batch count: 177
+INFO:tensorflow:loss: 5.842947
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.748
+INFO:tensorflow:Batch count: 178
+INFO:tensorflow:loss: 5.741670
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.080
+INFO:tensorflow:Batch count: 179
+INFO:tensorflow:loss: 5.602578
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.116
+INFO:tensorflow:Batch count: 180
+INFO:tensorflow:loss: 5.786693
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 1.934
+INFO:tensorflow:Batch count: 181
+INFO:tensorflow:loss: 5.887387
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.050
+INFO:tensorflow:Batch count: 182
+INFO:tensorflow:loss: 6.048347
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-169
+INFO:tensorflow:seconds for training step: 2.683
+INFO:tensorflow:Batch count: 183
+INFO:tensorflow:loss: 6.016457
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for batch: 1.21
+INFO:tensorflow:loss: 6.105780
+INFO:tensorflow:running_avg_loss: 6.453809
+INFO:tensorflow:Found new best model with 6.454 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.525
+INFO:tensorflow:Batch count: 184
+INFO:tensorflow:loss: 5.801769
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.635
+INFO:tensorflow:Batch count: 185
+INFO:tensorflow:loss: 5.697729
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 0.873
+INFO:tensorflow:Batch count: 186
+INFO:tensorflow:loss: 6.569384
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.956
+INFO:tensorflow:Batch count: 187
+INFO:tensorflow:loss: 5.656157
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.258
+INFO:tensorflow:Batch count: 188
+INFO:tensorflow:loss: 5.943040
+INFO:tensorflow:running training step...
+INFO:tensorflow:Loading checkpoint /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/train/model.ckpt-169
+INFO:tensorflow:seconds for batch: 1.45
+INFO:tensorflow:loss: 5.787049
+INFO:tensorflow:running_avg_loss: 6.447141
+INFO:tensorflow:Found new best model with 6.447 running_avg_loss. Saving to /home/ubuntu/gttp_logs/qbas_glove_no_optimizer_adam_batch_size_64_1/eval/bestmodel
+INFO:tensorflow:seconds for training step: 2.746
+INFO:tensorflow:Batch count: 189
+INFO:tensorflow:loss: 5.777332
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.949
+INFO:tensorflow:Batch count: 190
+INFO:tensorflow:loss: 6.320447
+INFO:tensorflow:running training step...
+INFO:tensorflow:seconds for training step: 2.383
+INFO:tensorflow:Batch count: 191
+INFO:tensorflow:loss: 5.913874
+INFO:tensorflow:running training step...
