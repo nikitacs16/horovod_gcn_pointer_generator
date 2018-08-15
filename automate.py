@@ -5,7 +5,7 @@ import subprocess
 from multiprocessing import Pool
 
 file_name = sys.argv[1]
-folds = sys.argv[2]
+folds = int(sys.argv[2])
 parent_path = sys.argv[3]
 
 def run_train(file_name,out_file_name):
@@ -31,7 +31,7 @@ for i in range(1,folds+1):
 	doc['dev_path']= os.path.join(parent_path,str(i),'val*.pkl')
 	doc['test_path']= os.path.join(parent_path,str(i),'test*.pkl')
 	doc['vocab_path'] =  os.path.join(parent_path,str(i),'vocab')
-	doc['exp_name'] = doc['base_name'] + '_' + str(i)
+	doc['exp_name'] = doc['base_experiment'] + '_' + str(i)
 	with open(file_name, 'w') as f:
 		yaml.dump(doc, f)	
 
