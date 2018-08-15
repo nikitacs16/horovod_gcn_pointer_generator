@@ -9,19 +9,25 @@ folds = int(sys.argv[2])
 parent_path = sys.argv[3]
 
 def run_train(file_name,out_file_name):
-	train_command = 'python run_summarization.py --mode=train --config_file ' + str(file_name) + ' &> out_' + str(out_file_name)
-	os.system(train_command)    
+	train_command = 'python run_summarization.py --mode=train --config_file ' + str(file_name) 
+	with open(out_file_name, "w") as outfile:
+    	subprocess.call(train_command, stdout=outfile)
 	
 def run_eval(file_name,out_file_name):
-	eval_command = 'python -u run_summarization.py --mode=eval --config_file ' + str(file_name) + ' &> out_v1_' + str(out_file_name)
-	os.system('sleep 60; ' + eval_command)
+	eval_command = 'python  run_summarization.py --mode=eval --config_file ' + str(file_name) 
+	eval_command = 'sleep 60; ' + eval_command)
+	with open(out_file_name, "w") as outfile:
+    	subprocess.call(eval_command, stdout=outfile)
 
 def run_test(file_name,out_file_name):
 	test_command = 'python -u run_summarization.py --mode=decode --config_file '+str(file_name) +  ' &> out_t_'+str(out_file_name)
-	os.system(test_command)
+	with open(out_file_name, "w") as outfile:
+    	subprocess.call(test_command, stdout=outfile)
+
 def run_eval_test(file_name,out_file_name):
 	test_command = 'python -u run_summarization.py --mode=decode --use_val_as_test=True --config_file '+str(file_name) +  ' &> out_v_'+str(out_file_name)
-	os.system(test_command)
+	with open(out_file_name, "w") as outfile:
+    	subprocess.call(test_command, stdout=outfile)	
 
 
 for i in range(1,folds+1):
