@@ -58,7 +58,12 @@ tf.app.flags.DEFINE_boolean('single_pass', False, 'For decode mode only. If True
 tf.app.flags.DEFINE_boolean('use_stop_after', config['use_stop_after'], 'should you train for a fixed number of epochs?')
 tf.app.flags.DEFINE_integer('stop_steps', config['stop_steps'], 'iterations after which you should stop trainig')
 
+#save after flags
+tf.app.flags.DEFINE_boolean('use_save_at', config['use_save_at'], 'should you save at every epoch?')
+tf.app.flags.DEFINE_integer('save_steps', config['save_steps'], 'iterations after which you should stop trainig')
+
 tf.app.flags.DEFINE_string('use_glove',config['use_glove'],'use glove or not')
+
 # Where to save output
 tf.app.flags.DEFINE_string('log_root', config['log_root'], 'Root directory for all logging.')
 tf.app.flags.DEFINE_string('exp_name', config['exp_name'], 'Name for experiment. Logs will be saved in a directory with this name, under log_root.')
@@ -153,7 +158,7 @@ def restore_best_model():
   sess.run(tf.initialize_all_variables())
 
   # Restore the best model from eval dir
-  saver = tf.train.Saver([v for v in tf.all_variables() if "Adagrad" not in v.name])
+  saver = tf.train.Saver([v for v in tf.all_variables() if "Adagrad" not in v.name and "Adam" not in v.name])
   print ("Restoring all non-adagrad variables from best model in eval dir...")
   curr_ckpt = util.load_ckpt(saver, sess, "eval")
   print ("Restored %s." % curr_ckpt)
@@ -178,7 +183,7 @@ def convert_to_coverage_model():
   sess.run(tf.global_variables_initializer())
 
   # load all non-coverage weights from checkpoint
-  saver = tf.train.Saver([v for v in tf.global_variables() if "coverage" not in v.name and "Adagrad" not in v.name])
+  saver = tf.train.Saver([v for v in tf.global_variables() if "coverage" not in v.name and "Adagrad" not in v.name and "Adam" not in v.name])
   print ("restoring non-coverage variables...")
   curr_ckpt = util.load_ckpt(saver, sess)
   print ("restored.")
@@ -233,7 +238,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
       sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
     while True: # repeats until interrupted
       batch = batcher.next_batch()
-      batch_count = batch_count + 1
+      train_step = results['global_step'] # we need this to update our running average loss
       
           
       tf.logging.info('running training step...')
@@ -241,7 +246,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
       results = model.run_train_step(sess, batch)
       t1=time.time()
       tf.logging.info('seconds for training step: %.3f', t1-t0)
-      tf.logging.info('Batch count: %d',batch_count)
+      tf.logging.info('Batch count: %d',train_step)
       loss = results['loss']
       tf.logging.info('loss: %f', loss) # print the loss to screen
 
@@ -261,9 +266,18 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
         summary_writer.flush()
 
       if FLAGS.use_stop_after:
-        if batch_count > FLAGS.stop_steps:
+        if train_step >= FLAGS.stop_steps:
           tf.logging.info('Stopping as epoch limit completed')
           exit()
+
+      if FLAGS.use_save_at:
+        if train_step%FLAGS.save_steps==0:
+          file_name = 'epoch_' + str(train_step/FLAGS.save_steps)
+          new_saver = tf.train.Saver(sess,os.path.join(FLAGS.log_root,"train",file_name))
+
+
+
+
 
 
 def run_eval(model, batcher, vocab):
@@ -315,7 +329,7 @@ def run_eval(model, batcher, vocab):
       summary_writer.flush()
 
     if FLAGS.use_stop_after:
-        if FLAGS.stop_steps - train_step < 500:
+        if train_step >= FLAGS.stop_steps:
           tf.logging.info('Stopping as epoch limit completed')
           exit()
 

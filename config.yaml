@@ -37,7 +37,11 @@ gpu_device_id: '0'
 
 #stop_after
 use_stop_after: True
-stop_steps: 7000
+stop_steps: 34328
+
+#save_at
+use_save_at: True
+save_steps: 687
 
 #word gcn
 no_lstm_encoder: False #Removes LSTM layer from the seq2seq model. word_gcn flag should be true.
