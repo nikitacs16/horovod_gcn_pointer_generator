@@ -1,4 +1,0 @@
-model_checkpoint_path: "epoch_233"
-all_model_checkpoint_paths: "/home/ubuntu/gttp_logs/q_test/train/model.ckpt-2319"
-all_model_checkpoint_paths: "epoch_232"
-all_model_checkpoint_paths: "epoch_233"

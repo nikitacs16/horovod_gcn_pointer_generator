@@ -1,9 +1,9 @@
 #data_paths
-train_path: '/home/ubuntu/original_qbas/1/train*.pkl'
-dev_path: '/home/ubuntu/original_qbas/1/val*.pkl'
-test_path: '/home/ubuntu/original_qbas/1/test*.pkl'
-vocab_path: '/home/ubuntu/original_qbas/1/vocab'
-glove_path: '/home/ubuntu/glove/glove.6B.100d.txt'
+train_path: '/home/ubuntu/only_query/train*.pkl'
+dev_path: '/home/ubuntu/only_query/val*.pkl'
+test_path: '/home/ubuntu/only_query/test*.pkl'
+vocab_path: '/home/ubuntu/only_query/vocab'
+glove_path: '/home/ubuntu/glove/glove.840B.300d.txt'
 
 #glove options
 use_glove: True
@@ -14,7 +14,7 @@ base_experiment: ''
 exp_name: 'q_test_3' #Name for experiment. Logs will be saved in a directory with this name, under log_root
 #Hyperparameters
 hidden_dim: 256 #dimension of RNN hidden states
-emb_dim: 100 #dimension of word embeddings
+emb_dim: 300 #dimension of word embeddings
 batch_size: 16  #minibatch size
 max_enc_steps: 200 #max timesteps of encoder (max source text tokens)
 max_query_steps: 25 #max timesteps of query encoder (max source query tokens)
@@ -32,7 +32,7 @@ max_grad_norm: 2.0 #for gradient clipping
 #other_options
 pointer_gen: True #If True, use pointer-generator model. If False, use baseline model.
 query_encoder: True
-max_to_keep: 3
+max_to_keep: 50
 gpu_device_id: '0'
 
 #stop_after
@@ -41,7 +41,7 @@ stop_steps: 34328
 
 #save_at
 use_save_at: True
-save_steps: 10
+save_steps: 50
 
 #word gcn
 no_lstm_encoder: False #Removes LSTM layer from the seq2seq model. word_gcn flag should be true.
@@ -59,4 +59,4 @@ query_gcn_dropout: 1.0 #dropout keep probability for the gcn layer
 query_gcn_layers: 1 #Layers at gcn
 query_gcn_dim: 256 #output of gcn query_
 
-hidden_state_representation: ''#lstm_gcn, gcn_lstm, concat_lstm_gcn, concat_gcn_lstm, gcn_w_lstm
+#hidden_state_representation: ''#lstm_gcn, gcn_lstm, concat_lstm_gcn, concat_gcn_lstm, gcn_w_lstm
