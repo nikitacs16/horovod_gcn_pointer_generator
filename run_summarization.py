@@ -208,7 +208,7 @@ def setup_training(model, batcher):
     convert_to_coverage_model()
   if FLAGS.restore_best_model:
     restore_best_model()
-  saver = tf.train.Saver(max_to_keep=3) # keep 3 checkpoints at a time
+  saver = tf.train.Saver(max_to_keep=50) # keep 3 checkpoints at a time
 
   sv = tf.train.Supervisor(logdir=train_dir,
                      is_chief=True,
@@ -232,6 +232,10 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
   """Repeatedly runs training iterations, logging loss to screen and writing summaries"""
   tf.logging.info("starting run_training")
   batch_count = 0
+  #new_saver = tf.train.Saver()
+  if FLAGS.use_save_at:
+    epoch_dir = os.path.join(FLAGS.log_root, "epoch")
+    if not os.path.exists(epoch_dir): os.makedirs(epoch_dir)
   with sess_context_manager as sess:
     if FLAGS.debug: # start the tensorflow debugger
       sess = tf_debug.LocalCLIDebugWrapperSession(sess)
@@ -271,7 +275,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
 
       if FLAGS.use_save_at:
         if train_step%FLAGS.save_steps==0:
-          file_name = 'epoch_' + str(train_step/FLAGS.save_steps)
+          file_name = os.path.join(FLAGS.log_root,'epoch','epoch_' + str(train_step/FLAGS.save_steps))
          
           saver.save(sess,file_name)
 

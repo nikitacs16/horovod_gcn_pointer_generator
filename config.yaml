@@ -1,8 +1,8 @@
 #data_paths
-train_path: '/home/ubuntu/preksha_abs_summ/train*.pkl'
-dev_path: '/home/ubuntu/preksha_abs_summ/val*.pkl'
-test_path: '/home/ubuntu/preksha_abs_summ/test*.pkl'
-vocab_path: '/home/ubuntu/preksha_abs_summ/finished_files/vocab'
+train_path: '/home/ubuntu/original_qbas/1/train*.pkl'
+dev_path: '/home/ubuntu/original_qbas/1/val*.pkl'
+test_path: '/home/ubuntu/original_qbas/1/test*.pkl'
+vocab_path: '/home/ubuntu/original_qbas/1/vocab'
 glove_path: '/home/ubuntu/glove/glove.6B.100d.txt'
 
 #glove options
@@ -11,7 +11,7 @@ optimizer: adam
 #output paths
 log_root: '/home/ubuntu/gttp_logs' #Root directory for all logging.
 base_experiment: ''
-exp_name: 'q_test' #Name for experiment. Logs will be saved in a directory with this name, under log_root
+exp_name: 'q_test_3' #Name for experiment. Logs will be saved in a directory with this name, under log_root
 #Hyperparameters
 hidden_dim: 256 #dimension of RNN hidden states
 emb_dim: 100 #dimension of word embeddings
@@ -41,7 +41,7 @@ stop_steps: 34328
 
 #save_at
 use_save_at: True
-save_steps: 687
+save_steps: 10
 
 #word gcn
 no_lstm_encoder: False #Removes LSTM layer from the seq2seq model. word_gcn flag should be true.
