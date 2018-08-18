@@ -17,7 +17,7 @@ for lr in learning_rate:
 			config['save_steps'] = step_count[k]
 			config['adam_lr'] = lr
 			count = count + 1
-			file_name = os.path.join(path,'config_' + str(count))
+			file_name = os.path.join(path,'config_' + str(count) + '.yaml')
 			yaml.dump(config,open(file_name,'w'))
 
 

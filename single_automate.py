@@ -47,6 +47,6 @@ res1 = pool.apply_async(run_test,[file_name,doc['exp_name']])
 res2 = pool.apply_async(run_eval_test,[file_name,doc['exp_name']])
 pool.close()
 pool.join()
-print(i)
+#print(i)
 	
 print('Completed!')

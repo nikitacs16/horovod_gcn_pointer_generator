@@ -3,7 +3,7 @@ train_path: '/home/ubuntu/only_query/train*.pkl'
 dev_path: '/home/ubuntu/only_query/val*.pkl'
 test_path: '/home/ubuntu/only_query/test*.pkl'
 vocab_path: '/home/ubuntu/only_query/vocab'
-glove_path: '/home/ubuntu/glove/glove.840B.300d.txt'
+glove_path: '/home/ubuntu/glove.840B.300d.txt'
 
 #glove options
 use_glove: True
