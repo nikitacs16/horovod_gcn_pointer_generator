@@ -490,11 +490,15 @@ class SummarizationModel(object):
 
             # Add embedding matrix (shared by the encoder and decoder inputs)
             with tf.variable_scope('embedding'):
-                if self.use_glove:
-		    tf.logging.info('glove')
-                    embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32))
+                if hps.mode == "train":
+                    if self.use_glove:
+                      self.vocab.set_glove_embedding(hps.glove_path,hps.emb_dim)
+                      embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable)
+                    else:
+                      embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init,trainable=hps.emb_trainable)
                 else:
-                    embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init)
+                    embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32)
+
                 if hps.mode == "train": self._add_emb_vis(embedding)  # add to tensorboard
                 emb_enc_inputs = tf.nn.embedding_lookup(embedding,
                                                         self._enc_batch)  # tensor with shape (batch_size, max_enc_steps, emb_size)
