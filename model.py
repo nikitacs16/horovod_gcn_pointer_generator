@@ -98,6 +98,10 @@ class SummarizationModel(object):
         self._vocab = vocab
         self.regularizer = None #called globally. L2 Norm is used.
         self.use_glove = hps.use_glove
+        if hps.mode=='train':
+            if hps.use_glove:
+                self._vocab.set_glove_embedding(hps.glove_path,hps.emb_dim)
+                     
 
         
 
@@ -493,7 +497,6 @@ class SummarizationModel(object):
                 if hps.mode == "train":
                     if self.use_glove:
   
-                      self._vocab.set_glove_embedding(hps.glove_path,hps.emb_dim)
                       tf.logging.info('glove')
                       embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable)
                     else:
