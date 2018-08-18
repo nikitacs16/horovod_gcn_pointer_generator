@@ -117,7 +117,7 @@ class Vocab(object):
         """ Creates glove embedding_matrix from file path"""
         emb = np.random.rand(self._count,embedding_dim)
         with open(fpath) as f: #python 3.x support 
-            for line in f:
+            for k,line in enumerate(f):
                 fields = line.split()
                 if len(fields) - 1 != embedding_dim:
                     # Sometimes there are funny unicode parsing problems that lead to different
@@ -136,6 +136,8 @@ class Vocab(object):
                 if word in self._word_to_id:
                     vector = np.asarray(fields[1:], dtype='float32')
                     emb[self._word_to_id[word]] = vector
+#		if k%1000 == 0:
+#		   tf.logging.info('glove : %d',k)
         self.glove_emb = emb
     
 
