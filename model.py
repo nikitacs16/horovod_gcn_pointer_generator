@@ -496,11 +496,10 @@ class SummarizationModel(object):
             with tf.variable_scope('embedding'):
                 if hps.mode == "train":
                     if self.use_glove:
-  
                       tf.logging.info('glove')
-                      embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable)
+                      embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32))
                     else:
-                      embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init,trainable=hps.emb_trainable)
+                      embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init)
                 else:
                     embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32)
 
