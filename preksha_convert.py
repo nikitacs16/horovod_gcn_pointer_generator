@@ -6,13 +6,13 @@ base_lstm = [256,128]
 stop_count = [17165,8583]
 step_count = [345,172]
 count = 0
-path = '/home/nikita/data/preksha_new/only_query_yaml'
+path = '/media/nikita/Q/Sentence/only_query_yaml'
 config = yaml.load(open('config.yaml'))
 for lr in learning_rate:
 	for bl in base_lstm:
 		for k,b in enumerate(batch_size):
 			config['exp_name'] = 'no_gcn_lr_' + str(lr)+ '_batch_' + str(b) + '_lstm_' + str(bl)
-			config['stop_steps'] = step_count[k]
+			config['stop_steps'] = stop_count[k]
 			config['batch_size'] = b
 			config['save_steps'] = step_count[k]
 			config['adam_lr'] = lr
