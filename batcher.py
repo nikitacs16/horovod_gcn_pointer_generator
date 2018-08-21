@@ -26,7 +26,7 @@ import data
 import pickle
 import threading
 import random
-
+import ast
 
 class Example(object):
 	"""Class representing a train/val/test example for text summarization."""
@@ -485,12 +485,13 @@ class Batcher(object):
 				try:
 					article_text = e.features.feature['article'].bytes_list.value[0] # document text
 					abstract_text = e.features.feature['abstract'].bytes_list.value[0] # response text
-					if self._hps.use_query:
+					if self._hps.query_encoder:
 						query_text = e.features.feature['query'].bytes_list.value[0] # context text
-					is self._hps.word_gcn:
-						word_edge_list = e.features.feature['word_edge_list'].bytes_list.value[0]
+					if self._hps.word_gcn:
+						word_edge_list =ast.literal_eval(e.features.feature['word_edge_list'].bytes_list.value[0])
+						#tf.logging.info((word_edge_list[0]))
 					if self._hps.query_gcn:
-						query_edge_list = e.features.feature['query_edge_list'].bytes_list.value[0]
+						query_edge_list = ast.literal_eval(e.features.feature['query_edge_list'].bytes_list.value[0])
 
 				except ValueError:
 					tf.logging.error('Failed to get article or abstract from example')
