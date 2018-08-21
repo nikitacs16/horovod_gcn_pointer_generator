@@ -43,6 +43,7 @@ config = yaml.load(open(FLAGS.config_file,'r'))
 # GPU device 
 tf.app.flags.DEFINE_string('gpu_device_id','0','allocate gpu to which device')
 os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
+tf.app.flags.DEFINE_boolean('tf_example_format',config['tf_example_format'],'Is data in pickle or tf example format')
 
 # Where to find data
 tf.app.flags.DEFINE_string('data_path',config['train_path'], 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
@@ -405,11 +406,14 @@ def main(unused_argv):
   if FLAGS.word_gcn:
     hps_dict['num_word_dependency_labels'] = 45 #something from meta data here . Gives unique dependency labels.
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
-  data_ = get_data(FLAGS.data_path)
-  tf.logging.info(tf.flags.FLAGS.__flags)	
-  batcher = Batcher(data_, vocab, hps, single_pass=FLAGS.single_pass)
+  if FLAGS.tf_example_format:
+    batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
+  else:
+    data_ = get_data(FLAGS.data_path)
+    batcher = Batcher(data_, vocab, hps, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
 
-
+  tf.logging.info(tf.flags.FLAGS.__flags)  
+     
   tf.set_random_seed(111) # a seed value for randomness
 
   if hps.mode == 'train':

@@ -143,7 +143,7 @@ class Vocab(object):
 
 
 
-def example_generator(data_path, single_pass, word_gcn=True):
+def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=True):
     """Generates tf.Examples from data files.
 
     Binary data format: <length><blob>. <length> represents the byte size
@@ -160,64 +160,45 @@ def example_generator(data_path, single_pass, word_gcn=True):
     Deserialized tf.Example.
   """
     # tf.logging.info(data_path)
-
-    while True:
-        if single_pass:
-            for data_ in data_path:
-                for i in data_:
-                    yield i
-        else:
-            random.shuffle(data_path)
-            for data_ in data_path:
-                new_data = data_
-                x = np.arange(len(new_data))
-                np.random.shuffle(x)
-                # random.shuffle(new_data)
-                for i in x:
-                    yield new_data[i]
-        if single_pass:
-            break
-        '''
-    if len(filelist) == 1:
-      data_ = pickle.load(open(filelist[0],'rb'))
-      x = np.arange(len(data_))
-      if not single_pass:
-        np.random.shuffle(x)
-        for i in x:
-          yield data_[i]
+    if data_as_tf_example:
+    	while True:
+		filelist = glob.glob(data_path) # get the list of datafiles
+		assert filelist, ('Error: Empty filelist at %s' % data_path) # check filelist isn't empty
+		if single_pass:
+			filelist = sorted(filelist)
+		else:
+			random.shuffle(filelist)
+		for f in filelist:
+			reader = open(f, 'rb')
+			while True:
+				len_bytes = reader.read(8)
+				if not len_bytes: break # finished reading this file
+				str_len = struct.unpack('q', len_bytes)[0]
+				example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
+				yield example_pb2.Example.FromString(example_str)
+		if single_pass:
+			print "example_generator completed reading all datafiles. No more data."
+			break
+    	
     else:
-      if single_pass:
-        filelist = sorted(filelist)
-      else:
-        random.shuffle(filelist)
-
-      for f in filelist:
-	tf.logging.info(f)
-	try:
-          data_ = pickle.load(open(f,'rb'))
-	  tf.logging.info('tried')	
-	except Exception as e:
-	  tf.logging.info('caught')	
-	  tf.logging.info(e)	
-        for i in data_:
-          yield i
-    
-    if single_pass:
-      print ("example_generator completed reading all datafiles. No more data.")
-      break
-    for f in filelist:
-      reader = open(f, 'rb')
-      while True:
-        len_bytes = reader.read(8)
-        if not len_bytes: break # finished reading this file
-        str_len = struct.unpack('q', len_bytes)[0]
-        example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
-        yield example_pb2.Example.FromString(example_str)
-    if single_pass:
-      print ("example_generator completed reading all datafiles. No more data.")
-      break
-    '''
-
+    	#pickle format
+	    while True:
+	        if single_pass:
+	            for data_ in data_path:
+	                for i in data_:
+	                    yield i
+	        else:
+	            random.shuffle(data_path)
+	            for data_ in data_path:
+	                new_data = data_
+	                x = np.arange(len(new_data))
+	                np.random.shuffle(x)
+	                # random.shuffle(new_data)
+	                for i in x:
+	                    yield new_data[i]
+	        if single_pass:
+	            break
+     
 
 def article2ids(article_words, vocab):
     """Map the article words to their ids. Also return a list of OOVs in the article.

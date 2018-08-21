@@ -304,7 +304,7 @@ class Batcher(object):
 
 	BATCH_QUEUE_MAX = 100  # max number of batches the batch_queue can hold
 
-	def __init__(self, data_, vocab, hps, single_pass):
+	def __init__(self, data_, vocab, hps, single_pass,data_format):
 		"""Initialize the batcher. Start threads that process the data into batches.
 
 		Args:
@@ -317,6 +317,7 @@ class Batcher(object):
 		self._vocab = vocab
 		self._hps = hps
 		self._single_pass = single_pass
+		self._data_as_tf_example = data_format
 		# Initialize a queue of Batches waiting to be used, and a queue of Examples waiting to be batched
 		self._batch_queue = Queue.Queue(self.BATCH_QUEUE_MAX)
 		self._example_queue = Queue.Queue(self.BATCH_QUEUE_MAX * self._hps.batch_size)
@@ -375,46 +376,54 @@ class Batcher(object):
 
 	def fill_example_queue(self):
 		"""Reads data from file and processes into Examples which are then placed into the example queue."""
-		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass))
+		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass,self._data_as_tf_example))
 		count = 0
 		query = None
 		word_edge_list = None
 		query_edge_list = None
-		while True:
-			try:
-				curr_data = input_gen.next()
-				count = count + 1
-				article = curr_data['article']
-				# if article[0]=='\"':
-				#	article = article[1:]
+		if self._data_as_tf_example:
+			while True:
+				try:
+					 article, abstract, word_edge_list, query, query_edge_list= input_gen.next() # read the next example from file. article and abstract are both strings.
+				except StopIteration: # if there are no more examples:
+					tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
+					if self._single_pass:
+						tf.logging.info("single_pass mode is on, so we've finished reading dataset. This thread is stopping.")
+						self._finished_reading = True
+						break
+					else:
+						raise Exception("single_pass mode is off but the example generator is out of data; error.")
+				abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
+				example = Example(article, abstract_sentences, self._vocab, self._hps, word_edge_list=word_edge_list, query=query, query_edge_list=query_edge_list)
+				self._example_queue.put(example)
+		else:
 
-				abstract = curr_data['abstract'].strip()
-				if self._hps.word_gcn:
-					word_edge_list = curr_data['word_edge_list']
-				if self._hps.query_encoder:
-					query = curr_data['query']
-				if self._hps.query_gcn:
-					query_edge_list = curr_data['query_edge_list']
+			while True:
+				try:
+					curr_data = input_gen.next()
+					count = count + 1
+					article = curr_data['article']
+					abstract = curr_data['abstract'].strip()
+					if self._hps.word_gcn:
+						word_edge_list = curr_data['word_edge_list']
+					if self._hps.query_encoder:
+						query = curr_data['query']
+					if self._hps.query_gcn:
+						query_edge_list = curr_data['query_edge_list']
+				except Exception as e:  # if there are no more examples:
+					tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
+					if self._single_pass:
+						tf.logging.info(
+							"single_pass mode is on, so we've finished reading dataset. This thread is stopping.")
+						self._finished_reading = True
+						break
+					else:
+						tf.logging.info(e)
+						raise Exception("single_pass mode is off but the example generator is out of data; error.")
 
-			#				tf.logging.info("%d\t%s\t%s\n"%(count,str(threading.currentThread().getName()),article[0:40]))
-			except Exception as e:  # if there are no more examples:
-				tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
-				if self._single_pass:
-					tf.logging.info(
-						"single_pass mode is on, so we've finished reading dataset. This thread is stopping.")
-					self._finished_reading = True
-					break
-				else:
-					tf.logging.info(e)
-					raise Exception("single_pass mode is off but the example generator is out of data; error.")
-
-			abstract_sentences = [sent.strip() for sent in data.abstract2sents(
-				abstract)]  # Use the <s> and </s> tags in abstract to get a list of sentences.
-			
-
-			example = Example(article, abstract_sentences, self._vocab, self._hps, word_edge_list=word_edge_list, query=query, query_edge_list=query_edge_list)
-			
-			self._example_queue.put(example)  # place the Example in the example queue.
+				abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)]  # Use the <s> and </s> tags in abstract to get a list of sentences.
+				example = Example(article, abstract_sentences, self._vocab, self._hps, word_edge_list=word_edge_list, query=query, query_edge_list=query_edge_list)
+				self._example_queue.put(example)  # place the Example in the example queue.
 
 	def fill_batch_queue(self):
 		"""Takes Examples out of example queue, sorts them by encoder sequence length, processes into Batches and places them in the batch queue.
@@ -467,25 +476,34 @@ class Batcher(object):
 
 		Args:
 			example_generator: a generator of tf.Examples from file. See data.example_generator"""
-		while True:
-			e = example_generator.next()
-			yield e
-			'''
-			if self._hps.word_gcn:
-				article_text, abstract_text, word_edge_list  = example_generator.next() # e is a tf.Example
-				yield article_text, abstract_text, word_edge_list
-			else:
-				article_text, abstract_text = example_generator.next()
-				yield article_text, abstract_text
+		if self._data_as_tf_example:
+			query_text = None
+			query_edge_list = None
+			word_edge_list = None
+			while True:
+				e = example_generator.next() # e is a tf.Example
+				try:
+					article_text = e.features.feature['article'].bytes_list.value[0] # document text
+					abstract_text = e.features.feature['abstract'].bytes_list.value[0] # response text
+					if self._hps.use_query:
+						query_text = e.features.feature['query'].bytes_list.value[0] # context text
+					is self._hps.word_gcn:
+						word_edge_list = e.features.feature['word_edge_list'].bytes_list.value[0]
+					if self._hps.query_gcn:
+						query_edge_list = e.features.feature['query_edge_list'].bytes_list.value[0]
+
+				except ValueError:
+					tf.logging.error('Failed to get article or abstract from example')
+					continue
+				if len(article_text)==0: # See https://github.com/abisee/pointer-generator/issues/1
+					tf.logging.warning('Found an example with empty article text. Skipping it.')
+				else:
+					yield (article_text, abstract_text, word_edge_list, query_text, query_edge_list)
 			
-			try:
-				article_text = e.features.feature['article'].bytes_list.value[0] # the article text was saved under the key 'article' in the data files
-				abstract_text = e.features.feature['abstract'].bytes_list.value[0] # the abstract text was saved under the key 'abstract' in the data files
-			except ValueError:
-				tf.logging.error('Failed to get article or abstract from example')
-				continue
-			if len(article_text)==0: # See https://github.com/abisee/pointer-generator/issues/1
-				tf.logging.warning('Found an example with empty article text. Skipping it.')
-			else:
-				yield (article_text, abstract_text)
-			'''
+		else:
+
+			while True:
+				e = example_generator.next()
+				yield e
+			
+				
