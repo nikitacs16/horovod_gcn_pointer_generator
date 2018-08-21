@@ -147,7 +147,7 @@ class SummarizationModel(object):
             self._query_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout, shape=(), name='query_dropout')
             self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
             self._query_neighbour_count = tf.placeholder(tf.float32, [hps.batch_size, None], name='query_neighbour_count')
-
+	tf.logging.info('Placeholders done')
         
 
 

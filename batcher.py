@@ -64,7 +64,7 @@ class Example(object):
 			query_words = query.split()
 			#query_words = word_features.get_tokens(query)
 			if len(query_words) > hps.max_query_steps:
-				#tf.logging.info('Before_query: %d Hps: %d'%(len(query_words),hps.max_query_steps))
+				tf.logging.info('Before_query: %d Hps: %d'%(len(query_words),hps.max_query_steps))
 				query_words = query_words[len(query_words)- hps.max_query_steps:]
 				#tf.logging.info('Big_query : %d'%(len(query_words)))
 				query = " ".join(q for q in query_words)
