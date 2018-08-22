@@ -162,23 +162,23 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
     # tf.logging.info(data_path)
     if data_as_tf_example:
     	while True:
-		filelist = glob.glob(data_path) # get the list of datafiles
-		assert filelist, ('Error: Empty filelist at %s' % data_path) # check filelist isn't empty
-		if single_pass:
-			filelist = sorted(filelist)
-		else:
-			random.shuffle(filelist)
-		for f in filelist:
-			reader = open(f, 'rb')
-			while True:
-				len_bytes = reader.read(8)
-				if not len_bytes: break # finished reading this file
-				str_len = struct.unpack('q', len_bytes)[0]
-				example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
-				yield example_pb2.Example.FromString(example_str)
-		if single_pass:
-			print "example_generator completed reading all datafiles. No more data."
-			break
+			filelist = glob.glob(data_path) # get the list of datafiles
+			assert filelist, ('Error: Empty filelist at %s' % data_path) # check filelist isn't empty
+			if single_pass:
+				filelist = sorted(filelist)
+			else:
+				random.shuffle(filelist)
+			for f in filelist:
+				reader = open(f, 'rb')
+				while True:
+					len_bytes = reader.read(8)
+					if not len_bytes: break # finished reading this file
+					str_len = struct.unpack('q', len_bytes)[0]
+					example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
+					yield example_pb2.Example.FromString(example_str)
+			if single_pass:
+				print "example_generator completed reading all datafiles. No more data."
+				break
     	
     else:
     	#pickle format
