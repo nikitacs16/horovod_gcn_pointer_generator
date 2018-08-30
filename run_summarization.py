@@ -44,6 +44,8 @@ config = yaml.load(open(FLAGS.config_file,'r'))
 tf.app.flags.DEFINE_string('gpu_device_id',config['gpu_device_id'],'allocate gpu to which device')
 os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
 tf.app.flags.DEFINE_boolean('tf_example_format',config['tf_example_format'],'Is data in pickle or tf example format')
+tf.app.flags.DEFINE_boolean('test_by_epoch',False, 'should you test per epoch')
+tf.app.flags.DEFINE_integer('epoch_num',0,'which epoch to test')
 
 # Where to find data
 tf.app.flags.DEFINE_string('data_path',config['train_path'], 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
@@ -92,7 +94,7 @@ tf.app.flags.DEFINE_float('max_grad_norm', config['max_grad_norm'], 'for gradien
 tf.app.flags.DEFINE_boolean('pointer_gen', config['pointer_gen'], 'If True, use pointer-generator model. If False, use baseline model.')
 
 #GCN model
-tf.app.flags.DEFINE_boolean('no_lstm_encoder', config['no_lstm_encoder'], 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
+tf.app.flags.DEFINE_boolean('no_lstm_encoder', False, 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('word_gcn', config['word_gcn'], 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('word_gcn_gating', config['word_gcn_gating'], 'If True, use gating at word level')
 tf.app.flags.DEFINE_float('word_gcn_dropout', config['word_gcn_dropout'], 'dropout keep probability for the gcn layer')
@@ -103,7 +105,7 @@ tf.app.flags.DEFINE_integer('word_gcn_dim', config['word_gcn_dim'], 'output of g
 tf.app.flags.DEFINE_boolean('query_encoder',config['query_encoder'],'Keep true for the query based problems')
 #tf.app.flags.DEFINE_boolean('no_lstm_query_encoder', False, 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
 
-tf.app.flags.DEFINE_boolean('no_lstm_query_encoder', config['no_lstm_query_encoder'], 'Removes LSTM layer for query from the seq2seq model. query_gcn flag should be true.')
+tf.app.flags.DEFINE_boolean('no_lstm_query_encoder',False, 'Removes LSTM layer for query from the seq2seq model. query_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('query_gcn', config['query_gcn'], 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('query_gcn_gating', config['query_gcn_gating'], 'If True, use gating at query level')
 tf.app.flags.DEFINE_float('query_gcn_dropout', config['query_gcn_dropout'], 'dropout keep probability for the gcn layer')
@@ -210,14 +212,14 @@ def setup_training(model, batcher):
     convert_to_coverage_model()
   if FLAGS.restore_best_model:
     restore_best_model()
-  saver = tf.train.Saver(max_to_keep=7) # keep 3 checkpoints at a time
+  saver = tf.train.Saver(max_to_keep=None) # keep 3 checkpoints at a time
 
   sv = tf.train.Supervisor(logdir=train_dir,
                      is_chief=True,
                      saver=saver,
                      summary_op=None,
                      save_summaries_secs=60, # save summaries for tensorboard every 60 secs
-                     save_model_secs=60, # checkpoint every 60 secs
+                     save_model_secs=0,                    
                      global_step=model.global_step)
   summary_writer = sv.summary_writer
   tf.logging.info("Preparing or waiting for session...")
@@ -427,7 +429,10 @@ def main(unused_argv):
     decode_model_hps = hps  # This will be the hyperparameters for the decoder model
     decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
     model = SummarizationModel(decode_model_hps, vocab)
-    decoder = BeamSearchDecoder(model, batcher, vocab)
+    if FLAGS.test_by_epoch:
+      decoder = BeamSearchDecoder(model, batcher, vocab, use_epoch=True, epoch_num=FLAGS.epoch_num)
+    else:
+      decoder = BeamSearchDecoder(model, batcher, vocab)
     decoder.decode() # decode indefinitely (unless single_pass=True, in which case deocde the dataset exactly once)
   elif hps.mode == 'restore_best_model':
     model = SummarizationModel(hps, vocab)
