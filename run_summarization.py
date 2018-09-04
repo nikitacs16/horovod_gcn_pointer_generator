@@ -72,6 +72,8 @@ tf.app.flags.DEFINE_string('use_glove',config['use_glove'],'use glove or not')
 tf.app.flags.DEFINE_string('log_root', config['log_root'], 'Root directory for all logging.')
 tf.app.flags.DEFINE_string('exp_name', config['exp_name'], 'Name for experiment. Logs will be saved in a directory with this name, under log_root.')
 
+
+
 # Hyperparameters
 tf.app.flags.DEFINE_integer('hidden_dim', config['hidden_dim'], 'dimension of RNN hidden states')
 tf.app.flags.DEFINE_integer('emb_dim', config['emb_dim'], 'dimension of word embeddings')
@@ -93,8 +95,17 @@ tf.app.flags.DEFINE_float('max_grad_norm', config['max_grad_norm'], 'for gradien
 # Pointer-generator or baseline model
 tf.app.flags.DEFINE_boolean('pointer_gen', config['pointer_gen'], 'If True, use pointer-generator model. If False, use baseline model.')
 
-#GCN model
+
 tf.app.flags.DEFINE_boolean('no_lstm_encoder', False, 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
+tf.app.flags.DEFINE_boolean('query_encoder',config['query_encoder'],'Keep true for the query based problems')
+tf.app.flags.DEFINE_boolean('no_lstm_query_encoder',False, 'Removes LSTM layer for query from the seq2seq model. query_gcn flag should be true.')
+tf.app.flags.DEFINE_boolean('concat_gcn_lstm',config['concat_gcn_lstm'], 'Should you concat hidden states from lstm and gcn?')
+tf.app.flags.DEFINE_boolean('use_gcn_lstm_parallel',config['use_gcn_lstm_parallel'], 'Should you concat hidden states from lstm and gcn?')
+tf.app.flags.DEFINE_boolean('use_label_information',config['use_label_information'], 'Should you concat hidden states from lstm and gcn?')
+
+
+#GCN model
+
 tf.app.flags.DEFINE_boolean('word_gcn', config['word_gcn'], 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('word_gcn_gating', config['word_gcn_gating'], 'If True, use gating at word level')
 tf.app.flags.DEFINE_float('word_gcn_dropout', config['word_gcn_dropout'], 'dropout keep probability for the gcn layer')
@@ -102,10 +113,8 @@ tf.app.flags.DEFINE_integer('word_gcn_layers', config['word_gcn_layers'], 'Layer
 tf.app.flags.DEFINE_integer('word_gcn_dim', config['word_gcn_dim'], 'output of gcn ')
 
 #Query model addition
-tf.app.flags.DEFINE_boolean('query_encoder',config['query_encoder'],'Keep true for the query based problems')
 #tf.app.flags.DEFINE_boolean('no_lstm_query_encoder', False, 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
 
-tf.app.flags.DEFINE_boolean('no_lstm_query_encoder',False, 'Removes LSTM layer for query from the seq2seq model. query_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('query_gcn', config['query_gcn'], 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('query_gcn_gating', config['query_gcn_gating'], 'If True, use gating at query level')
 tf.app.flags.DEFINE_float('query_gcn_dropout', config['query_gcn_dropout'], 'dropout keep probability for the gcn layer')
@@ -400,13 +409,16 @@ def main(unused_argv):
     raise Exception("The single_pass flag should only be True in decode mode")
 
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
-  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable']
+  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information']
   hps_dict = {}
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list
       hps_dict[key] = val # add it to the dict
-  if FLAGS.word_gcn:
+  if FLAGS.use_label_information:
     hps_dict['num_word_dependency_labels'] = 45 #something from meta data here . Gives unique dependency labels.
+  else:
+    hps_dict['num_word_dependency_labels'] = 1
+    
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
   if FLAGS.tf_example_format:
     batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
