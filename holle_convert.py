@@ -1,12 +1,12 @@
 import os
 import yaml
-batch_size = [16,32,64]
+batch_size = [16,32]
 opt = ['adam','adagrad']
 glove = [True,False]
-stop_count = [520000,260000,130000]
+stop_count = [86720, 43360]
 count = 0
-path = '/home/nikita/Work/cbt_yaml'
-config = yaml.load(open('config _ti_cn.yaml'))
+path = '/home/nikita/Work/holle_yaml'
+config = yaml.load(open('/home/nikita/config _ti_holl.yaml'))
 for o in opt:
 	for g in glove:
 		for k,b in enumerate(batch_size):
@@ -18,5 +18,7 @@ for o in opt:
 			count = count + 1
 			file_name = os.path.join(path,'config_' + str(count) + '.yaml')
 			yaml.dump(config,open(file_name,'w'))
+
+
 
 

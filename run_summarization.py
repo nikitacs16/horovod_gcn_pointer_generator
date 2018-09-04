@@ -53,6 +53,8 @@ tf.app.flags.DEFINE_string('vocab_path', config['vocab_path'], 'Path expression 
 tf.app.flags.DEFINE_string('glove_path',config['glove_path'], 'glpb')
 tf.app.flags.DEFINE_boolean('emb_trainable',config['emb_trainable'],'')
 tf.app.flags.DEFINE_string('use_val_as_test',False,'For automation only')
+tf.app.flags.DEFINE_boolean('use_lstm',config['use_lstm'],'For automation only')
+
 # Important settings
 tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
 tf.app.flags.DEFINE_string('optimizer',config['optimizer'],'must be adam/adagrad')
@@ -96,9 +98,9 @@ tf.app.flags.DEFINE_float('max_grad_norm', config['max_grad_norm'], 'for gradien
 tf.app.flags.DEFINE_boolean('pointer_gen', config['pointer_gen'], 'If True, use pointer-generator model. If False, use baseline model.')
 
 
-tf.app.flags.DEFINE_boolean('no_lstm_encoder', False, 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
+tf.app.flags.DEFINE_boolean('no_lstm_encoder', config['no_lstm_encoder'], 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('query_encoder',config['query_encoder'],'Keep true for the query based problems')
-tf.app.flags.DEFINE_boolean('no_lstm_query_encoder',False, 'Removes LSTM layer for query from the seq2seq model. query_gcn flag should be true.')
+tf.app.flags.DEFINE_boolean('no_lstm_query_encoder',config['no_lstm_query_encoder'], 'Removes LSTM layer for query from the seq2seq model. query_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('concat_gcn_lstm',config['concat_gcn_lstm'], 'Should you concat hidden states from lstm and gcn?')
 tf.app.flags.DEFINE_boolean('use_gcn_lstm_parallel',config['use_gcn_lstm_parallel'], 'Should you concat hidden states from lstm and gcn?')
 tf.app.flags.DEFINE_boolean('use_label_information',config['use_label_information'], 'Should you concat hidden states from lstm and gcn?')
