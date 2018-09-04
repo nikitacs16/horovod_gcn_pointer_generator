@@ -15,7 +15,7 @@ def run_train(file_name,out_file_name):
 	
 def run_eval(file_name,out_file_name):
 	eval_command = 'python  run_summarization.py --mode=eval --config_file ' + str(file_name) +' --gpu_device_id ' + str(gpu_id) 
-	eval_command = 'sleep 5000; ' + eval_command
+	eval_command = 'sleep 300; ' + eval_command
 	os.system(eval_command)
 	#with open(out_file_name, "w") as outfile:
 	#	subprocess.call(eval_command, stdout=outfile)

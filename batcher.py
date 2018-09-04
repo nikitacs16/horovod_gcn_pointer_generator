@@ -52,6 +52,7 @@ class Example(object):
 		self.enc_len = len(article_words)  # store the length after truncation but before padding
 		self.enc_input = [vocab.word2id(w) for w in
 						  article_words]  # list of word ids; OOVs are represented by the id for UNK token
+		#tf.logging.info(self.enc_len)
 
 		# Process the abstract
 		abstract = ' '.join(abstract_sentences)  # string

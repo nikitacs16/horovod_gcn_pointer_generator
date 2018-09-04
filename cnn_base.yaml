@@ -12,7 +12,7 @@ optimizer: adagrad
 #output paths
 log_root: '/home/riseadmin/gttp_logs' #Root directory for all logging.
 base_experiment: 'gcn_cnn'
-exp_name: 'gcn_rnn' #Name for experiment. Logs will be saved in a directory with this name, under log_root
+exp_name: 'gcn_base' #Name for experiment. Logs will be saved in a directory with this name, under log_root
 tf_example_format: True
 #Hyperparameters
 hidden_dim: 128 #dimension of RNN hidden states
@@ -35,7 +35,7 @@ max_grad_norm: 2.0 #for gradient clipping
 pointer_gen: True #If True, use pointer-generator model. If False, use baseline model.
 query_encoder: False #cnn dm
 max_to_keep: 7
-gpu_device_id: '0'
+gpu_device_id: '2'
 
 #stop_after
 use_stop_after: True
@@ -52,7 +52,7 @@ concat_gcn_lstm: False
 
 #word gcn
 no_lstm_encoder: False #Removes LSTM layer from the seq2seq model. word_gcn flag should be true.
-word_gcn: True #If True, use pointer-generator with gcn at word level. If False, use other options.
+word_gcn: False #If True, use pointer-generator with gcn at word level. If False, use other options.
 word_gcn_gating: False #If True, use gating at word level
 word_gcn_dropout: 1.0 #dropout keep probability for the gcn layer
 word_gcn_layers: 1 #Layers at gcn

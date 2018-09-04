@@ -147,9 +147,6 @@ class SummarizationModel(object):
 			self._query_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout, shape=(), name='query_dropout')
 			self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
 			self._query_neighbour_count = tf.placeholder(tf.float32, [hps.batch_size, None], name='query_neighbour_count')
-	tf.logging.info('Placeholders done')
-		
-
 
 		# decoder part
 		self._dec_batch = tf.placeholder(tf.int32, [hps.batch_size, hps.max_dec_steps], name='dec_batch')
@@ -424,7 +421,7 @@ class SummarizationModel(object):
 		if hps.use_lstm:
 			cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim, state_is_tuple=True, initializer=self.rand_unif_init)
 		else:
-			cell = tf.contrib.rnn.RNNCell(hps.hidden_dim)
+			cell = tf.contrib.rnn.BasicRNNCell(hps.hidden_dim)
 
 	
 		if hps.no_lstm_encoder:
@@ -438,13 +435,12 @@ class SummarizationModel(object):
 		  outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
 																			 self._enc_states, self._enc_padding_mask,
 																			 cell, use_query=True, query_states=self._query_states, query_padding_mask=self._query_padding_mask,
-																			 initial_state_attention=( hps.mode == "decode"), 
-																			 pointer_gen=hps.pointer_gen, use_coverage=hps.coverage,
+																			 initial_state_attention=( hps.mode == "decode"),use_lstm= hps.use_lstm, pointer_gen=hps.pointer_gen, use_coverage=hps.coverage,
 																			 prev_coverage=prev_coverage)
 		else:
 		  outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
 																			 self._enc_states, self._enc_padding_mask,
-																			 cell, initial_state_attention=( hps.mode == "decode"), 
+																			 cell, initial_state_attention=( hps.mode == "decode"),  use_lstm=hps.use_lstm,
 																			 pointer_gen=hps.pointer_gen, use_coverage=hps.coverage,
 																			 prev_coverage=prev_coverage)
 
@@ -554,11 +550,11 @@ class SummarizationModel(object):
 
 
 			if self._hps.word_gcn:
-				if self._use_gcn_lstm_parallel:
+				if self._hps.use_gcn_lstm_parallel:
 					gcn_in = emb_enc_inputs
 					in_dim = hps.emb_dim
 				else:
-					gcn_in = self.enc_states
+					gcn_in = self._enc_states
 					in_dim = self._hps.hidden_dim*2
 
 				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
@@ -584,7 +580,7 @@ class SummarizationModel(object):
 					q_in_dim = self._hps.hidden_dim * 2
 
 			  	if self._hps.query_gcn:
-			  		if self._use_gcn_lstm_parallel:
+			  		if self._hps.use_gcn_lstm_parallel:
 			  			q_gcn_in = emb_query_inputs
 			  			q_in_dim = hps.emb_dim
 			  		else:
@@ -758,7 +754,10 @@ class SummarizationModel(object):
 			
 		# dec_in_state is LSTMStateTuple shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
 		# Given that the batch is a single example repeated, dec_in_state is identical across the batch so we just take the top row.
-		dec_in_state = tf.contrib.rnn.LSTMStateTuple(dec_in_state.c[0], dec_in_state.h[0])
+		if self._hps.use_lstm:
+			dec_in_state = tf.contrib.rnn.LSTMStateTuple(dec_in_state.c[0], dec_in_state.h[0])
+		else:
+			dec_in_state = dec_in_state[0] #verify ?
 		if use_query:
 			return enc_states, dec_in_state, query_states
 		else:
@@ -789,11 +788,17 @@ class SummarizationModel(object):
 		beam_size = len(dec_init_states)
 
 		# Turn dec_init_states (a list of LSTMStateTuples) into a single LSTMStateTuple for the batch
-		cells = [np.expand_dims(state.c, axis=0) for state in dec_init_states]
-		hiddens = [np.expand_dims(state.h, axis=0) for state in dec_init_states]
-		new_c = np.concatenate(cells, axis=0)  # shape [batch_size,hidden_dim]
-		new_h = np.concatenate(hiddens, axis=0)  # shape [batch_size,hidden_dim]
-		new_dec_in_state = tf.contrib.rnn.LSTMStateTuple(new_c, new_h)
+		if self._hps.use_lstm:
+			cells = [np.expand_dims(state.c, axis=0) for state in dec_init_states]
+			hiddens = [np.expand_dims(state.h, axis=0) for state in dec_init_states]
+			new_c = np.concatenate(cells, axis=0)  # shape [batch_size,hidden_dim]
+			new_h = np.concatenate(hiddens, axis=0)  # shape [batch_size,hidden_dim]
+			new_dec_in_state = tf.contrib.rnn.LSTMStateTuple(new_c, new_h)
+		else:
+			hiddens = [np.expand_dims(state, axis = 0) for state in dec_init_states]
+			new_h = np.concatenate(hiddens, axis=0)
+			new_dec_in_state = new_h
+		
 
 		feed = {
 			self._enc_states: enc_states,
@@ -831,8 +836,11 @@ class SummarizationModel(object):
 		results = sess.run(to_return, feed_dict=feed)  # run the decoder step
 
 		# Convert results['states'] (a single LSTMStateTuple) into a list of LSTMStateTuple -- one for each hypothesis
-		new_states = [tf.contrib.rnn.LSTMStateTuple(results['states'].c[i, :], results['states'].h[i, :]) for i in
+		if self._hps.use_lstm:
+			new_states = [tf.contrib.rnn.LSTMStateTuple(results['states'].c[i, :], results['states'].h[i, :]) for i in
 					  xrange(beam_size)]
+		else:
+			new_states = [results['states'][i,:] for i in xrange(beam_size)]
 
 		# Convert singleton list containing a tensor to a list of k arrays
 		assert len(results['attn_dists']) == 1

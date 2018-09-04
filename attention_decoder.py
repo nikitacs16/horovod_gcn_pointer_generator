@@ -26,7 +26,7 @@ from tensorflow.python.ops import math_ops
 # In the future, it would make more sense to write variants on the attention mechanism using the new seq2seq library for tensorflow 1.0: https://www.tensorflow.org/api_guides/python/contrib.seq2seq#Attention
 
 
-def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding_mask, cell, use_query=False,query_states=None, query_padding_mask=None, initial_state_attention=False, pointer_gen=True, use_coverage=False, prev_coverage=None):
+def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding_mask, cell, use_query=False,query_states=None, query_padding_mask=None, use_lstm=True,initial_state_attention=False, pointer_gen=True, use_coverage=False, prev_coverage=None):
   """
   Args:
     decoder_inputs: A list of 2D Tensors [batch_size x input_size].
@@ -209,7 +209,10 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
       # Calculate p_gen
       if pointer_gen:
         with tf.variable_scope('calculate_pgen'):
-          p_gen = linear([context_vector, state.c, state.h, x], 1, True) # Tensor shape (batch_size, 1)
+          if use_lstm:
+          	p_gen = linear([context_vector, state.c, state.h, x], 1, True) # Tensor shape (batch_size, 1)
+	  else:
+		p_gen = linear([context_vector, state, x], 1, True)
           p_gen = tf.sigmoid(p_gen)
           p_gens.append(p_gen)
 
