@@ -506,6 +506,10 @@ class SummarizationModel(object):
 		"""Add the whole sequence-to-sequence model to the graph."""
 		hps = self._hps
 		vsize = self._vocab.size()  # size of the vocabulary
+		"""
+			EMBEDDING HERE
+		
+		"""
 		
 		with tf.variable_scope('seq2seq'):
 			# Some initializers
@@ -534,6 +538,12 @@ class SummarizationModel(object):
 				
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
 																						   axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
+
+			"""
+			
+			CALLS SUPPORT ONLY GCN, ONLY LSTM, GCN_OVER_LSTM, GCN + LSTM
+			
+			"""	
 
 			
 			if self._hps.no_lstm_encoder:  # use gcn directly
@@ -670,6 +680,159 @@ class SummarizationModel(object):
 													 hps.batch_size * 2)  # take the k largest probs. note batch_size=beam_size in decode mode
 			self._topk_log_probs = tf.log(topk_probs)
 
+
+	def _add_gcn_seq2seq(self):
+		"""Add the whole sequence-to-sequence model to the graph."""
+		hps = self._hps
+		vsize = self._vocab.size()  # size of the vocabulary
+		
+		"""
+			EMBEDDING HERE
+		
+		"""
+		
+		with tf.variable_scope('gcn_seq2seq'):
+			# Some initializers
+			self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag, hps.rand_unif_init_mag,
+																seed=123)
+			self.trunc_norm_init = tf.truncated_normal_initializer(stddev=hps.trunc_norm_init_std)
+
+			# Add embedding matrix (shared by the encoder and decoder inputs)
+			with tf.variable_scope('embedding'):
+				if hps.mode == "train":
+					if self.use_glove:
+					  tf.logging.info('glove')
+					  embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable)
+					
+					else:
+					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=hps.emb_trainable)
+				
+				else:
+					embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32)
+
+				if hps.mode == "train": self._add_emb_vis(embedding)  # add to tensorboard
+				emb_enc_inputs = tf.nn.embedding_lookup(embedding,
+														self._enc_batch)  # tensor with shape (batch_size, max_enc_steps, emb_size)
+				if hps.query_encoder:
+				  emb_query_inputs = tf.nn.embedding_lookup(embedding, self._query_batch) # tensor with shape (batch_size, max_query_steps, emb_size)
+				
+				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
+																						   axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
+
+			"""
+			
+			CALLS SUPPORT GCN_BEFORE_LSTM		
+
+			"""	
+			gcn_in = emb_enc_inputs
+			in_dim = hps.emb_dim
+			gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
+												  batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
+												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
+												  adj_out=self._word_adj_out,neighbour_count=self._word_neighbour_count, 
+												  num_layers=hps.word_gcn_layers,
+												  use_gating=hps.word_gcn_gating, dropout=self._word_gcn_dropout,
+												  name="gcn_word")
+
+			enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens)
+
+			if self._hps.concat_gcn_lstm:
+				self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
+			else:
+				self._enc_states = enc_outputs
+
+			self._dec_in_state = self._reduce_states(fw_st, bw_st)
+
+
+			if self.hps.query_encoder:
+				q_gcn_in = emb_query_inputs
+				q_in_dim = hps.emb_dim
+				q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
+													batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
+													max_labels=hps.num_word_dependency_labels, adj_in=self._query_adj_in,
+													adj_out=self._query_adj_out, neighbour_count=self._query_neighbour_count, 
+													num_layers=hps.query_gcn_layers,
+													use_gating=hps.query_gcn_gating, dropout=self._query_gcn_dropout,
+													name="gcn_query")
+
+				query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens,name='query_encoder')
+
+				if self._hps.concat_gcn_lstm:
+					self._query_states = tf.concat(axis=2,values=[q_gcn_outputs, query_outputs])
+				else:
+					self._query_states = query_outputs	
+						
+
+			# Add the decoder.
+			with tf.variable_scope('decoder'):
+				decoder_outputs, self._dec_out_state, self.attn_dists, self.p_gens, self.coverage = self._add_decoder(
+					emb_dec_inputs)
+
+			# Add the output projection to obtain the vocabulary distribution
+			with tf.variable_scope('output_projection'):
+				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=self.trunc_norm_init)
+				w_t = tf.transpose(w)
+				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=self.trunc_norm_init)
+				vocab_scores = []  # vocab_scores is the vocabulary distribution before applying softmax. Each entry on the list corresponds to one decoder step
+				for i, output in enumerate(decoder_outputs):
+					if i > 0:
+						tf.get_variable_scope().reuse_variables()
+					vocab_scores.append(tf.nn.xw_plus_b(output, w, v))  # apply the linear layer
+
+				vocab_dists = [tf.nn.softmax(s) for s in
+							   vocab_scores]  # The vocabulary distributions. List length max_dec_steps of (batch_size, vsize) arrays. The words are in the order they appear in the vocabulary file.
+
+			# For pointer-generator model, calc final distribution from copy distribution and vocabulary distribution
+			if FLAGS.pointer_gen:
+				final_dists = self._calc_final_dist(vocab_dists, self.attn_dists)
+			else:  # final distribution is just vocabulary distribution
+				final_dists = vocab_dists
+
+			if hps.mode in ['train', 'eval']:
+				# Calculate the loss
+				with tf.variable_scope('loss'):
+					if FLAGS.pointer_gen:
+						# Calculate the loss per step
+						# This is fiddly; we use tf.gather_nd to pick out the probabilities of the gold target words
+						loss_per_step = []  # will be list length max_dec_steps containing shape (batch_size)
+						batch_nums = tf.range(0, limit=hps.batch_size)  # shape (batch_size)
+						for dec_step, dist in enumerate(final_dists):
+							targets = self._target_batch[:,
+									  dec_step]  # The indices of the target words. shape (batch_size)
+							indices = tf.stack((batch_nums, targets), axis=1)  # shape (batch_size, 2)
+							gold_probs = tf.gather_nd(dist,
+													  indices)  # shape (batch_size). prob of correct words on this step
+							losses = -tf.log(gold_probs)
+							loss_per_step.append(losses)
+
+						# Apply dec_padding_mask and get loss
+						self._loss = _mask_and_avg(loss_per_step, self._dec_padding_mask)
+
+					else:  # baseline model
+						self._loss = tf.contrib.seq2seq.sequence_loss(tf.stack(vocab_scores, axis=1),
+																	  self._target_batch,
+																	  self._dec_padding_mask)  # this applies softmax internally
+
+					tf.summary.scalar('loss', self._loss)
+
+					# Calculate coverage loss from the attention distributions
+					if hps.coverage:
+						with tf.variable_scope('coverage_loss'):
+							self._coverage_loss = _coverage_loss(self.attn_dists, self._dec_padding_mask)
+							tf.summary.scalar('coverage_loss', self._coverage_loss)
+						self._total_loss = self._loss + hps.cov_loss_wt * self._coverage_loss
+						tf.summary.scalar('total_loss', self._total_loss)
+
+		if hps.mode == "decode":
+			# We run decode beam search mode one decoder step at a time
+			assert len(
+				final_dists) == 1  # final_dists is a singleton list containing shape (batch_size, extended_vsize)
+			final_dists = final_dists[0]
+			topk_probs, self._topk_ids = tf.nn.top_k(final_dists,
+													 hps.batch_size * 2)  # take the k largest probs. note batch_size=beam_size in decode mode
+			self._topk_log_probs = tf.log(topk_probs)
+
+
 	def _add_train_op(self):
 		"""Sets self._train_op, the op to run for training."""
 		# Take gradients of the trainable variables w.r.t. the loss function to minimize
@@ -699,7 +862,11 @@ class SummarizationModel(object):
 		t0 = time.time()
 		self._add_placeholders()
 		with tf.device("/gpu:0"):
-			self._add_seq2seq()
+			if self._hps.use_gcn_first:
+				self._add_gcn_seq2seq()
+			else
+				self._add_seq2seq()
+		
 		self.global_step = tf.Variable(0, name='global_step', trainable=False)
 		if self._hps.mode == 'train':
 			self._add_train_op()
