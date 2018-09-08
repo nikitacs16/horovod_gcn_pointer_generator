@@ -506,10 +506,7 @@ class SummarizationModel(object):
 		"""Add the whole sequence-to-sequence model to the graph."""
 		hps = self._hps
 		vsize = self._vocab.size()  # size of the vocabulary
-		"""
-			EMBEDDING HERE
 		
-		"""
 		
 		with tf.variable_scope('seq2seq'):
 			# Some initializers
@@ -539,11 +536,7 @@ class SummarizationModel(object):
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
 																						   axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 
-			"""
 			
-			CALLS SUPPORT ONLY GCN, ONLY LSTM, GCN_OVER_LSTM, GCN + LSTM
-			
-			"""	
 
 			
 			if self._hps.no_lstm_encoder:  # use gcn directly
@@ -685,11 +678,8 @@ class SummarizationModel(object):
 		"""Add the whole sequence-to-sequence model to the graph."""
 		hps = self._hps
 		vsize = self._vocab.size()  # size of the vocabulary
-		
-		"""
-			EMBEDDING HERE
-		
-		"""
+		tf.logging.info('Called reverse')
+	
 		
 		with tf.variable_scope('gcn_seq2seq'):
 			# Some initializers
@@ -719,11 +709,7 @@ class SummarizationModel(object):
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
 																						   axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 
-			"""
-			
-			CALLS SUPPORT GCN_BEFORE_LSTM		
-
-			"""	
+	
 			gcn_in = emb_enc_inputs
 			in_dim = hps.emb_dim
 			gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
@@ -744,7 +730,7 @@ class SummarizationModel(object):
 			self._dec_in_state = self._reduce_states(fw_st, bw_st)
 
 
-			if self.hps.query_encoder:
+			if self._hps.query_encoder:
 				q_gcn_in = emb_query_inputs
 				q_in_dim = hps.emb_dim
 				q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
@@ -862,9 +848,10 @@ class SummarizationModel(object):
 		t0 = time.time()
 		self._add_placeholders()
 		with tf.device("/gpu:0"):
-			if self._hps.use_gcn_first:
+			if self._hps.use_gcn_before_lstm:
+				
 				self._add_gcn_seq2seq()
-			else
+			else:
 				self._add_seq2seq()
 		
 		self.global_step = tf.Variable(0, name='global_step', trainable=False)

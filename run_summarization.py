@@ -53,8 +53,10 @@ tf.app.flags.DEFINE_string('vocab_path', config['vocab_path'], 'Path expression 
 tf.app.flags.DEFINE_string('glove_path',config['glove_path'], 'glpb')
 tf.app.flags.DEFINE_boolean('emb_trainable',config['emb_trainable'],'')
 tf.app.flags.DEFINE_string('use_val_as_test',False,'For automation only')
-tf.app.flags.DEFINE_boolean('use_lstm',config['use_lstm'],'For automation only')
+tf.app.flags.DEFINE_boolean('use_lstm',config['use_lstm'],'For conceptual experiments')
 
+tf.app.flags.DEFINE_integer('max_to_keep',config['max_to_keep'],'how many models to keep')
+tf.app.flags.DEFINE_integer('save_model_secs',60, 'after how many seconds should you keep a checkpoint')
 # Important settings
 tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
 tf.app.flags.DEFINE_string('optimizer',config['optimizer'],'must be adam/adagrad')

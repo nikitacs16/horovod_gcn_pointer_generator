@@ -2,32 +2,33 @@ import os
 import sys
 import yaml
 import subprocess
+
 from multiprocessing import Pool
 
 file_name = sys.argv[1]
 gpu_id = sys.argv[2]
 #gpu_val_id = sys.argv[3]
 def run_train(file_name,out_file_name):
-	train_command = 'python run_summarization.py --mode=train --config_file ' + str(file_name) +' --gpu_device_id ' + str(gpu_id)
+	train_command = 'python run_summarization.py --mode=train --config_file ' + str(file_name) +' --gpu_device_id ' + str(gpu_id) + ' --use_gcn_before_lstm True'
 	os.system(train_command)
 #	with open(out_file_name, "w") as outfile:
 #		subprocess.call(train_command, stdout=outfile)
 	
 def run_eval(file_name,out_file_name):
-	eval_command = 'python  run_summarization.py --mode=eval --config_file ' + str(file_name) +' --gpu_device_id ' + str(gpu_id) 
+	eval_command = 'python  run_summarization.py --mode=eval --config_file ' + str(file_name) +' --gpu_device_id ' + str(gpu_id) + ' --use_gcn_before_lstm True'
 	eval_command = 'sleep 300; ' + eval_command
 	os.system(eval_command)
 	#with open(out_file_name, "w") as outfile:
 	#	subprocess.call(eval_command, stdout=outfile)
 
 def run_test(file_name,out_file_name):
-	test_command = 'python -u run_summarization.py --mode=decode --config_file '+str(file_name)+ ' --gpu_device_id ' + str(gpu_id) 
+	test_command = 'python -u run_summarization.py --mode=decode --config_file '+str(file_name)+ ' --gpu_device_id ' + str(gpu_id) + ' --use_gcn_before_lstm True' 
 	#with open(out_file_name, "w") as outfile:
 	#	subprocess.call(test_command, stdout=outfile)
 	os.system(test_command)
 
 def run_eval_test(file_name,out_file_name):
-	test_command = 'python -u run_summarization.py --mode=decode --use_val_as_test=True --config_file ' + str(file_name) +' --gpu_device_id ' + str(gpu_id)
+	test_command = 'python -u run_summarization.py --mode=decode --use_val_as_test=True --config_file ' + str(file_name) +' --gpu_device_id ' + str(gpu_id) + ' --use_gcn_before_lstm True'
 	#with open(out_file_name, "w") as outfile:
 	#	subprocess.call(test_command, stdout=outfile)
 	os.system(test_command)	
