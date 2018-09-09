@@ -56,7 +56,7 @@ tf.app.flags.DEFINE_string('use_val_as_test',False,'For automation only')
 tf.app.flags.DEFINE_boolean('use_lstm',config['use_lstm'],'For conceptual experiments')
 
 tf.app.flags.DEFINE_integer('max_to_keep',config['max_to_keep'],'how many models to keep')
-tf.app.flags.DEFINE_integer('save_model_secs',60, 'after how many seconds should you keep a checkpoint')
+tf.app.flags.DEFINE_integer('save_model_secs',config['save_model_secs'], 'after how many seconds should you keep a checkpoint')
 # Important settings
 tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
 tf.app.flags.DEFINE_string('optimizer',config['optimizer'],'must be adam/adagrad')
@@ -77,8 +77,14 @@ tf.app.flags.DEFINE_string('log_root', config['log_root'], 'Root directory for a
 tf.app.flags.DEFINE_string('exp_name', config['exp_name'], 'Name for experiment. Logs will be saved in a directory with this name, under log_root.')
 
 
+#l2
+tf.app.flags.DEFINE_boolean('use_regularizer', False, 'should you l2')
+tf.app.flags.DEFINE_float('beta_l2', config['beta_l2'], 'scale for l2')
+
+
 
 # Hyperparameters
+
 tf.app.flags.DEFINE_integer('hidden_dim', config['hidden_dim'], 'dimension of RNN hidden states')
 tf.app.flags.DEFINE_integer('emb_dim', config['emb_dim'], 'dimension of word embeddings')
 tf.app.flags.DEFINE_integer('batch_size',config['batch_size'], 'minibatch size')
@@ -110,7 +116,7 @@ tf.app.flags.DEFINE_boolean('use_label_information',config['use_label_informatio
 
 #GCN model
 
-tf.app.flags.DEFINE_boolean('use_gcn_before_lstm',False,'should you use gcn before lstm ?')
+tf.app.flags.DEFINE_boolean('use_gcn_before_lstm',config['use_gcn_before_lstm'],'should you use gcn before lstm ?')
 tf.app.flags.DEFINE_boolean('word_gcn', config['word_gcn'], 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('word_gcn_gating', config['word_gcn_gating'], 'If True, use gating at word level')
 tf.app.flags.DEFINE_float('word_gcn_dropout', config['word_gcn_dropout'], 'dropout keep probability for the gcn layer')
@@ -414,7 +420,7 @@ def main(unused_argv):
     raise Exception("The single_pass flag should only be True in decode mode")
 
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
-  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm','use_gcn_before_lstm']
+  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm','use_gcn_before_lstm','use_regularizer','beta_l2']
   hps_dict = {}
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list

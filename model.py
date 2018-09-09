@@ -96,12 +96,17 @@ class SummarizationModel(object):
 	def __init__(self, hps, vocab):
 		self._hps = hps
 		self._vocab = vocab
-		self.regularizer = None #called globally. L2 Norm is used.
 		self.use_glove = hps.use_glove
 		if hps.mode=='train':
 			if hps.use_glove:
 				self._vocab.set_glove_embedding(hps.glove_path,hps.emb_dim)
-					 
+		if hps.use_regularizer:
+			self.beta_l2 = hps.beta_l2
+		else:
+			self.beta_l2 = 0.0
+
+		self._regularizer = tf.contrib.layers.l2_regularizer(scale=self.beta_l2)
+			 
 
 		
 
@@ -269,9 +274,9 @@ class SummarizationModel(object):
 
 				act_sum = tf.zeros([batch_size, max_nodes, gcn_dim])
 
-				w_in = tf.get_variable('w_in', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer())                           
-				w_out = tf.get_variable('w_out', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer())
-				w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],  initializer=tf.contrib.layers.xavier_initializer())
+				w_in = tf.get_variable('w_in', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)                           
+				w_out = tf.get_variable('w_out', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+				w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],  initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 
 				# for code optimisation only
 				pre_com_o_in = tf.tensordot(gcn_in, w_in, axes=[[2], [0]])
@@ -279,9 +284,9 @@ class SummarizationModel(object):
 				pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2], [0]])
 
 				if use_gating:
-					w_gin = tf.get_variable('w_gin', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer())
-					w_gout = tf.get_variable('w_gout', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer())
-					w_gloop = tf.get_variable('w_gloop', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer())
+					w_gin = tf.get_variable('w_gin', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+					w_gout = tf.get_variable('w_gout', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+					w_gloop = tf.get_variable('w_gloop', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 											  
 
 					# for code optimisation only
@@ -293,10 +298,10 @@ class SummarizationModel(object):
 
 					with tf.variable_scope('label-%d_name-%s_layer-%d' % (lbl, name, layer)) as scope:
 
-						b_out = tf.get_variable('b_out', [1, gcn_dim], initializer=tf.constant_initializer(0.0))
+						b_out = tf.get_variable('b_out', [1, gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 			 
 						if use_gating:
-							b_gout = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0))
+							b_gout = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 
 					with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
 						inp_in = pre_com_o_in + tf.expand_dims(b_out,axis=0)  
@@ -377,14 +382,14 @@ class SummarizationModel(object):
 			if self._hps.use_lstm:
 			# Define weights and biases to reduce the cell and reduce the state
 				w_reduce_c = tf.get_variable('w_reduce_c', [hidden_dim * 2, hidden_dim], dtype=tf.float32,
-										 initializer=self.trunc_norm_init)
+										 initializer=self.trunc_norm_init, regularizer=self._regularizer)
 				bias_reduce_c = tf.get_variable('bias_reduce_c', [hidden_dim], dtype=tf.float32,
-											initializer=self.trunc_norm_init)
+											initializer=self.trunc_norm_init, regularizer=self._regularizer)
 			
 			bias_reduce_h = tf.get_variable('bias_reduce_h', [hidden_dim], dtype=tf.float32,
-											initializer=self.trunc_norm_init)
+											initializer=self.trunc_norm_init, regularizer=self._regularizer)
 			w_reduce_h = tf.get_variable('w_reduce_h', [hidden_dim * 2, hidden_dim], dtype=tf.float32,
-										 initializer=self.trunc_norm_init)
+										 initializer=self.trunc_norm_init, regularizer=self._regularizer)
 
 
 			# Apply linear layer
@@ -519,10 +524,10 @@ class SummarizationModel(object):
 				if hps.mode == "train":
 					if self.use_glove:
 					  tf.logging.info('glove')
-					  embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable)
+					  embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable, regularizer=self._regularizer)
 					
 					else:
-					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=hps.emb_trainable)
+					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=hps.emb_trainable, regularizer=self._regularizer)
 				
 				else:
 					embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32)
@@ -567,7 +572,7 @@ class SummarizationModel(object):
 												  num_layers=hps.word_gcn_layers,
 												  use_gating=hps.word_gcn_gating, dropout=self._word_gcn_dropout,
 												  name="gcn_word")
-				if self._hps.concat_gcn_lstm:
+				if self._hps.concat_gcn_lstm and self._hps.word_gcn:
 					self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
 				else:
 					self._enc_states = gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
@@ -598,7 +603,7 @@ class SummarizationModel(object):
 													num_layers=hps.query_gcn_layers,
 													use_gating=hps.query_gcn_gating, dropout=self._query_gcn_dropout,
 													name="gcn_query")
-				if self._hps.concat_gcn_lstm:
+				if self._hps.concat_gcn_lstm and self._hps.query_gcn:
 					self._query_states = tf.concat(axis=2,values=[query_outputs,q_gcn_outputs])
 				else:
 					self._query_states = q_gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
@@ -611,9 +616,9 @@ class SummarizationModel(object):
 
 			# Add the output projection to obtain the vocabulary distribution
 			with tf.variable_scope('output_projection'):
-				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=self.trunc_norm_init)
+				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
 				w_t = tf.transpose(w)
-				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=self.trunc_norm_init)
+				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
 				vocab_scores = []  # vocab_scores is the vocabulary distribution before applying softmax. Each entry on the list corresponds to one decoder step
 				for i, output in enumerate(decoder_outputs):
 					if i > 0:
@@ -653,6 +658,9 @@ class SummarizationModel(object):
 						self._loss = tf.contrib.seq2seq.sequence_loss(tf.stack(vocab_scores, axis=1),
 																	  self._target_batch,
 																	  self._dec_padding_mask)  # this applies softmax internally
+					if self.use_regularizer:	
+						self._loss += tf.contrib.layers.apply_regularization(self._regularizer, tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+
 
 					tf.summary.scalar('loss', self._loss)
 
@@ -681,7 +689,7 @@ class SummarizationModel(object):
 		tf.logging.info('Called reverse')
 	
 		
-		with tf.variable_scope('gcn_seq2seq'):
+		with tf.variable_scope('gcn_seq2seq',):
 			# Some initializers
 			self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag, hps.rand_unif_init_mag,
 																seed=123)
@@ -692,10 +700,10 @@ class SummarizationModel(object):
 				if hps.mode == "train":
 					if self.use_glove:
 					  tf.logging.info('glove')
-					  embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable)
+					  embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable, regularizer=self._regularizer)
 					
 					else:
-					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=hps.emb_trainable)
+					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=hps.emb_trainable, regularizer=self._regularizer)
 				
 				else:
 					embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32)
@@ -722,7 +730,7 @@ class SummarizationModel(object):
 
 			enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens)
 
-			if self._hps.concat_gcn_lstm:
+			if self._hps.concat_gcn_lstm and self._hps.word_gcn:
 				self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
 			else:
 				self._enc_states = enc_outputs
@@ -733,7 +741,8 @@ class SummarizationModel(object):
 			if self._hps.query_encoder:
 				q_gcn_in = emb_query_inputs
 				q_in_dim = hps.emb_dim
-				q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
+				if self._hps.query_gcn:
+					q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
 													batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
 													max_labels=hps.num_word_dependency_labels, adj_in=self._query_adj_in,
 													adj_out=self._query_adj_out, neighbour_count=self._query_neighbour_count, 
@@ -743,7 +752,7 @@ class SummarizationModel(object):
 
 				query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens,name='query_encoder')
 
-				if self._hps.concat_gcn_lstm:
+				if self._hps.concat_gcn_lstm and self._hps.query_gcn:
 					self._query_states = tf.concat(axis=2,values=[q_gcn_outputs, query_outputs])
 				else:
 					self._query_states = query_outputs	
@@ -756,9 +765,9 @@ class SummarizationModel(object):
 
 			# Add the output projection to obtain the vocabulary distribution
 			with tf.variable_scope('output_projection'):
-				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=self.trunc_norm_init)
+				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
 				w_t = tf.transpose(w)
-				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=self.trunc_norm_init)
+				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
 				vocab_scores = []  # vocab_scores is the vocabulary distribution before applying softmax. Each entry on the list corresponds to one decoder step
 				for i, output in enumerate(decoder_outputs):
 					if i > 0:
@@ -798,6 +807,9 @@ class SummarizationModel(object):
 						self._loss = tf.contrib.seq2seq.sequence_loss(tf.stack(vocab_scores, axis=1),
 																	  self._target_batch,
 																	  self._dec_padding_mask)  # this applies softmax internally
+					if self.use_regularizer:	
+						self._loss += tf.contrib.layers.apply_regularization(self._regularizer, tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))	
+					
 
 					tf.summary.scalar('loss', self._loss)
 
