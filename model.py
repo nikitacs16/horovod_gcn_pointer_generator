@@ -866,6 +866,7 @@ class SummarizationModel(object):
 	def build_graph(self):
 		"""Add the placeholders, model, global step, train_op and summaries to the graph"""
 		tf.logging.info('Building graph...')
+		tf.logging.info(self._hps.use_gcn_before_lstm)
 		t0 = time.time()
 		self._add_placeholders()
 		with tf.device("/gpu:0"):
