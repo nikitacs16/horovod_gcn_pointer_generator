@@ -612,10 +612,10 @@ class SummarizationModel(object):
 													num_layers=hps.query_gcn_layers,
 													use_gating=hps.query_gcn_gating, dropout=self._query_gcn_dropout,
 													name="gcn_query")
-				if self._hps.concat_gcn_lstm and self._hps.query_gcn:
-					self._query_states = tf.concat(axis=2,values=[query_outputs,q_gcn_outputs])
-				else:
-					self._query_states = q_gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
+					if self._hps.concat_gcn_lstm and self._hps.query_gcn:
+						self._query_states = tf.concat(axis=2,values=[query_outputs,q_gcn_outputs])
+					else:
+						self._query_states = q_gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
 
 
 			# Add the decoder.
