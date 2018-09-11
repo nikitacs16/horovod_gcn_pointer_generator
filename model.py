@@ -100,9 +100,7 @@ class SummarizationModel(object):
 		if hps.mode=='train':
 			if hps.use_glove:
 				self._vocab.set_glove_embedding(hps.glove_path,hps.emb_dim)
-		else:
-			self._hps.word_gcn_dropout = 1.0
-			self._hps.query_gcn_dropout = 1.0 #disabling dropout
+		
 		if hps.use_regularizer:
 			self.beta_l2 = hps.beta_l2
 		else:
@@ -141,7 +139,11 @@ class SummarizationModel(object):
 			self._word_adj_out = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_out_{}'.format(lbl)) for lbl
 				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
-			self._word_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout, shape=(), name='dropout')
+			if hps.mode == 'train':
+				self._word_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout, shape=(), name='dropout')
+			else:
+				self._word_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='dropout')
+
 			self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
 			self._word_neighbour_count = tf.placeholder(tf.float32, [hps.batch_size, None], name='word_neighbour_count')
 
@@ -152,7 +154,11 @@ class SummarizationModel(object):
 			self._query_adj_out = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_out_{}'.format(lbl)) for lbl
 				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
-			self._query_gcn_dropout = tf.placeholder_with_default(hps.query_gcn_dropout, shape=(), name='query_dropout')
+			if hps.mode == 'train':
+				self._query_gcn_dropout = tf.placeholder_with_default(hps.query_gcn_dropout, shape=(), name='query_dropout')
+			else:
+				self._query_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='query_dropout')
+
 			self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
 			self._query_neighbour_count = tf.placeholder(tf.float32, [hps.batch_size, None], name='query_neighbour_count')
 
