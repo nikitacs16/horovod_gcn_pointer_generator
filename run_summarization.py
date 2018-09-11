@@ -78,7 +78,7 @@ tf.app.flags.DEFINE_string('exp_name', config['exp_name'], 'Name for experiment.
 
 
 #l2
-tf.app.flags.DEFINE_boolean('use_regularizer', False, 'should you l2')
+tf.app.flags.DEFINE_boolean('use_regularizer', config['use_regularizer'], 'should you l2')
 tf.app.flags.DEFINE_float('beta_l2', config['beta_l2'], 'scale for l2')
 
 

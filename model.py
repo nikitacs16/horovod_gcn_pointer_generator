@@ -100,6 +100,9 @@ class SummarizationModel(object):
 		if hps.mode=='train':
 			if hps.use_glove:
 				self._vocab.set_glove_embedding(hps.glove_path,hps.emb_dim)
+		else:
+			self._hps.word_gcn_dropout = 1.0
+			self._hps.query_gcn_dropout = 1.0 #disabling dropout
 		if hps.use_regularizer:
 			self.beta_l2 = hps.beta_l2
 		else:
@@ -149,7 +152,7 @@ class SummarizationModel(object):
 			self._query_adj_out = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_out_{}'.format(lbl)) for lbl
 				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
-			self._query_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout, shape=(), name='query_dropout')
+			self._query_gcn_dropout = tf.placeholder_with_default(hps.query_gcn_dropout, shape=(), name='query_dropout')
 			self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
 			self._query_neighbour_count = tf.placeholder(tf.float32, [hps.batch_size, None], name='query_neighbour_count')
 
@@ -807,7 +810,7 @@ class SummarizationModel(object):
 						self._loss = tf.contrib.seq2seq.sequence_loss(tf.stack(vocab_scores, axis=1),
 																	  self._target_batch,
 																	  self._dec_padding_mask)  # this applies softmax internally
-					if self.use_regularizer:	
+					if self._hps.use_regularizer:	
 						self._loss += tf.contrib.layers.apply_regularization(self._regularizer, tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))	
 					
 
@@ -957,110 +960,4 @@ class SummarizationModel(object):
 		if self._hps.use_lstm:
 			cells = [np.expand_dims(state.c, axis=0) for state in dec_init_states]
 			hiddens = [np.expand_dims(state.h, axis=0) for state in dec_init_states]
-			new_c = np.concatenate(cells, axis=0)  # shape [batch_size,hidden_dim]
-			new_h = np.concatenate(hiddens, axis=0)  # shape [batch_size,hidden_dim]
-			new_dec_in_state = tf.contrib.rnn.LSTMStateTuple(new_c, new_h)
-		else:
-			hiddens = [np.expand_dims(state, axis = 0) for state in dec_init_states]
-			new_h = np.concatenate(hiddens, axis=0)
-			new_dec_in_state = new_h
-		
-
-		feed = {
-			self._enc_states: enc_states,
-			self._enc_padding_mask: batch.enc_padding_mask,
-			self._dec_in_state: new_dec_in_state,
-			self._dec_batch: np.transpose(np.array([latest_tokens])),
-		}
-
-		to_return = {
-			"ids": self._topk_ids,
-			"probs": self._topk_log_probs,
-			"states": self._dec_out_state,
-			"attn_dists": self.attn_dists
-		}
-
-		if FLAGS.pointer_gen:
-			feed[self._enc_batch_extend_vocab] = batch.enc_batch_extend_vocab
-			feed[self._max_art_oovs] = batch.max_art_oovs
-			to_return['p_gens'] = self.p_gens
-
-		if FLAGS.word_gcn:
-			feed[self._max_word_seq_len] = batch.max_word_len
-		
-		if FLAGS.query_encoder:
-			feed[self._query_states] = query_states
-			feed[self._query_padding_mask] = batch.query_padding_mask
-
-		if FLAGS.query_gcn:
-			feed[self._max_query_seq_len] = batch.max_query_len
-
-		if self._hps.coverage:
-			feed[self.prev_coverage] = np.stack(prev_coverage, axis=0)
-			to_return['coverage'] = self.coverage
-
-		results = sess.run(to_return, feed_dict=feed)  # run the decoder step
-
-		# Convert results['states'] (a single LSTMStateTuple) into a list of LSTMStateTuple -- one for each hypothesis
-		if self._hps.use_lstm:
-			new_states = [tf.contrib.rnn.LSTMStateTuple(results['states'].c[i, :], results['states'].h[i, :]) for i in
-					  xrange(beam_size)]
-		else:
-			new_states = [results['states'][i,:] for i in xrange(beam_size)]
-
-		# Convert singleton list containing a tensor to a list of k arrays
-		assert len(results['attn_dists']) == 1
-		attn_dists = results['attn_dists'][0].tolist()
-
-		if FLAGS.pointer_gen:
-			# Convert singleton list containing a tensor to a list of k arrays
-			assert len(results['p_gens']) == 1
-			p_gens = results['p_gens'][0].tolist()
-		else:
-			p_gens = [None for _ in xrange(beam_size)]
-
-		# Convert the coverage tensor to a list length k containing the coverage vector for each hypothesis
-		if FLAGS.coverage:
-			new_coverage = results['coverage'].tolist()
-			assert len(new_coverage) == beam_size
-		else:
-			new_coverage = [None for _ in xrange(beam_size)]
-
-		return results['ids'], results['probs'], new_states, attn_dists, p_gens, new_coverage
-
-
-def _mask_and_avg(values, padding_mask):
-	"""Applies mask to values then returns overall average (a scalar)
-
-  Args:
-	values: a list length max_dec_steps containing arrays shape (batch_size).
-	padding_mask: tensor shape (batch_size, max_dec_steps) containing 1s and 0s.
-
-  Returns:
-	a scalar
-  """
-
-	dec_lens = tf.reduce_sum(padding_mask, axis=1)  # shape batch_size. float32
-	values_per_step = [v * padding_mask[:, dec_step] for dec_step, v in enumerate(values)]
-	values_per_ex = sum(values_per_step) / dec_lens  # shape (batch_size); normalized value for each batch member
-	return tf.reduce_mean(values_per_ex)  # overall average
-
-
-def _coverage_loss(attn_dists, padding_mask):
-	"""Calculates the coverage loss from the attention distributions.
-
-  Args:
-	attn_dists: The attention distributions for each decoder timestep. A list length max_dec_steps containing shape (batch_size, attn_length)
-	padding_mask: shape (batch_size, max_dec_steps).
-
-  Returns:
-	coverage_loss: scalar
-  """
-	coverage = tf.zeros_like(attn_dists[0])  # shape (batch_size, attn_length). Initial coverage is zero.
-	covlosses = []  # Coverage loss per decoder timestep. Will be list length max_dec_steps containing shape (batch_size).
-	for a in attn_dists:
-		covloss = tf.reduce_sum(tf.minimum(a, coverage), [1])  # calculate the coverage loss for this step
-		covlosses.append(covloss)
-		coverage += a  # update the coverage vector
-	coverage_loss = _mask_and_avg(covlosses, padding_mask)
-	return coverage_loss
+			new_c = np.concatenate(cells, axis=0)  # shape [batch_size,hi

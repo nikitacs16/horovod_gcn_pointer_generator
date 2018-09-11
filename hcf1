@@ -1,0 +1,91 @@
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcublas.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcudnn.so.5 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcufft.so.8.0 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcuda.so.1 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcurand.so.8.0 locally
+INFO:tensorflow:Starting seq2seq_attention in train mode...
+INFO:tensorflow:{'vocab_size': 25000, 'save_model_secs': 60, 'gpu_device_id': '0', 'tf_example_format': True, 'data_path': '/home/riseadmin/gcn_finished_files/finished_files/chunked/train*', 'save_steps': 50, 'convert_to_coverage_model': False, 'trunc_norm_init_std': 0.0001, 'use_val_as_test': False, 'optimizer': 'adagrad', 'query_gcn_layers': 1, 'use_gcn_lstm_parallel': True, 'word_gcn_layers': 1, 'restore_best_model': False, 'no_lstm_encoder': False, 'exp_name': 'holle_batch_size_16_glove_True_adam_0.0004_model_use_gcn_lstm_parallel_concat_True_use_label_information_False_dropout_0.75', 'use_lstm': True, 'concat_gcn_lstm': True, 'max_dec_steps': 60, 'cov_loss_wt': 1.0, 'max_query_steps': 65, 'lr': 0.015, 'epoch_num': 0, 'use_glove': True, 'mode': 'train', 'beta_l2': 0.0, 'log_root': '/home/riseadmin/gttp_logs/holle_batch_size_16_glove_True_adam_0.0004_model_use_gcn_lstm_parallel_concat_True_use_label_information_False_dropout_0.75', 'max_enc_steps': 300, 'query_encoder': True, 'stop_steps': 50000, 'vocab_path': '/home/riseadmin/gcn_finished_files/finished_files/vocab', 'query_gcn_gating': False, 'rand_unif_init_mag': 0.02, 'batch_size': 16, 'use_stop_after': True, 'adagrad_init_acc': 0.01, 'query_gcn_dropout': 0.75, 'coverage': False, 'max_grad_norm': 2.0, 'glove_path': '/home/riseadmin/glove/glove.6B.100d.txt', 'min_dec_steps': 3, 'pointer_gen': True, 'use_save_at': False, 'single_pass': False, 'word_gcn': True, 'word_gcn_gating': False, 'use_regularizer': False, 'use_label_information': True, 'no_lstm_query_encoder': False, 'config_file': '/home/riseadmin/holle_gpu/config_1.yaml', 'adam_lr': 0.0004, 'emb_dim': 100, 'word_gcn_dropout': 0.75, 'word_gcn_dim': 128, 'query_gcn_dim': 128, 'query_gcn': True, 'hidden_dim': 256, 'test_by_epoch': False, 'debug': False, 'beam_size': 4, 'emb_trainable': True, 'use_gcn_before_lstm': True, 'max_to_keep': 7}
+INFO:tensorflow:Scale of 0 disables regularizer.
+INFO:tensorflow:Building graph...
+INFO:tensorflow:Called reverse
+INFO:tensorflow:glove
+INFO:tensorflow:Adding attention_decoder timestep 0 of 60
+INFO:tensorflow:Adding attention_decoder timestep 1 of 60
+INFO:tensorflow:Adding attention_decoder timestep 2 of 60
+INFO:tensorflow:Adding attention_decoder timestep 3 of 60
+INFO:tensorflow:Adding attention_decoder timestep 4 of 60
+INFO:tensorflow:Adding attention_decoder timestep 5 of 60
+INFO:tensorflow:Adding attention_decoder timestep 6 of 60
+INFO:tensorflow:Adding attention_decoder timestep 7 of 60
+INFO:tensorflow:Adding attention_decoder timestep 8 of 60
+INFO:tensorflow:Adding attention_decoder timestep 9 of 60
+INFO:tensorflow:Adding attention_decoder timestep 10 of 60
+INFO:tensorflow:Adding attention_decoder timestep 11 of 60
+INFO:tensorflow:Adding attention_decoder timestep 12 of 60
+INFO:tensorflow:Adding attention_decoder timestep 13 of 60
+INFO:tensorflow:Adding attention_decoder timestep 14 of 60
+INFO:tensorflow:Adding attention_decoder timestep 15 of 60
+INFO:tensorflow:Adding attention_decoder timestep 16 of 60
+INFO:tensorflow:Adding attention_decoder timestep 17 of 60
+INFO:tensorflow:Adding attention_decoder timestep 18 of 60
+INFO:tensorflow:Adding attention_decoder timestep 19 of 60
+INFO:tensorflow:Adding attention_decoder timestep 20 of 60
+INFO:tensorflow:Adding attention_decoder timestep 21 of 60
+INFO:tensorflow:Adding attention_decoder timestep 22 of 60
+INFO:tensorflow:Adding attention_decoder timestep 23 of 60
+INFO:tensorflow:Adding attention_decoder timestep 24 of 60
+INFO:tensorflow:Adding attention_decoder timestep 25 of 60
+INFO:tensorflow:Adding attention_decoder timestep 26 of 60
+INFO:tensorflow:Adding attention_decoder timestep 27 of 60
+INFO:tensorflow:Adding attention_decoder timestep 28 of 60
+INFO:tensorflow:Adding attention_decoder timestep 29 of 60
+INFO:tensorflow:Adding attention_decoder timestep 30 of 60
+INFO:tensorflow:Adding attention_decoder timestep 31 of 60
+INFO:tensorflow:Adding attention_decoder timestep 32 of 60
+INFO:tensorflow:Adding attention_decoder timestep 33 of 60
+INFO:tensorflow:Adding attention_decoder timestep 34 of 60
+INFO:tensorflow:Adding attention_decoder timestep 35 of 60
+INFO:tensorflow:Adding attention_decoder timestep 36 of 60
+INFO:tensorflow:Adding attention_decoder timestep 37 of 60
+INFO:tensorflow:Adding attention_decoder timestep 38 of 60
+INFO:tensorflow:Adding attention_decoder timestep 39 of 60
+INFO:tensorflow:Adding attention_decoder timestep 40 of 60
+INFO:tensorflow:Adding attention_decoder timestep 41 of 60
+INFO:tensorflow:Adding attention_decoder timestep 42 of 60
+INFO:tensorflow:Adding attention_decoder timestep 43 of 60
+INFO:tensorflow:Adding attention_decoder timestep 44 of 60
+INFO:tensorflow:Adding attention_decoder timestep 45 of 60
+INFO:tensorflow:Adding attention_decoder timestep 46 of 60
+INFO:tensorflow:Adding attention_decoder timestep 47 of 60
+INFO:tensorflow:Adding attention_decoder timestep 48 of 60
+INFO:tensorflow:Adding attention_decoder timestep 49 of 60
+INFO:tensorflow:Adding attention_decoder timestep 50 of 60
+INFO:tensorflow:Adding attention_decoder timestep 51 of 60
+INFO:tensorflow:Adding attention_decoder timestep 52 of 60
+INFO:tensorflow:Adding attention_decoder timestep 53 of 60
+INFO:tensorflow:Adding attention_decoder timestep 54 of 60
+INFO:tensorflow:Adding attention_decoder timestep 55 of 60
+INFO:tensorflow:Adding attention_decoder timestep 56 of 60
+INFO:tensorflow:Adding attention_decoder timestep 57 of 60
+INFO:tensorflow:Adding attention_decoder timestep 58 of 60
+INFO:tensorflow:Adding attention_decoder timestep 59 of 60
+before
+/home/riseadmin/holle_gpu/config_1.yaml
+max_size of vocab was specified as 25000; we now have 25000 words. Stopping reading.
+Finished constructing vocabulary of 25000 total words. Last word added: chucky!)are
+creating model...
+Writing word embedding metadata file to /home/riseadmin/gttp_logs/holle_batch_size_16_glove_True_adam_0.0004_model_use_gcn_lstm_parallel_concat_True_use_label_information_False_dropout_0.75/train/vocab_metadata.tsv...
+Traceback (most recent call last):
+  File "run_summarization.py", line 470, in <module>
+    tf.app.run()
+  File "/home/riseadmin/anaconda3/envs/py27/lib/python2.7/site-packages/tensorflow/python/platform/app.py", line 44, in run
+    _sys.exit(main(_sys.argv[:1] + flags_passthrough))
+  File "run_summarization.py", line 447, in main
+    setup_training(model, batcher)
+  File "run_summarization.py", line 229, in setup_training
+    model.build_graph() # build the graph
+  File "/home/riseadmin/gcn_pointer_generator/model.py", line 868, in build_graph
+    self._add_gcn_seq2seq()
+  File "/home/riseadmin/gcn_pointer_generator/model.py", line 807, in _add_gcn_seq2seq
+    self._loss = _mask_and_avg(loss_per_step, self._dec_padding_mask)
+NameError: global name '_mask_and_avg' is not defined
