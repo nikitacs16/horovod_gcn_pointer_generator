@@ -969,3 +969,120 @@ class SummarizationModel(object):
 			cells = [np.expand_dims(state.c, axis=0) for state in dec_init_states]
 			hiddens = [np.expand_dims(state.h, axis=0) for state in dec_init_states]
 			new_c = np.concatenate(cells, axis=0)  # shape [batch_size,hi
+
+	def decode_onestep(self, sess, batch, latest_tokens, enc_states, dec_init_states, prev_coverage, query_states=None):
+		"""For beam search decoding. Run the decoder for one step.
+	Args:
+	  sess: Tensorflow session.
+	  batch: Batch object containing single example repeated across the batch
+	  latest_tokens: Tokens to be fed as input into the decoder for this timestep
+	  enc_states: The encoder states.
+	  dec_init_states: List of beam_size LSTMStateTuples; the decoder states from the previous timestep
+	  prev_coverage: List of np arrays. The coverage vectors from the previous timestep. List of None if not using coverage.
+	  query_states : The query states
+	Returns:
+	  ids: top 2k ids. shape [beam_size, 2*beam_size]
+	  probs: top 2k log probabilities. shape [beam_size, 2*beam_size]
+	  new_states: new states of the decoder. a list length beam_size containing
+		LSTMStateTuples each of shape ([hidden_dim,],[hidden_dim,])
+	  attn_dists: List length beam_size containing lists length attn_length.
+	  p_gens: Generation probabilities for this step. A list length beam_size. List of None if in baseline mode.
+	  new_coverage: Coverage vectors for this step. A list of arrays. List of None if coverage is not turned on.
+	"""
+
+		beam_size = len(dec_init_states)
+
+		# Turn dec_init_states (a list of LSTMStateTuples) into a single LSTMStateTuple for the batch
+		cells = [np.expand_dims(state.c, axis=0) for state in dec_init_states]
+		hiddens = [np.expand_dims(state.h, axis=0) for state in dec_init_states]
+		new_c = np.concatenate(cells, axis=0)  # shape [batch_size,hidden_dim]
+		new_h = np.concatenate(hiddens, axis=0)  # shape [batch_size,hidden_dim]
+		new_dec_in_state = tf.contrib.rnn.LSTMStateTuple(new_c, new_h)
+
+		feed = {
+			self._enc_states: enc_states,
+			self._enc_padding_mask: batch.enc_padding_mask,
+			self._dec_in_state: new_dec_in_state,
+			self._dec_batch: np.transpose(np.array([latest_tokens])),
+		}
+
+		to_return = {
+			"ids": self._topk_ids,
+			"probs": self._topk_log_probs,
+			"states": self._dec_out_state,
+			"attn_dists": self.attn_dists
+		}
+
+		if FLAGS.pointer_gen:
+			feed[self._enc_batch_extend_vocab] = batch.enc_batch_extend_vocab
+			feed[self._max_art_oovs] = batch.max_art_oovs
+			to_return['p_gens'] = self.p_gens
+
+		if FLAGS.word_gcn:
+			feed[self._max_word_seq_len] = batch.max_word_len
+		
+		if FLAGS.query_encoder:
+			feed[self._query_states] = query_states
+			feed[self._query_padding_mask] = batch.query_padding_mask
+
+		if FLAGS.query_gcn:
+			feed[self._max_query_seq_len] = batch.max_query_len
+
+		if self._hps.coverage:
+			feed[self.prev_coverage] = np.stack(prev_coverage, axis=0)
+			to_return['coverage'] = self.coverage
+
+		results = sess.run(to_return, feed_dict=feed)  # run the decoder step
+
+		# Convert results['states'] (a single LSTMStateTuple) into a list of LSTMStateTuple -- one for each hypothesis
+		new_states = [tf.contrib.rnn.LSTMStateTuple(results['states'].c[i, :], results['states'].h[i, :]) for i in
+					  xrange(beam_size)]
+
+		# Convert singleton list containing a tensor to a list of k arrays
+		assert len(results['attn_dists']) == 1
+		attn_dists = results['attn_dists'][0].tolist()
+
+		if FLAGS.pointer_gen:
+			# Convert singleton list containing a tensor to a list of k arrays
+			assert len(results['p_gens']) == 1
+			p_gens = results['p_gens'][0].tolist()
+		else:
+			p_gens = [None for _ in xrange(beam_size)]
+
+		# Convert the coverage tensor to a list length k containing the coverage vector for each hypothesis
+		if FLAGS.coverage:
+			new_coverage = results['coverage'].tolist()
+			assert len(new_coverage) == beam_size
+		else:
+			new_coverage = [None for _ in xrange(beam_size)]
+
+		return results['ids'], results['probs'], new_states, attn_dists, p_gens, new_coverage
+
+
+def _mask_and_avg(values, padding_mask):
+	"""Applies mask to values then returns overall average (a scalar)
+  Args:
+	values: a list length max_dec_steps containing arrays shape (batch_size).
+	padding_mask: tensor shape (batch_size, max_dec_steps) containing 1s and 0s.
+  Returns:
+	a scalar
+  """
+
+	dec_lens = tf.reduce_sum(padding_mask, axis=1)  # shape batch_size. float32
+	values_per_step = [v * padding_mask[:, dec_step] for dec_step, v in enumerate(values)]
+	values_per_ex = sum(values_per_step) / dec_lens  # shape (batch_size); normalized value for each batch member
+	return tf.reduce_mean(values_per_ex)  # overall average
+
+
+def _coverage_loss(attn_dists, padding_mask):
+	"""Calculates the coverage loss from the attention distributions.
+  Args:
+	attn_dists: The attention distributions for each decoder timestep. A list length max_dec_steps containing shape (batch_size, attn_length)
+	padding_mask: shape (batch_size, max_dec_steps).
+  Returns:
+	coverage_loss: scalar
+  """
+	coverage = tf.zeros_like(attn_dists[0])  # shape (batch_size, attn_length). Initial coverage is zero.
+	covlosses = []  # Coverage loss per decoder timestep. Will be list length max_dec_steps containing shape (batch_size).
+	for a in attn_dists:
+
