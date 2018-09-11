@@ -667,7 +667,7 @@ class SummarizationModel(object):
 						self._loss = tf.contrib.seq2seq.sequence_loss(tf.stack(vocab_scores, axis=1),
 																	  self._target_batch,
 																	  self._dec_padding_mask)  # this applies softmax internally
-					if self.use_regularizer:	
+					if hps.use_regularizer:	
 						self._loss += tf.contrib.layers.apply_regularization(self._regularizer, tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
 
