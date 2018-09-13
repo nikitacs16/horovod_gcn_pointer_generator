@@ -722,6 +722,7 @@ class SummarizationModel(object):
 														self._enc_batch)  # tensor with shape (batch_size, max_enc_steps, emb_size)
 				if hps.query_encoder:
 				  emb_query_inputs = tf.nn.embedding_lookup(embedding, self._query_batch) # tensor with shape (batch_size, max_query_steps, emb_size)
+
 				
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
 																						   axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
@@ -737,6 +738,9 @@ class SummarizationModel(object):
 												  use_gating=hps.word_gcn_gating, dropout=self._word_gcn_dropout,
 												  name="gcn_word")
 
+			if hps.concat_with_word_embedding:
+				gcn_outputs = tf.concat(axis=2,values=[emb_enc_inputs,gcn_outputs])
+
 			enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens)
 
 			if self._hps.concat_gcn_lstm and self._hps.word_gcn:
@@ -750,8 +754,7 @@ class SummarizationModel(object):
 			if self._hps.query_encoder:
 				q_gcn_in = emb_query_inputs
 				q_in_dim = hps.emb_dim
-				if self._hps.query_gcn:
-					q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
+				q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
 													batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
 													max_labels=hps.num_word_dependency_labels, adj_in=self._query_adj_in,
 													adj_out=self._query_adj_out, neighbour_count=self._query_neighbour_count, 
@@ -759,7 +762,13 @@ class SummarizationModel(object):
 													use_gating=hps.query_gcn_gating, dropout=self._query_gcn_dropout,
 													name="gcn_query")
 
+				if hps.concat_with_word_embedding:
+					q_gcn_outputs = tf.concat(axis=2,values=[emb_query_inputs,q_gcn_outputs])
+
+
+
 				query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens,name='query_encoder')
+
 
 				if self._hps.concat_gcn_lstm and self._hps.query_gcn:
 					self._query_states = tf.concat(axis=2,values=[q_gcn_outputs, query_outputs])

@@ -115,7 +115,7 @@ tf.app.flags.DEFINE_boolean('use_label_information',config['use_label_informatio
 
 
 #GCN model
-
+tf.app.flags.DEFINE_boolean('concat_with_word_embedding',config['concat_with_word_embedding'],'option for GLSTM')
 tf.app.flags.DEFINE_boolean('use_gcn_before_lstm',config['use_gcn_before_lstm'],'should you use gcn before lstm ?')
 tf.app.flags.DEFINE_boolean('word_gcn', config['word_gcn'], 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('word_gcn_gating', config['word_gcn_gating'], 'If True, use gating at word level')
