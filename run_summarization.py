@@ -123,7 +123,7 @@ tf.app.flags.DEFINE_boolean('word_gcn_gating', config['word_gcn_gating'], 'If Tr
 tf.app.flags.DEFINE_float('word_gcn_dropout', config['word_gcn_dropout'], 'dropout keep probability for the gcn layer')
 tf.app.flags.DEFINE_integer('word_gcn_layers', config['word_gcn_layers'], 'Layers at gcn')
 tf.app.flags.DEFINE_integer('word_gcn_dim', config['word_gcn_dim'], 'output of gcn ')
-
+tf.app.flags.DEFINE_boolean('word_gcn_skip',config['word_gcn_skip'], 'add skkip ?')
 #Query model addition
 #tf.app.flags.DEFINE_boolean('no_lstm_query_encoder', False, 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
 
@@ -132,6 +132,7 @@ tf.app.flags.DEFINE_boolean('query_gcn_gating', config['query_gcn_gating'], 'If 
 tf.app.flags.DEFINE_float('query_gcn_dropout', config['query_gcn_dropout'], 'dropout keep probability for the gcn layer')
 tf.app.flags.DEFINE_integer('query_gcn_layers', config['query_gcn_layers'], 'Layers at gcn')
 tf.app.flags.DEFINE_integer('query_gcn_dim', config['query_gcn_dim'], 'output of gcn ')
+tf.app.flags.DEFINE_boolean('query_gcn_skip',config['query_gcn_skip'], 'add skip ?')
 
 # Coverage hyperparameters
 tf.app.flags.DEFINE_boolean('coverage', False, 'Use coverage mechanism. Note, the experiments reported in the ACL paper train WITHOUT coverage until converged, and then train for a short phase WITH coverage afterwards. i.e. to reproduce the results in the ACL paper, turn this off for most of training then turn on for a short phase at the end.')
