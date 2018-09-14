@@ -268,9 +268,10 @@ class SummarizationModel(object):
 
 
 	def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, neighbour_count, num_layers=1,
-					   use_gating=False, use_normalization=True, dropout=1.0, name="GCN"):
+					   use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN"):
 
 		out = []
+		true_input = gcn_in
 		out.append(gcn_in)
 		#    return tf.nn.relu(tf.zeros([batch_size, max_nodes, gcn_dim]))
 		if not self._hps.use_label_information:
@@ -285,12 +286,12 @@ class SummarizationModel(object):
 
 				w_in = tf.get_variable('w_in', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)                           
 				w_out = tf.get_variable('w_out', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
-				w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],  initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+#				w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],  initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 
 				# for code optimisation only
 				pre_com_o_in = tf.tensordot(gcn_in, w_in, axes=[[2], [0]])
 				pre_com_o_out = tf.tensordot(gcn_in, w_out, axes=[[2], [0]])
-				pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2], [0]])
+#				pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2], [0]])
 
 				if use_gating:
 					w_gin = tf.get_variable('w_gin', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
@@ -311,6 +312,8 @@ class SummarizationModel(object):
 			 
 						if use_gating:
 							b_gout = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
+						if use_skip:
+							w_skip = tf.get_variable('w_skip', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 
 					with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
 						inp_in = pre_com_o_in + tf.expand_dims(b_out,axis=0)  
@@ -344,6 +347,7 @@ class SummarizationModel(object):
 
 					act_sum += in_act + out_act
 
+				'''
 				with tf.name_scope('self_loop'):
 					inp_loop = pre_com_o_loop
 					if dropout != 1.0: inp_loop = tf.nn.dropout(inp_loop, keep_prob=dropout)
@@ -354,24 +358,15 @@ class SummarizationModel(object):
 						loop_act = inp_loop * loop_gsig
 					else:
 						loop_act = inp_loop
+				'''
 
-				act_sum += loop_act
-		#tf.logging.info('act sum dim')
-				#tf.logging.info(tf.shape(act_sum))
-#                act_sum = act_sum/neighbour_count
+				#act_sum += loop_act
 				neighbour_count = tf.expand_dims(neighbour_count,-1)
 				act_sum = act_sum/neighbour_count 
 				gcn_out = tf.nn.relu(act_sum)
-				
-				'''
-				if use_normalization:
-					tf.logging.info('before')
-					tf.logging.info(gcn_out.shape())
-					gcn_norm = tf.norm(gcn_out,axis=2,keepdims=True)
-					gcn_out = gcn_out / gcn_out
-					tf.logging.info('after')
-					tf.logging.info(gcn_out.shape())
-				'''
+				if use_skip:
+					gcn_out = tf.sum(tf.sigmoid(tf.multiply(w_skip,gcn_out)), true_input)
+
 				out.append(gcn_out)
 
 		return gcn_out
@@ -550,9 +545,15 @@ class SummarizationModel(object):
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
 																						   axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 
-			
+			if self._hps.concat_gcn_lstm:
 
-			
+				gcn_word_w = tf.get_variable('gcn_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+				lstm_word_w = tf.get_variable('lstm_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+				if self._hps.query_encoder:
+					q_gcn_word_w = tf.get_variable('q_gcn_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+
+
 			if self._hps.no_lstm_encoder:  # use gcn directly
 				self._enc_states = emb_enc_inputs
 				in_dim = hps.emb_dim
@@ -574,15 +575,19 @@ class SummarizationModel(object):
 					gcn_in = self._enc_states
 					in_dim = self._hps.hidden_dim*2
 
-				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
+				gcn_outputs= self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
 												  batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
 												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
 												  adj_out=self._word_adj_out,neighbour_count=self._word_neighbour_count, 
 												  num_layers=hps.word_gcn_layers,
-												  use_gating=hps.word_gcn_gating, dropout=self._word_gcn_dropout,
+												  use_gating=hps.word_gcn_gating, use_skip=hps.word_gcn_skip, dropout=self._word_gcn_dropout,
 												  name="gcn_word")
 				if self._hps.concat_gcn_lstm and self._hps.word_gcn:
-					self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
+					if self._hps.simple_concat:
+						self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
+					else:
+						self._enc_states = tf.add(tf.multiply(gcn_word_w,gcn_outputs),tf.multiply(lstm_word_w,enc_outputs))
+				
 				else:
 					self._enc_states = gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
 	
@@ -610,10 +615,14 @@ class SummarizationModel(object):
 													max_labels=hps.num_word_dependency_labels, adj_in=self._query_adj_in,
 													adj_out=self._query_adj_out, neighbour_count=self._query_neighbour_count, 
 													num_layers=hps.query_gcn_layers,
-													use_gating=hps.query_gcn_gating, dropout=self._query_gcn_dropout,
+													use_gating=hps.query_gcn_gating, use_skip=hps.query_gcn_skip, dropout=self._query_gcn_dropout,
 													name="gcn_query")
 					if self._hps.concat_gcn_lstm and self._hps.query_gcn:
-						self._query_states = tf.concat(axis=2,values=[query_outputs,q_gcn_outputs])
+						if self._hps.simple_concat:
+							self._query_states = tf.concat(axis=2,values=[query_outputs,q_gcn_outputs])
+						else:
+							self._query_states = tf.add(tf.multiply(q_gcn_word_w,q_gcn_outputs),tf.multiply(q_lstm_word_w,query_outputs))
+						
 					else:
 						self._query_states = q_gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
 
@@ -727,6 +736,16 @@ class SummarizationModel(object):
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
 																						   axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 
+
+			if self._hps.concat_gcn_lstm:
+
+				gcn_word_w = tf.get_variable('gcn_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+				lstm_word_w = tf.get_variable('lstm_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+				if self._hps.query_encoder:
+					q_gcn_word_w = tf.get_variable('q_gcn_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+	
+
 	
 			gcn_in = emb_enc_inputs
 			in_dim = hps.emb_dim
@@ -735,7 +754,7 @@ class SummarizationModel(object):
 												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
 												  adj_out=self._word_adj_out,neighbour_count=self._word_neighbour_count, 
 												  num_layers=hps.word_gcn_layers,
-												  use_gating=hps.word_gcn_gating, dropout=self._word_gcn_dropout,
+												  use_gating=hps.word_gcn_gating, use_skip=hps.word_gcn_skip, dropout=self._word_gcn_dropout,
 												  name="gcn_word")
 
 			if hps.concat_with_word_embedding:
@@ -744,7 +763,11 @@ class SummarizationModel(object):
 			enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens)
 
 			if self._hps.concat_gcn_lstm and self._hps.word_gcn:
-				self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
+				if self._hps.simple_concat:
+					self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
+				else:
+					self._enc_states = tf.add(tf.multiply(gcn_word_w,gcn_outputs),tf.multiply(lstm_word_w,enc_outputs))
+				
 			else:
 				self._enc_states = enc_outputs
 
@@ -759,7 +782,7 @@ class SummarizationModel(object):
 													max_labels=hps.num_word_dependency_labels, adj_in=self._query_adj_in,
 													adj_out=self._query_adj_out, neighbour_count=self._query_neighbour_count, 
 													num_layers=hps.query_gcn_layers,
-													use_gating=hps.query_gcn_gating, dropout=self._query_gcn_dropout,
+													use_gating=hps.query_gcn_gating,  use_skip=hps.query_gcn_skip, dropout=self._query_gcn_dropout,
 													name="gcn_query")
 
 				if hps.concat_with_word_embedding:
@@ -771,7 +794,11 @@ class SummarizationModel(object):
 
 
 				if self._hps.concat_gcn_lstm and self._hps.query_gcn:
-					self._query_states = tf.concat(axis=2,values=[q_gcn_outputs, query_outputs])
+					if self._hps.simple_concat:
+						self._query_states = tf.concat(axis=2,values=[q_gcn_outputs, query_outputs])
+					else:
+						self._query_states = tf.add(tf.multiply(q_gcn_word_w,q_gcn_outputs),tf.multiply(q_lstm_word_w,query_outputs))
+					
 				else:
 					self._query_states = query_outputs	
 						
