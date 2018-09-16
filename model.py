@@ -272,13 +272,13 @@ class SummarizationModel(object):
 
 		out = []
 		true_input = gcn_in
+		true_in_dim = in_dim
 		out.append(gcn_in)
 		#    return tf.nn.relu(tf.zeros([batch_size, max_nodes, gcn_dim]))
 		if not self._hps.use_label_information:
 			max_labels = 1
 		for layer in range(num_layers):
-			gcn_in = out[
-				-1]  # out contains the output of all the GCN layers, intitally contains input to first GCN Layer
+			gcn_in = out[-1]  # out contains the output of all the GCN layers, intitally contains input to first GCN Layer
 			if len(out) > 1: in_dim = gcn_dim  # After first iteration the in_dim = gcn_dim
 			with tf.variable_scope('%s-%d' % (name, layer)):
 
@@ -313,7 +313,7 @@ class SummarizationModel(object):
 						if use_gating:
 							b_gout = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 						if use_skip:
-							w_skip = tf.get_variable('w_skip', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+							w_skip = tf.get_variable('w_skip', [gcn_dim,true_in_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 
 					with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
 						inp_in = pre_com_o_in + tf.expand_dims(b_out,axis=0)  
@@ -365,8 +365,8 @@ class SummarizationModel(object):
 				act_sum = act_sum/neighbour_count 
 				gcn_out = tf.nn.relu(act_sum)
 				if use_skip:
-					gcn_out = tf.sum(tf.sigmoid(tf.multiply(w_skip,gcn_out)), true_input)
-
+					gcn_out = tf.add(tf.tensordot(gcn_out,w_skip,axes=[[2],[0]]), true_input)
+					tf.logging.info(tf.shape(gcn_out))				
 				out.append(gcn_out)
 
 		return gcn_out
@@ -547,11 +547,11 @@ class SummarizationModel(object):
 
 			if self._hps.concat_gcn_lstm:
 
-				gcn_word_w = tf.get_variable('gcn_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
-				lstm_word_w = tf.get_variable('lstm_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+				gcn_word_w = tf.get_variable('gcn_word_w', [self._hps.word_gcn_dim,256], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+				lstm_word_w = tf.get_variable('lstm_word_w', [self._hps.hidden_dim*2,256], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
 				if self._hps.query_encoder:
-					q_gcn_word_w = tf.get_variable('q_gcn_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
-					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+					q_gcn_word_w = tf.get_variable('q_gcn_word_w', [256, self._hps.query_gcn_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [256, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
 
 
 			if self._hps.no_lstm_encoder:  # use gcn directly
@@ -586,7 +586,7 @@ class SummarizationModel(object):
 					if self._hps.simple_concat:
 						self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
 					else:
-						self._enc_states = tf.add(tf.multiply(gcn_word_w,gcn_outputs),tf.multiply(lstm_word_w,enc_outputs))
+						self._enc_states = tf.add(tf.tensordot(gcn_outputs,gcn_word_w,axes=[[2],[0]]),tf.tensordot(enc_outputs,lstm_word_w,axes=[[2],[0]]))
 				
 				else:
 					self._enc_states = gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
@@ -621,7 +621,7 @@ class SummarizationModel(object):
 						if self._hps.simple_concat:
 							self._query_states = tf.concat(axis=2,values=[query_outputs,q_gcn_outputs])
 						else:
-							self._query_states = tf.add(tf.multiply(q_gcn_word_w,q_gcn_outputs),tf.multiply(q_lstm_word_w,query_outputs))
+							self._query_states = tf.add(tf.multiply(q_gcn_outputs,q_gcn_word_w),tf.multiply(query_outputs,q_lstm_word_w))
 						
 					else:
 						self._query_states = q_gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
@@ -739,11 +739,11 @@ class SummarizationModel(object):
 
 			if self._hps.concat_gcn_lstm:
 
-				gcn_word_w = tf.get_variable('gcn_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
-				lstm_word_w = tf.get_variable('lstm_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+				gcn_word_w = tf.get_variable('gcn_word_w', [256, self._hps.word_gcn_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+				lstm_word_w = tf.get_variable('lstm_word_w', [256, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
 				if self._hps.query_encoder:
-					q_gcn_word_w = tf.get_variable('q_gcn_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
-					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [self._hps.hidden_dim*2, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+					q_gcn_word_w = tf.get_variable('q_gcn_word_w', [256, self._hps.query_gcn_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [256, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
 	
 
 	
@@ -766,7 +766,7 @@ class SummarizationModel(object):
 				if self._hps.simple_concat:
 					self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
 				else:
-					self._enc_states = tf.add(tf.multiply(gcn_word_w,gcn_outputs),tf.multiply(lstm_word_w,enc_outputs))
+					self._enc_states = tf.add(tf.multiply(w_gcn_outputs,gcn_word_w),tf.multiply(enc_outputs,lstm_word_w))
 				
 			else:
 				self._enc_states = enc_outputs
@@ -797,7 +797,7 @@ class SummarizationModel(object):
 					if self._hps.simple_concat:
 						self._query_states = tf.concat(axis=2,values=[q_gcn_outputs, query_outputs])
 					else:
-						self._query_states = tf.add(tf.multiply(q_gcn_word_w,q_gcn_outputs),tf.multiply(q_lstm_word_w,query_outputs))
+						self._query_states = tf.add(tf.multiply(q_gcn_outputs,q_gcn_word_w),tf.multiply(query_outputs,q_lstm_word_w))
 					
 				else:
 					self._query_states = query_outputs	
