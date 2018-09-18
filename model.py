@@ -788,7 +788,7 @@ class SummarizationModel(object):
 					self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
 				else:
 					interm_outputs_2 = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
-					self._enc_states = tf.add(tf.multiply(interm_outputs_2,w_gcn_lstm),b_gcn_lstm)
+					self._enc_states = tf.add(tf.tensordot(interm_outputs_2,w_gcn_lstm, axes=[[2],[0]]),b_gcn_lstm)
 				
 			else:
 				self._enc_states = enc_outputs
