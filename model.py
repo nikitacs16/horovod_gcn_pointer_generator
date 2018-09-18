@@ -287,7 +287,7 @@ class SummarizationModel(object):
 				w_in = tf.get_variable('w_in', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)                           
 				w_out = tf.get_variable('w_out', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],  initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
-				b_layer = tf.get_variable('b_layer', [1, gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer) #gating for the highway networks
+				b_layer = tf.get_variable('b_layer', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer) #gating for the highway networks
 
 				# for code optimisation only
 				pre_com_o_in = tf.tensordot(gcn_in, w_in, axes=[[2], [0]])
@@ -304,6 +304,7 @@ class SummarizationModel(object):
 					pre_com_o_gin = tf.tensordot(gcn_in, w_gin, axes=[[2], [0]])
 					pre_com_o_gout = tf.tensordot(gcn_in, w_gout, axes=[[2], [0]])
 					pre_com_o_gloop = tf.tensordot(gcn_in, w_gloop, axes=[[2], [0]])
+				
 
 				for lbl in range(max_labels):
 
@@ -365,12 +366,15 @@ class SummarizationModel(object):
 				neighbour_count = tf.expand_dims(neighbour_count,-1)
 				act_sum = act_sum/neighbour_count 
 				gcn_out = tf.nn.relu(act_sum)
-				
+				tf.logging.info(gcn_out.get_shape())
 				if use_skip:
 					gcn_out = tf.add(tf.tensordot(gcn_out,w_skip,axes=[[2],[0]]), true_input)
+				#if in_dim!=gcn_dim:
+ 				w_adjust = tf.get_variable('w_adjust', [gcn_dim,in_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+				gcn_out = tf.tensordot(gcn_out,w_adjust,axes=[[2],[0]])
 				
 				gcn_out = b_layer * gcn_out + (1 - b_layer) * gcn_in
-
+				
 				out.append(gcn_out)
 
 		return gcn_out
@@ -551,7 +555,7 @@ class SummarizationModel(object):
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
 																						   axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 			if self._hps.concat_with_word_embedding:
-				w_word = tf.get_variable('word_w', [self._hps.word_gcn_dim + self._hps.emb_dim, 512], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)		
+				word_w = tf.get_variable('word_w', [self._hps.word_gcn_dim + self._hps.emb_dim, 512], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)		
 				
 				
 			if self._hps.concat_gcn_lstm:
@@ -724,7 +728,7 @@ class SummarizationModel(object):
 		tf.logging.info('Called reverse')
 	
 		
-		with tf.variable_scope('gcn_seq2seq',):
+		with tf.variable_scope('gcn_seq2seq'):
 			# Some initializers
 			self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag, hps.rand_unif_init_mag,
 																seed=123)
@@ -763,7 +767,7 @@ class SummarizationModel(object):
 					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [256, self._hps.hidden_dim*2], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)
 		
 			if self._hps.concat_with_word_embedding:
-				w_word = tf.get_variable('word_w', [self._hps.word_gcn_dim + self._hps.emb_dim, 512], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)		
+				word_w = tf.get_variable('word_w', [self._hps.word_gcn_dim + self._hps.emb_dim, 512], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)		
 	
 			gcn_in = emb_enc_inputs
 			in_dim = hps.emb_dim
@@ -785,7 +789,7 @@ class SummarizationModel(object):
 				if self._hps.simple_concat:
 					self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
 				else:
-					self._enc_states = tf.add(tf.multiply(w_gcn_outputs,gcn_word_w),tf.multiply(enc_outputs,lstm_word_w))
+					self._enc_states = tf.add(tf.multiply(gcn_outputs,gcn_word_w),tf.multiply(enc_outputs,lstm_word_w))
 				
 			else:
 				self._enc_states = enc_outputs
@@ -811,7 +815,7 @@ class SummarizationModel(object):
 
 
 
-					query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens,name='query_encoder')
+				query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens,name='query_encoder')
 
 
 				if self._hps.concat_gcn_lstm and self._hps.query_gcn:
