@@ -250,9 +250,9 @@ class SummarizationModel(object):
 		"""
 		with tf.variable_scope(name):
 			if self._hps.use_lstm:
-				cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=self.rand_unif_init,
+				cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=tf.contrib.layers.xavier_initializer(),
 											  state_is_tuple=True)
-				cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=self.rand_unif_init,
+				cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=tf.contrib.layers.xavier_initializer(),
 											  state_is_tuple=True)
 			else:
 				cell_fw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim)
@@ -286,12 +286,13 @@ class SummarizationModel(object):
 
 				w_in = tf.get_variable('w_in', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)                           
 				w_out = tf.get_variable('w_out', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
-#				w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],  initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+				w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],  initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+				b_layer = tf.get_variable('b_layer', [1, gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer) #gating for the highway networks
 
 				# for code optimisation only
 				pre_com_o_in = tf.tensordot(gcn_in, w_in, axes=[[2], [0]])
 				pre_com_o_out = tf.tensordot(gcn_in, w_out, axes=[[2], [0]])
-#				pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2], [0]])
+				pre_com_o_loop = tf.tensordot(gcn_in, w_loop, axes=[[2], [0]])
 
 				if use_gating:
 					w_gin = tf.get_variable('w_gin', [in_dim, 1], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
@@ -347,7 +348,7 @@ class SummarizationModel(object):
 
 					act_sum += in_act + out_act
 
-				'''
+				
 				with tf.name_scope('self_loop'):
 					inp_loop = pre_com_o_loop
 					if dropout != 1.0: inp_loop = tf.nn.dropout(inp_loop, keep_prob=dropout)
@@ -358,15 +359,18 @@ class SummarizationModel(object):
 						loop_act = inp_loop * loop_gsig
 					else:
 						loop_act = inp_loop
-				'''
+				
 
-				#act_sum += loop_act
+				act_sum += loop_act
 				neighbour_count = tf.expand_dims(neighbour_count,-1)
 				act_sum = act_sum/neighbour_count 
 				gcn_out = tf.nn.relu(act_sum)
+				
 				if use_skip:
 					gcn_out = tf.add(tf.tensordot(gcn_out,w_skip,axes=[[2],[0]]), true_input)
-					tf.logging.info(tf.shape(gcn_out))				
+				
+				gcn_out = b_layer * gcn_out + (1 - b_layer) * gcn_in
+
 				out.append(gcn_out)
 
 		return gcn_out
@@ -386,14 +390,15 @@ class SummarizationModel(object):
 			if self._hps.use_lstm:
 			# Define weights and biases to reduce the cell and reduce the state
 				w_reduce_c = tf.get_variable('w_reduce_c', [hidden_dim * 2, hidden_dim], dtype=tf.float32,
-										 initializer=self.trunc_norm_init, regularizer=self._regularizer)
+										 initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				bias_reduce_c = tf.get_variable('bias_reduce_c', [hidden_dim], dtype=tf.float32,
-											initializer=self.trunc_norm_init, regularizer=self._regularizer)
+											initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 			
 			bias_reduce_h = tf.get_variable('bias_reduce_h', [hidden_dim], dtype=tf.float32,
-											initializer=self.trunc_norm_init, regularizer=self._regularizer)
+											initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+			
 			w_reduce_h = tf.get_variable('w_reduce_h', [hidden_dim * 2, hidden_dim], dtype=tf.float32,
-										 initializer=self.trunc_norm_init, regularizer=self._regularizer)
+										 initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 
 
 			# Apply linear layer
@@ -428,7 +433,7 @@ class SummarizationModel(object):
 	"""
 		hps = self._hps
 		if hps.use_lstm:
-			cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim, state_is_tuple=True, initializer=self.rand_unif_init)
+			cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim, state_is_tuple=True, initializer=tf.contrib.layers.xavier_initializer())
 		else:
 			cell = tf.contrib.rnn.BasicRNNCell(hps.hidden_dim)
 
@@ -523,6 +528,7 @@ class SummarizationModel(object):
 																seed=123)
 			self.trunc_norm_init = tf.truncated_normal_initializer(stddev=hps.trunc_norm_init_std)
 
+
 			# Add embedding matrix (shared by the encoder and decoder inputs)
 			with tf.variable_scope('embedding'):
 				if hps.mode == "train":
@@ -531,7 +537,7 @@ class SummarizationModel(object):
 					  embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable, regularizer=self._regularizer)
 					
 					else:
-					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=hps.emb_trainable, regularizer=self._regularizer)
+					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=hps.emb_trainable, regularizer=self._regularizer)
 				
 				else:
 					embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32)
@@ -544,14 +550,18 @@ class SummarizationModel(object):
 				
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
 																						   axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
-
+			if self._hps.concat_with_word_embedding:
+				w_word = tf.get_variable('word_w', [self._hps.word_gcn_dim + self._hps.emb_dim, 512], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)		
+				
+				
 			if self._hps.concat_gcn_lstm:
 
-				gcn_word_w = tf.get_variable('gcn_word_w', [self._hps.word_gcn_dim,256], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
-				lstm_word_w = tf.get_variable('lstm_word_w', [self._hps.hidden_dim*2,256], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+				gcn_word_w = tf.get_variable('gcn_word_w', [self._hps.word_gcn_dim,512], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)
+				lstm_word_w = tf.get_variable('lstm_word_w', [self._hps.hidden_dim*2,512], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)
+				
 				if self._hps.query_encoder:
-					q_gcn_word_w = tf.get_variable('q_gcn_word_w', [256, self._hps.query_gcn_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
-					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [256, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+					q_gcn_word_w = tf.get_variable('q_gcn_word_w', [256, self._hps.query_gcn_dim], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)
+					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [256, self._hps.hidden_dim*2], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)
 
 
 			if self._hps.no_lstm_encoder:  # use gcn directly
@@ -568,20 +578,27 @@ class SummarizationModel(object):
 
 
 			if self._hps.word_gcn:
+				
 				if self._hps.use_gcn_lstm_parallel:
 					gcn_in = emb_enc_inputs
 					in_dim = hps.emb_dim
 				else:
-					gcn_in = self._enc_states
-					in_dim = self._hps.hidden_dim*2
+					if self._hps.concat_with_word_embedding:
+						gcn_in = tf.concat(axis=2,values=[emb_enc_inputs,self._enc_states])
+						gcn_in = tf.tensordot(gcn_in,word_w,axes=[[2],[0]])
+					else:
+						gcn_in = self._enc_states
+						in_dim = self._hps.hidden_dim*2
 
-				gcn_outputs= self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
+				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
 												  batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
 												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
 												  adj_out=self._word_adj_out,neighbour_count=self._word_neighbour_count, 
 												  num_layers=hps.word_gcn_layers,
 												  use_gating=hps.word_gcn_gating, use_skip=hps.word_gcn_skip, dropout=self._word_gcn_dropout,
 												  name="gcn_word")
+				
+
 				if self._hps.concat_gcn_lstm and self._hps.word_gcn:
 					if self._hps.simple_concat:
 						self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
@@ -608,7 +625,6 @@ class SummarizationModel(object):
 			  		else:
 			  			q_gcn_in = self._query_states
 			  			q_in_dim = self._hps.hidden_dim * 2
-
 				
 					q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
 													batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
@@ -617,6 +633,7 @@ class SummarizationModel(object):
 													num_layers=hps.query_gcn_layers,
 													use_gating=hps.query_gcn_gating, use_skip=hps.query_gcn_skip, dropout=self._query_gcn_dropout,
 													name="gcn_query")
+					
 					if self._hps.concat_gcn_lstm and self._hps.query_gcn:
 						if self._hps.simple_concat:
 							self._query_states = tf.concat(axis=2,values=[query_outputs,q_gcn_outputs])
@@ -634,9 +651,9 @@ class SummarizationModel(object):
 
 			# Add the output projection to obtain the vocabulary distribution
 			with tf.variable_scope('output_projection'):
-				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
+				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				w_t = tf.transpose(w)
-				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
+				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				vocab_scores = []  # vocab_scores is the vocabulary distribution before applying softmax. Each entry on the list corresponds to one decoder step
 				for i, output in enumerate(decoder_outputs):
 					if i > 0:
@@ -721,7 +738,7 @@ class SummarizationModel(object):
 					  embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable, regularizer=self._regularizer)
 					
 					else:
-					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=hps.emb_trainable, regularizer=self._regularizer)
+					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=hps.emb_trainable, regularizer=self._regularizer)
 				
 				else:
 					embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32)
@@ -739,13 +756,14 @@ class SummarizationModel(object):
 
 			if self._hps.concat_gcn_lstm:
 
-				gcn_word_w = tf.get_variable('gcn_word_w', [256, self._hps.word_gcn_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
-				lstm_word_w = tf.get_variable('lstm_word_w', [256, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
+				gcn_word_w = tf.get_variable('gcn_word_w', [self._hps.word_gcn_dim, 512], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)
+				lstm_word_w = tf.get_variable('lstm_word_w', [self._hps.hidden_dim*2, 512], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)
 				if self._hps.query_encoder:
-					q_gcn_word_w = tf.get_variable('q_gcn_word_w', [256, self._hps.query_gcn_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
-					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [256, self._hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)
-	
-
+					q_gcn_word_w = tf.get_variable('q_gcn_word_w', [256, self._hps.query_gcn_dim], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)
+					q_lstm_word_w = tf.get_variable('q_lstm_word_w', [256, self._hps.hidden_dim*2], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)
+		
+			if self._hps.concat_with_word_embedding:
+				w_word = tf.get_variable('word_w', [self._hps.word_gcn_dim + self._hps.emb_dim, 512], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)		
 	
 			gcn_in = emb_enc_inputs
 			in_dim = hps.emb_dim
@@ -759,6 +777,7 @@ class SummarizationModel(object):
 
 			if hps.concat_with_word_embedding:
 				gcn_outputs = tf.concat(axis=2,values=[emb_enc_inputs,gcn_outputs])
+				gcn_outputs = tf.tensordot(gcn_outputs,word_w,axes=[[2],[0]])
 
 			enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens)
 
@@ -777,7 +796,9 @@ class SummarizationModel(object):
 			if self._hps.query_encoder:
 				q_gcn_in = emb_query_inputs
 				q_in_dim = hps.emb_dim
-				q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
+				q_gcn_outputs = q_gcn_in
+				if self._hps.query_gcn:
+					q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
 													batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
 													max_labels=hps.num_word_dependency_labels, adj_in=self._query_adj_in,
 													adj_out=self._query_adj_out, neighbour_count=self._query_neighbour_count, 
@@ -785,12 +806,12 @@ class SummarizationModel(object):
 													use_gating=hps.query_gcn_gating,  use_skip=hps.query_gcn_skip, dropout=self._query_gcn_dropout,
 													name="gcn_query")
 
-				if hps.concat_with_word_embedding:
-					q_gcn_outputs = tf.concat(axis=2,values=[emb_query_inputs,q_gcn_outputs])
+					if hps.concat_with_word_embedding:
+						q_gcn_outputs = tf.concat(axis=2,values=[emb_query_inputs,q_gcn_outputs])
 
 
 
-				query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens,name='query_encoder')
+					query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens,name='query_encoder')
 
 
 				if self._hps.concat_gcn_lstm and self._hps.query_gcn:
@@ -810,9 +831,9 @@ class SummarizationModel(object):
 
 			# Add the output projection to obtain the vocabulary distribution
 			with tf.variable_scope('output_projection'):
-				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
+				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				w_t = tf.transpose(w)
-				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
+				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				vocab_scores = []  # vocab_scores is the vocabulary distribution before applying softmax. Each entry on the list corresponds to one decoder step
 				for i, output in enumerate(decoder_outputs):
 					if i > 0:
