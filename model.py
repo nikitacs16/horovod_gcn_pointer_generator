@@ -373,7 +373,7 @@ class SummarizationModel(object):
  				
  				w_adjust = tf.get_variable('w_adjust', [in_dim, gcn_dim ], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				b_adjust = tf.get_variable('b_adjust', [1, gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
-				gcn_in = tf.add(tf.tensordot(gcn_in,w_adjust,axes=[[2],[0]]), b_adjust) 
+				gcn_in = tf.nn.relu(tf.add(tf.tensordot(gcn_in,w_adjust,axes=[[2],[0]]), b_adjust)) 
 				
 				gcn_out = b_layer * gcn_in + (1.0 - b_layer) * gcn_out
 				
@@ -583,7 +583,7 @@ class SummarizationModel(object):
 				else:
 					if self._hps.concat_with_word_embedding:
 						gcn_in = tf.concat(axis=2,values=[emb_enc_inputs,self._enc_states]) #emb + enc
-						gcn_in = tf.add(tf.tensordot(gcn_in,w_word,axes=[[2],[0]]),b_word)  #enc dim state
+						gcn_in = tf.nn.relu(tf.add(tf.tensordot(gcn_in,w_word,axes=[[2],[0]]),b_word))  #enc dim state
 					else:
 						gcn_in = self._enc_states
 						in_dim = self._hps.hidden_dim*2
@@ -606,7 +606,7 @@ class SummarizationModel(object):
 						self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
 					else:
 						interm_outputs_2 = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
-						self._enc_states = tf.add(tf.tensordot(interm_outputs_2,w_gcn_lstm,axes=[[2],[0]]), b_gcn_lstm)
+						self._enc_states = tf.nn.relu(tf.add(tf.tensordot(interm_outputs_2,w_gcn_lstm,axes=[[2],[0]]), b_gcn_lstm))
 				
 				else:
 					self._enc_states = gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
@@ -641,7 +641,7 @@ class SummarizationModel(object):
 						if self._hps.simple_concat:
 							self._query_states = tf.concat(axis=2,values=[query_outputs,q_gcn_outputs])
 						else:
-							self._query_states = tf.add(tf.multiply(q_gcn_outputs,q_gcn_word_w),tf.multiply(query_outputs,q_lstm_word_w))
+							self._query_states = tf.nn.relu(tf.add(tf.multiply(q_gcn_outputs,q_gcn_word_w),tf.multiply(query_outputs,q_lstm_word_w)))
 						
 					else:
 						self._query_states = q_gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
@@ -773,7 +773,7 @@ class SummarizationModel(object):
 				interm_outputs_1 = tf.concat(axis=2,values=[emb_enc_inputs,gcn_outputs]) #gcn outputs are now in_dim
 				w_word = tf.get_variable('w_word', [hps.word_gcn_dim + self._hps.emb_dim, hps.word_gcn_dim], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)		
 				b_word = tf.get_variable('b_word', [1, hps.word_gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
-				gcn_outputs = tf.add(tf.tensordot(interm_outputs_1,w_word,axes=[[2],[0]]), b_word) 
+				gcn_outputs = tf.nn.relu(tf.add(tf.tensordot(interm_outputs_1,w_word,axes=[[2],[0]]), b_word)) 
 
 			enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens)
 
@@ -788,7 +788,7 @@ class SummarizationModel(object):
 					self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
 				else:
 					interm_outputs_2 = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
-					self._enc_states = tf.add(tf.tensordot(interm_outputs_2,w_gcn_lstm, axes=[[2],[0]]),b_gcn_lstm)
+					self._enc_states = tf.nn.relu(tf.add(tf.tensordot(interm_outputs_2,w_gcn_lstm, axes=[[2],[0]]),b_gcn_lstm))
 				
 			else:
 				self._enc_states = enc_outputs
