@@ -561,7 +561,6 @@ class SummarizationModel(object):
 				b_word = tf.get_variable('b_word', [1, self._hps.hidden_dim*2], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 				
 
-
 			if self._hps.no_lstm_encoder:  # use gcn directly
 				self._enc_states = emb_enc_inputs
 				in_dim = hps.emb_dim
@@ -586,7 +585,10 @@ class SummarizationModel(object):
 						gcn_in = tf.nn.relu(tf.add(tf.tensordot(gcn_in,w_word,axes=[[2],[0]]),b_word))  #enc dim state
 					else:
 						gcn_in = self._enc_states
-						in_dim = self._hps.hidden_dim*2
+						if self._hps.no_lstm_encoder:
+							in_dim = hps.emb_dim
+						else:
+							in_dim = self._hps.hidden_dim*2
 
 				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
 												  batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
@@ -627,7 +629,11 @@ class SummarizationModel(object):
 			  			q_in_dim = hps.emb_dim
 			  		else:
 			  			q_gcn_in = self._query_states
-			  			q_in_dim = self._hps.hidden_dim * 2
+			  			if self._hps.no_lstm_query_encoder:
+			  				q_in_dim = hps.emb_dim
+			  				
+			  			else:
+			  				q_in_dim = self._hps.hidden_dim * 2
 				
 					q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
 													batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,

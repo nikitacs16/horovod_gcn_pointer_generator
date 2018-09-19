@@ -221,7 +221,7 @@ class Batch(object):
 				edge_list.append(ex.word_edge_list)
 
 			self.word_adj_in, self.word_adj_out, self.word_neighbour_count = data.get_adj(edge_list, hps.batch_size, max_enc_seq_len, use_label_information=hps.use_label_information, 
-																				max_labels=hps.num_word_dependency_labels)
+																				max_labels=hps.num_word_dependency_labels,flow_alone=hps.flow_alone, flow_combined=hps.flow_combined)
 
 	def init_query_seq(self, example_list, hps):
 		
@@ -262,7 +262,7 @@ class Batch(object):
 					query_edge_list.append(ex.query_edge_list)
 				#note query_edge_list is list of query edge lists. The length is equal to the batch size
 				self.query_adj_in, self.query_adj_out, self.query_neighbour_count = data.get_adj(query_edge_list, hps.batch_size, max_query_seq_len,use_label_information=hps.use_label_information,
-																   max_labels=hps.num_word_dependency_labels)
+																   max_labels=hps.num_word_dependency_labels,flow_alone=hps.flow_alone, flow_combined=hps.flow_combined)
 
 
 	def init_decoder_seq(self, example_list, hps):
