@@ -774,7 +774,7 @@ class SummarizationModel(object):
 				w_word = tf.get_variable('w_word', [hps.word_gcn_dim + self._hps.emb_dim, hps.word_gcn_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)		
 				b_word = tf.get_variable('b_word', [1, hps.word_gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 				gcn_outputs = tf.nn.relu(tf.add(tf.tensordot(interm_outputs_1,w_word,axes=[[2],[0]]), b_word)) 
-
+				#gcn_outputs = interm_outputs_1
 			enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens)
 
 			if self._hps.concat_gcn_lstm:
