@@ -396,15 +396,15 @@ class SummarizationModel(object):
 			if self._hps.use_lstm:
 			# Define weights and biases to reduce the cell and reduce the state
 				w_reduce_c = tf.get_variable('w_reduce_c', [hidden_dim * 2, hidden_dim], dtype=tf.float32,
-										 initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+										 initializer=self.rand_unif_init, regularizer=self._regularizer)
 				bias_reduce_c = tf.get_variable('bias_reduce_c', [hidden_dim], dtype=tf.float32,
-											initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+											initializer=self.rand_unif_init, regularizer=self._regularizer)
 			
 			bias_reduce_h = tf.get_variable('bias_reduce_h', [hidden_dim], dtype=tf.float32,
-											initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+											initializer=self.rand_unif_init, regularizer=self._regularizer)
 			
 			w_reduce_h = tf.get_variable('w_reduce_h', [hidden_dim * 2, hidden_dim], dtype=tf.float32,
-										 initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+										 initializer=self.rand_unif_init, regularizer=self._regularizer)
 
 
 			# Apply linear layer
@@ -439,7 +439,7 @@ class SummarizationModel(object):
 	"""
 		hps = self._hps
 		if hps.use_lstm:
-			cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim, state_is_tuple=True, initializer=tf.contrib.layers.xavier_initializer())
+			cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim, state_is_tuple=True, initializer=self.rand_unif_init)
 		else:
 			cell = tf.contrib.rnn.BasicRNNCell(hps.hidden_dim)
 
@@ -543,7 +543,7 @@ class SummarizationModel(object):
 					  embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable, regularizer=self._regularizer)
 					
 					else:
-					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=hps.emb_trainable, regularizer=self._regularizer)
+					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=hps.emb_trainable, regularizer=self._regularizer)
 				
 				else:
 					embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32)
@@ -557,7 +557,7 @@ class SummarizationModel(object):
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch,
 																						   axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 			if self._hps.concat_with_word_embedding: #intermediate concat
-				w_word = tf.get_variable('w_word', [self._hps.hidden_dim * 2 + self._hps.emb_dim, self._hps.hidden_dim * 2], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)		
+				w_word = tf.get_variable('w_word', [self._hps.hidden_dim * 2 + self._hps.emb_dim, self._hps.hidden_dim * 2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)		
 				b_word = tf.get_variable('b_word', [1, self._hps.hidden_dim*2], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 				
 
@@ -597,7 +597,7 @@ class SummarizationModel(object):
 												  name="gcn_word")
 				
 				if self._hps.concat_gcn_lstm:
-					w_gcn_lstm = tf.get_variable('w_gcn_lstm', [hps.word_gcn_dim + hps.hidden_dim * 2, hps.hidden_dim * 2 ], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+					w_gcn_lstm = tf.get_variable('w_gcn_lstm', [hps.word_gcn_dim + hps.hidden_dim * 2, hps.hidden_dim * 2 ], initializer=self.trunc_norm_init, regularizer=self._regularizer)
 					b_gcn_lstm = tf.get_variable('b_gcn_lstm', [1, hps.hidden_dim * 2], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 				
 
@@ -654,9 +654,9 @@ class SummarizationModel(object):
 
 			# Add the output projection to obtain the vocabulary distribution
 			with tf.variable_scope('output_projection'):
-				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
 				w_t = tf.transpose(w)
-				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
 				vocab_scores = []  # vocab_scores is the vocabulary distribution before applying softmax. Each entry on the list corresponds to one decoder step
 				for i, output in enumerate(decoder_outputs):
 					if i > 0:
@@ -741,7 +741,7 @@ class SummarizationModel(object):
 					  embedding = tf.get_variable('embedding', dtype=tf.float32, initializer=tf.cast(self._vocab.glove_emb,tf.float32),trainable=hps.emb_trainable, regularizer=self._regularizer)
 					
 					else:
-					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=hps.emb_trainable, regularizer=self._regularizer)
+					  embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=hps.emb_trainable, regularizer=self._regularizer)
 				
 				else:
 					embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32)
@@ -771,14 +771,14 @@ class SummarizationModel(object):
 
 			if hps.concat_with_word_embedding:
 				interm_outputs_1 = tf.concat(axis=2,values=[emb_enc_inputs,gcn_outputs]) #gcn outputs are now in_dim
-				w_word = tf.get_variable('w_word', [hps.word_gcn_dim + self._hps.emb_dim, hps.word_gcn_dim], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)		
+				w_word = tf.get_variable('w_word', [hps.word_gcn_dim + self._hps.emb_dim, hps.word_gcn_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)		
 				b_word = tf.get_variable('b_word', [1, hps.word_gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 				gcn_outputs = tf.nn.relu(tf.add(tf.tensordot(interm_outputs_1,w_word,axes=[[2],[0]]), b_word)) 
 
 			enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens)
 
 			if self._hps.concat_gcn_lstm:
-				w_gcn_lstm = tf.get_variable('w_gcn_lstm', [hps.word_gcn_dim + hps.hidden_dim*2, hps.hidden_dim*2], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), trainable=True, regularizer=self._regularizer)		
+				w_gcn_lstm = tf.get_variable('w_gcn_lstm', [hps.word_gcn_dim + hps.hidden_dim*2, hps.hidden_dim*2], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)		
 				b_gcn_lstm = tf.get_variable('b_gcn_lstm', [1, hps.hidden_dim*2], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 
 			
@@ -834,9 +834,9 @@ class SummarizationModel(object):
 
 			# Add the output projection to obtain the vocabulary distribution
 			with tf.variable_scope('output_projection'):
-				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
 				w_t = tf.transpose(w)
-				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=self.trunc_norm_init, regularizer=self._regularizer)
 				vocab_scores = []  # vocab_scores is the vocabulary distribution before applying softmax. Each entry on the list corresponds to one decoder step
 				for i, output in enumerate(decoder_outputs):
 					if i > 0:
