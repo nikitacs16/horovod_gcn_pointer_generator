@@ -363,8 +363,8 @@ class SummarizationModel(object):
 				
 
 				act_sum += loop_act
-				neighbour_count = tf.expand_dims(neighbour_count,-1)
-				act_sum = act_sum/neighbour_count 
+				neighbour_count_ = tf.expand_dims(neighbour_count,-1)
+				act_sum = act_sum/neighbour_count_ 
 				gcn_out = tf.nn.relu(act_sum)
 				tf.logging.info(gcn_out.get_shape())
 				if use_skip:
