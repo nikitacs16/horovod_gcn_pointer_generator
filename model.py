@@ -288,7 +288,8 @@ class SummarizationModel(object):
 				w_out = tf.get_variable('w_out', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],  initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				b_layer = tf.get_variable('b_layer', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer) #gating for the highway networks
-
+				b_out = tf.get_variable('b_out', [1, gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
+			 
 				# for code optimisation only
 				pre_com_o_in = tf.tensordot(gcn_in, w_in, axes=[[2], [0]])
 				pre_com_o_out = tf.tensordot(gcn_in, w_out, axes=[[2], [0]])
@@ -310,21 +311,22 @@ class SummarizationModel(object):
 
 					with tf.variable_scope('label-%d_name-%s_layer-%d' % (lbl, name, layer)) as scope:
 
-						b_out = tf.get_variable('b_out', [1, gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
-			 
+						
 						if use_gating:
 							b_gout = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
+							b_gin = tf.get_variable('b_gin', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
+							b_gloop = tf.get_variable('b_gloop',[1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 						if use_skip:
 							w_skip = tf.get_variable('w_skip', [gcn_dim,true_in_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 
 					with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
-						inp_in = pre_com_o_in + tf.expand_dims(b_out,axis=0)  
+						inp_in = pre_com_o_in  
 						in_t = tf.stack(
 							[tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_in[i]) for i in range(batch_size)])
 						if dropout != 1.0: in_t = tf.nn.dropout(in_t, keep_prob=dropout)
 
 						if use_gating:
-							inp_gin = pre_com_o_gin + tf.expand_dims(b_gout, axis=0)
+							inp_gin = pre_com_o_gin + tf.expand_dims(b_gin, axis=0)
 							in_gate = tf.stack(
 								[tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_gin[i]) for i in range(batch_size)])
 							in_gsig = tf.sigmoid(in_gate)
@@ -333,7 +335,7 @@ class SummarizationModel(object):
 							in_act = in_t
 
 					with tf.name_scope('out_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
-						inp_out = pre_com_o_out + tf.expand_dims(b_out, axis=0)
+						inp_out = pre_com_o_out 
 						out_t = tf.stack(
 							[tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_out[i]) for i in range(batch_size)])
 						if dropout != 1.0: out_t = tf.nn.dropout(out_t, keep_prob=dropout)
@@ -355,7 +357,7 @@ class SummarizationModel(object):
 					if dropout != 1.0: inp_loop = tf.nn.dropout(inp_loop, keep_prob=dropout)
 
 					if use_gating:
-						inp_gloop = pre_com_o_gloop
+						inp_gloop = pre_com_o_gloop + tf.expand_dims(b_gloop, axis=0)
 						loop_gsig = tf.sigmoid(inp_gloop)
 						loop_act = inp_loop * loop_gsig
 					else:
@@ -363,10 +365,12 @@ class SummarizationModel(object):
 				
 
 				act_sum += loop_act
+				act_sum = act_sum + tf.expand_dims(b_out,axis=0) 
+				
 				neighbour_count_ = tf.expand_dims(neighbour_count,-1)
 				act_sum = act_sum/neighbour_count_ 
 				gcn_out = tf.nn.relu(act_sum)
-				tf.logging.info(gcn_out.get_shape())
+				
 				if use_skip:
 					gcn_out = tf.add(tf.tensordot(gcn_out,w_skip,axes=[[2],[0]]), true_input)
 				
@@ -635,7 +639,10 @@ class SummarizationModel(object):
 			  				
 			  			else:
 			  				q_in_dim = self._hps.hidden_dim * 2
-				
+					if q_in_dim!= gcn_dim:
+						w_adjust_q = tf.get_variable('w_adjust_q', [q_in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+						q_gcn_in = tf.tensordot(q_gcn_in, w_adjust_q,axes=[[2],[0]])
+					
 					q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
 													batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
 													max_labels=hps.num_word_dependency_labels, adj_in=self._query_adj_in,

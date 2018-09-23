@@ -365,6 +365,7 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_l
                 continue
 
             if flow_alone:
+                lbl = 0
                 if src+1 < max_nodes:
                     out_ind[lbl].append((src, src+1))
                     out_data[lbl].append(1.0)
