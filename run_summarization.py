@@ -392,7 +392,9 @@ def main(unused_argv):
     FLAGS.restore_best_model = True
   
   if FLAGS.mode == 'debug':
-    FLAGS.debug = True  
+    FLAGS.debug = True 
+
+  if FLAGS.mode == 'co' 
 
   tf.logging.set_verbosity(tf.logging.INFO) # choose what level of logging you want
   tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))

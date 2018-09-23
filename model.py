@@ -374,7 +374,11 @@ class SummarizationModel(object):
 				if use_skip:
 					gcn_out = tf.add(tf.tensordot(gcn_out,w_skip,axes=[[2],[0]]), true_input)
 				
- 				
+ 				if in_dim!= gcn_dim:
+					w_adjust = tf.get_variable('w_adjust', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+					gcn_in = tf.tensordot(gcn_in, w_adjust,axes=[[2],[0]])
+					tf.logging.info('Input transformed for residual upadate')		
+	
 				gcn_out = b_layer * gcn_in + (1.0 - b_layer) * gcn_out # weighted residual connection
 				
 				out.append(gcn_out)
@@ -591,10 +595,7 @@ class SummarizationModel(object):
 							in_dim = self._hps.hidden_dim*2
 
 				gcn_dim = hps.word_gcn_dim			
-				if in_dim!= gcn_dim:
-					w_adjust = tf.get_variable('w_adjust', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
-					gcn_in = tf.tensordot(gcn_in, w_adjust,axes=[[2],[0]])		
-
+			
 				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
 												  batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
 												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
@@ -639,9 +640,6 @@ class SummarizationModel(object):
 			  				
 			  			else:
 			  				q_in_dim = self._hps.hidden_dim * 2
-					if q_in_dim!= gcn_dim:
-						w_adjust_q = tf.get_variable('w_adjust_q', [q_in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
-						q_gcn_in = tf.tensordot(q_gcn_in, w_adjust_q,axes=[[2],[0]])
 					
 					q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
 													batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
@@ -776,9 +774,7 @@ class SummarizationModel(object):
 			in_dim = hps.emb_dim
 
 			gcn_dim = hps.word_gcn_dim			
-			if in_dim!= gcn_dim:
-				w_adjust = tf.get_variable('w_adjust', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
-				gcn_in = tf.tensordot(gcn_in, w_adjust,axes=[[2],[0]])
+			
 
 			gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
 												  batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
@@ -820,11 +816,8 @@ class SummarizationModel(object):
 				q_gcn_in = emb_query_inputs
 				q_in_dim = hps.emb_dim
 				q_gcn_outputs = q_gcn_in
-				gcn_dim = hps.query_gcn_dim
-
-				if q_in_dim!= gcn_dim:
-					w_adjust_q = tf.get_variable('w_adjust_q', [q_in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
-					q_gcn_in = tf.tensordot(q_gcn_in, w_adjust_q,axes=[[2],[0]])
+				
+				
 				
 				if self._hps.query_gcn: #deprecated
 					q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
