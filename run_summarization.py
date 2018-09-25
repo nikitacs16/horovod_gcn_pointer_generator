@@ -394,8 +394,7 @@ def main(unused_argv):
   if FLAGS.mode == 'debug':
     FLAGS.debug = True 
 
-  if FLAGS.mode == 'co' 
-
+  
   tf.logging.set_verbosity(tf.logging.INFO) # choose what level of logging you want
   tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))
   if FLAGS.no_lstm_encoder and FLAGS.word_gcn!=True:
