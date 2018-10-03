@@ -316,7 +316,7 @@ class SummarizationModel(object):
 							b_common = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 
 						
-						'''
+						
 						if use_gating:
 							b_gout = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 							b_gin = tf.get_variable('b_gin', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
@@ -324,14 +324,14 @@ class SummarizationModel(object):
 						
 						if use_skip:
 							w_skip = tf.get_variable('w_skip', [gcn_dim,true_in_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
-						'''
+						
 					with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
 						inp_in = pre_com_o_in  
 						in_t = tf.stack(
 							[tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_in[i]) for i in range(batch_size)])
 						if dropout != 1.0: in_t = tf.nn.dropout(in_t, keep_prob=dropout)
 
-						'''
+						
 						if use_gating:
 							inp_gin = pre_com_o_gin + tf.expand_dims(b_gin, axis=0)
 							in_gate = tf.stack(
@@ -340,7 +340,7 @@ class SummarizationModel(object):
 							in_act = in_t * in_gsig
 						else:
 							in_act = in_t
-						'''
+						
 						in_act = in_t
 
 					with tf.name_scope('out_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
@@ -348,7 +348,7 @@ class SummarizationModel(object):
 						out_t = tf.stack(
 							[tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_out[i]) for i in range(batch_size)])
 						if dropout != 1.0: out_t = tf.nn.dropout(out_t, keep_prob=dropout)
-						'''
+					
 						if use_gating:
 							inp_gout = pre_com_o_gout + tf.expand_dims(b_gout, axis=0)
 							out_gate = tf.stack([tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_gout[i]) for i in
@@ -357,7 +357,7 @@ class SummarizationModel(object):
 							out_act = out_t * out_gsig
 						else:
 							out_act = out_t
-						'''
+					
 						out_act = out_t
 
 					act_sum += in_act + out_act 
@@ -366,14 +366,14 @@ class SummarizationModel(object):
 				with tf.name_scope('self_loop'):
 					inp_loop = pre_com_o_loop
 					if dropout != 1.0: inp_loop = tf.nn.dropout(inp_loop, keep_prob=dropout)
-					'''
+					
 					if use_gating:
 						inp_gloop = pre_com_o_gloop + tf.expand_dims(b_gloop, axis=0)
 						loop_gsig = tf.sigmoid(inp_gloop)
 						loop_act = inp_loop * loop_gsig
 					else:
 						loop_act = inp_loop
-					'''
+					
 
 				act_sum += loop_act
 				act_sum = act_sum + tf.expand_dims(b_out,axis=0) 
@@ -587,7 +587,7 @@ class SummarizationModel(object):
 				# Add the encoder.
 				enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens)
 
-				if self.stacked_lstm: #lstm over lstm
+				if self._hps.stacked_lstm: #lstm over lstm
 					enc_outputs, fw_st, bw_st = self._add_encoder(enc_outputs, self._enc_lens,name='stacked_encoder')
 	
 
@@ -607,7 +607,7 @@ class SummarizationModel(object):
 					if self._hps.concat_with_word_embedding: #interm concat
 						b_highway = tf.get_variable('b_highway', [1], initializer=tf.constant_initializer(0.0))
 
-						if hps.emb_dim!= hps.hidden_dim * 2 
+						if hps.emb_dim!= hps.hidden_dim * 2 :
 							w_adjust = tf.get_variable('w_adjust', [hps.emb_dim, hps.hidden_dim*2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 							emb_enc_inputs = tf.tensordot(emb_enc_inputs, w_adjust,axes=[[2],[0]])
 							tf.logging.info('Input transformed for residual upadate')		
@@ -637,7 +637,7 @@ class SummarizationModel(object):
 				if self._hps.concat_gcn_lstm and self._hps.word_gcn: #upper concat
 					b_upper_concat = tf.get_variable('b_upper_concat', [1], initializer=tf.constant_initializer(0.0))
 					
-					if hps.word_gcn_dim!= hps.hidden_dim * 2 
+					if hps.word_gcn_dim!= hps.hidden_dim * 2:
 						w_adjust_upper_concat = tf.get_variable('w_adjust_upper_concat', [hps.emb_dim, hps.hidden_dim*2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 						gcn_outputs = tf.tensordot(gcn_outputs, w_adjust_upper_concat,axes=[[2],[0]])
 					
