@@ -268,7 +268,7 @@ class SummarizationModel(object):
 
 
 	def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, neighbour_count, num_layers=1,
-					   use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN"): #output becomes gcn_in ka dimension 
+					   use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN", use_label_information=False): #output becomes gcn_in ka dimension 
 
 		out = []
 		true_input = gcn_in
@@ -288,6 +288,8 @@ class SummarizationModel(object):
 				w_out = tf.get_variable('w_out', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				w_loop = tf.get_variable('w_loop', [in_dim, gcn_dim],  initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 				b_layer = tf.get_variable('b_layer', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer) #gating for the highway networks
+
+
 				b_out = tf.get_variable('b_out', [1, gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 			 
 				# for code optimisation only
@@ -310,21 +312,26 @@ class SummarizationModel(object):
 				for lbl in range(max_labels):
 
 					with tf.variable_scope('label-%d_name-%s_layer-%d' % (lbl, name, layer)) as scope:
+						if use_gating:
+							b_common = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 
 						
+						'''
 						if use_gating:
 							b_gout = tf.get_variable('b_gout', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 							b_gin = tf.get_variable('b_gin', [1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 							b_gloop = tf.get_variable('b_gloop',[1], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
+						
 						if use_skip:
 							w_skip = tf.get_variable('w_skip', [gcn_dim,true_in_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
-
+						'''
 					with tf.name_scope('in_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
 						inp_in = pre_com_o_in  
 						in_t = tf.stack(
 							[tf.sparse_tensor_dense_matmul(adj_in[i][lbl], inp_in[i]) for i in range(batch_size)])
 						if dropout != 1.0: in_t = tf.nn.dropout(in_t, keep_prob=dropout)
 
+						'''
 						if use_gating:
 							inp_gin = pre_com_o_gin + tf.expand_dims(b_gin, axis=0)
 							in_gate = tf.stack(
@@ -333,13 +340,15 @@ class SummarizationModel(object):
 							in_act = in_t * in_gsig
 						else:
 							in_act = in_t
+						'''
+						in_act = in_t
 
 					with tf.name_scope('out_arcs-%s_name-%s_layer-%d' % (lbl, name, layer)):
 						inp_out = pre_com_o_out 
 						out_t = tf.stack(
 							[tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_out[i]) for i in range(batch_size)])
 						if dropout != 1.0: out_t = tf.nn.dropout(out_t, keep_prob=dropout)
-
+						'''
 						if use_gating:
 							inp_gout = pre_com_o_gout + tf.expand_dims(b_gout, axis=0)
 							out_gate = tf.stack([tf.sparse_tensor_dense_matmul(adj_out[i][lbl], inp_gout[i]) for i in
@@ -348,38 +357,43 @@ class SummarizationModel(object):
 							out_act = out_t * out_gsig
 						else:
 							out_act = out_t
+						'''
+						out_act = out_t
 
-					act_sum += in_act + out_act
+					act_sum += in_act + out_act 
 
 				
 				with tf.name_scope('self_loop'):
 					inp_loop = pre_com_o_loop
 					if dropout != 1.0: inp_loop = tf.nn.dropout(inp_loop, keep_prob=dropout)
-
+					'''
 					if use_gating:
 						inp_gloop = pre_com_o_gloop + tf.expand_dims(b_gloop, axis=0)
 						loop_gsig = tf.sigmoid(inp_gloop)
 						loop_act = inp_loop * loop_gsig
 					else:
 						loop_act = inp_loop
-				
+					'''
 
 				act_sum += loop_act
 				act_sum = act_sum + tf.expand_dims(b_out,axis=0) 
 				
-				neighbour_count_ = tf.expand_dims(neighbour_count,-1)
-				act_sum = act_sum/neighbour_count_ 
+				if use_normalization:
+
+					neighbour_count_ = tf.expand_dims(neighbour_count,-1)
+					act_sum = act_sum/neighbour_count_ 
+				
+
 				gcn_out = tf.nn.relu(act_sum)
 				
-				if use_skip:
-					gcn_out = tf.add(tf.tensordot(gcn_out,w_skip,axes=[[2],[0]]), true_input)
-				
- 				if in_dim!= gcn_dim:
-					w_adjust = tf.get_variable('w_adjust', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
-					gcn_in = tf.tensordot(gcn_in, w_adjust,axes=[[2],[0]])
-					tf.logging.info('Input transformed for residual upadate')		
+				if use_skip: #residue is called skip
+					
+ 					if in_dim!= gcn_dim:
+						w_adjust = tf.get_variable('w_adjust', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+						gcn_in = tf.tensordot(gcn_in, w_adjust,axes=[[2],[0]])
+						tf.logging.info('Input transformed for residual upadate')		
 	
-				gcn_out = b_layer * gcn_in + (1.0 - b_layer) * gcn_out # weighted residual connection
+					gcn_out = b_layer * gcn_in + (1.0 - b_layer) * gcn_out # weighted residual connection
 				
 				out.append(gcn_out)
 
@@ -572,6 +586,12 @@ class SummarizationModel(object):
 			else:
 				# Add the encoder.
 				enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens)
+
+				if self.stacked_lstm: #lstm over lstm
+					enc_outputs, fw_st, bw_st = self._add_encoder(enc_outputs, self._enc_lens,name='stacked_encoder')
+	
+
+
 				self._enc_states = enc_outputs
 				in_dim = self._hps.hidden_dim * 2
 				# Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
@@ -584,9 +604,17 @@ class SummarizationModel(object):
 					gcn_in = emb_enc_inputs
 					in_dim = hps.emb_dim
 				else:
-					if self._hps.concat_with_word_embedding:
-						gcn_in = tf.concat(axis=2,values=[emb_enc_inputs,self._enc_states]) #emb + enc
-						gcn_in = tf.nn.relu(tf.add(tf.tensordot(gcn_in,w_word,axes=[[2],[0]]),b_word))  #enc dim state
+					if self._hps.concat_with_word_embedding: #interm concat
+						b_highway = tf.get_variable('b_highway', [1], initializer=tf.constant_initializer(0.0))
+
+						if hps.emb_dim!= hps.hidden_dim * 2 
+							w_adjust = tf.get_variable('w_adjust', [hps.emb_dim, hps.hidden_dim*2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+							emb_enc_inputs = tf.tensordot(emb_enc_inputs, w_adjust,axes=[[2],[0]])
+							tf.logging.info('Input transformed for residual upadate')		
+						
+						gcn_in = b_highway * emb_enc_inputs + (1.0 - b_highway) * self._enc_states
+						in_dim = self._hps.hidden_dim * 2
+						
 					else:
 						gcn_in = self._enc_states
 						if self._hps.no_lstm_encoder:
@@ -604,17 +632,17 @@ class SummarizationModel(object):
 												  use_gating=hps.word_gcn_gating, use_skip=hps.word_gcn_skip, dropout=self._word_gcn_dropout,
 												  name="gcn_word")
 				
-				if self._hps.concat_gcn_lstm:
-					w_gcn_lstm = tf.get_variable('w_gcn_lstm', [hps.word_gcn_dim + hps.hidden_dim * 2, hps.hidden_dim * 2 ], initializer=self.trunc_norm_init, regularizer=self._regularizer)
-					b_gcn_lstm = tf.get_variable('b_gcn_lstm', [1, hps.hidden_dim * 2], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
 				
 
-				if self._hps.concat_gcn_lstm and self._hps.word_gcn:
-					if self._hps.simple_concat:
-						self._enc_states = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
-					else:
-						interm_outputs_2 = tf.concat(axis=2,values=[enc_outputs,gcn_outputs])
-						self._enc_states = tf.nn.relu(tf.add(tf.tensordot(interm_outputs_2,w_gcn_lstm,axes=[[2],[0]]), b_gcn_lstm))
+				if self._hps.concat_gcn_lstm and self._hps.word_gcn: #upper concat
+					b_upper_concat = tf.get_variable('b_upper_concat', [1], initializer=tf.constant_initializer(0.0))
+					
+					if hps.word_gcn_dim!= hps.hidden_dim * 2 
+						w_adjust_upper_concat = tf.get_variable('w_adjust_upper_concat', [hps.emb_dim, hps.hidden_dim*2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+						gcn_outputs = tf.tensordot(gcn_outputs, w_adjust_upper_concat,axes=[[2],[0]])
+					
+					self._enc_states = b_upper_concat * enc_outputs + (1.0 - b_upper_concat) * gcn_outputs
+
 				
 				else:
 					self._enc_states = gcn_outputs  # note we return the last output from the gcn directly instead of all the outputs outputs
@@ -785,7 +813,7 @@ class SummarizationModel(object):
 												  name="gcn_word")
 		
 
-			if hps.concat_with_word_embedding:
+			if hps.concat_with_word_embedding: #
 				interm_outputs_1 = tf.concat(axis=2,values=[emb_enc_inputs,gcn_outputs]) #gcn outputs are now in_dim
 				w_word = tf.get_variable('w_word', [hps.word_gcn_dim + self._hps.emb_dim, hps.word_gcn_dim], dtype=tf.float32, initializer=self.trunc_norm_init, trainable=True, regularizer=self._regularizer)		
 				b_word = tf.get_variable('b_word', [1, hps.word_gcn_dim], initializer=tf.constant_initializer(0.0), regularizer=self._regularizer)
