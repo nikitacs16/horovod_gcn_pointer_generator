@@ -638,7 +638,7 @@ class SummarizationModel(object):
 					b_upper_concat = tf.get_variable('b_upper_concat', [1], initializer=tf.constant_initializer(0.0))
 					
 					if hps.word_gcn_dim!= hps.hidden_dim * 2:
-						w_adjust_upper_concat = tf.get_variable('w_adjust_upper_concat', [hps.emb_dim, hps.hidden_dim*2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+						w_adjust_upper_concat = tf.get_variable('w_adjust_upper_concat', [hps.word_gcn_dim, hps.hidden_dim*2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 						gcn_outputs = tf.tensordot(gcn_outputs, w_adjust_upper_concat,axes=[[2],[0]])
 					
 					self._enc_states = b_upper_concat * enc_outputs + (1.0 - b_upper_concat) * gcn_outputs
