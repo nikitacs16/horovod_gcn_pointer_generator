@@ -283,7 +283,7 @@ class SummarizationModel(object):
                 t_indices += max_words * l
                 indices.append(t_indices)
                 b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
-        indices = tf.concat(indices, axis=0)
+        indices = tf.transpose(tf.concat(indices, axis=1), [1, 0])
         b_data = tf.concat(b_data, axis=0)
         adj_in = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
                                  dense_shape=[batch_size * max_words, batch_size * max_words])
@@ -298,7 +298,7 @@ class SummarizationModel(object):
                 t_indices += max_words * l
                 indices.append(t_indices)
                 b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
-        indices = tf.concat(indices, axis=0)
+        indices = tf.transpose(tf.concat(indices, axis=1), [1, 0])
         b_data = tf.concat(b_data, axis=0)
         adj_out = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
                                   dense_shape=[batch_size * max_words, batch_size * max_words])
@@ -329,7 +329,7 @@ class SummarizationModel(object):
                                         initializer=tf.random_normal_initializer(stddev=0.01))
                 b_loop = tf.get_variable("bias_loop", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01))
 
-                gates_loop = 1. 
+                gates_loop = 1.
 
                 if use_gating:
                     w_gate_in = tf.get_variable("weights_gate", [in_dim, 1],
