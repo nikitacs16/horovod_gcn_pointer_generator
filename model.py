@@ -329,7 +329,7 @@ class SummarizationModel(object):
                                         initializer=tf.random_normal_initializer(stddev=0.01))
                 b_loop = tf.get_variable("bias_loop", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01))
 
-                gates_loop = tf.constant_initializer(1.)
+                gates_loop = 1. 
 
                 if use_gating:
                     w_gate_in = tf.get_variable("weights_gate", [in_dim, 1],
