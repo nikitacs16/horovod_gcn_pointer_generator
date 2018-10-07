@@ -315,8 +315,6 @@ class SummarizationModel(object):
 
             with tf.variable_scope('%s-%d' % (name, layer)):
 
-                act_sum = tf.zeros([batch_size * max_nodes, gcn_dim])
-
                 w_in = tf.get_variable("weights", [in_dim, gcn_dim],
                                        initializer=tf.random_normal_initializer(stddev=0.01))
                 w_out = tf.get_variable("weights_inv", [in_dim, gcn_dim],
@@ -376,7 +374,7 @@ class SummarizationModel(object):
                 labels_pad, _ = tf.sparse_fill_empty_rows(labels_in, 0)
 
                 labels_weights, _ = tf.sparse_fill_empty_rows(adj_in, 0.)
-                labels = tf.nn.embedding_lookup_sparse(b, labels_pad, labels_weights, combiner='sum')
+                labels = tf.nn.embedding_lookup_sparse(b_in, labels_pad, labels_weights, combiner='sum')
 
                 h_in = h_in + labels
                 h_in = tf.reshape(h_in, tf.shape(gcn_in))
