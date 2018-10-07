@@ -285,10 +285,9 @@ class SummarizationModel(object):
                 b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
         indices = tf.transpose(tf.concat(indices, axis=1), [1, 0])
         b_data = tf.concat(b_data, axis=0)
-        adj_in = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
+        adj_in = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[1]]),
                                  dense_shape=[batch_size * max_words, batch_size * max_words])
-        labels_in = tf.SparseTensor(indices=indices, values=b_data,
-                                    dense_shape=[batch_size * max_words, batch_size * max_words])
+        # labels_in = tf.SparseTensor(indices=indices, values=b_data, dense_shape=[batch_size * max_words, batch_size * max_words])
 
         indices = []
         b_data = []
@@ -302,8 +301,7 @@ class SummarizationModel(object):
         b_data = tf.concat(b_data, axis=0)
         adj_out = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
                                   dense_shape=[batch_size * max_words, batch_size * max_words])
-        labels_out = tf.SparseTensor(indices=indices, values=b_data,
-                                     dense_shape=[batch_size * max_words, batch_size * max_words])
+        # labels_out = tf.SparseTensor(indices=indices, values=b_data, dense_shape=[batch_size * max_words, batch_size * max_words])
 
         out = [gcn_in]
 
@@ -331,60 +329,60 @@ class SummarizationModel(object):
 
                 gates_loop = 1.
 
-                if use_gating:
-                    w_gate_in = tf.get_variable("weights_gate", [in_dim, 1],
-                                                initializer=tf.random_normal_initializer(stddev=0.01))
-                    w_gate_out = tf.get_variable("weights_gate_inv", [in_dim, 1],
-                                                 initializer=tf.random_normal_initializer(stddev=0.01))
-                    w_gate_loop = tf.get_variable("weights_gate_loop", [in_dim, 1],
-                                                  initializer=tf.random_normal_initializer(stddev=0.01))
-
-                    b_gate_in = tf.get_variable("bias_gate", [max_labels],
-                                                initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01))
-                    b_gate_out = tf.get_variable("bias_gate_inv", [max_labels],
-                                                 initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01))
-                    b_gate_loop = tf.get_variable("bias_gate_loop", [1], initializer=tf.constant_initializer(1.))
-
-                    # TODO Add edge dropout
-
-                    # compute gates_in
-                    gates_in = tf.matmul(gcn_in_2d, w_gate_in)
-                    adj_in *= tf.transpose(gates_in)
-                    gates_bias = tf.squeeze(tf.nn.embedding_lookup(b_gate_in, labels_in.values, name='gates_lab'))
-                    values = tf.nn.sigmoid(adj_in.values + gates_bias)
-                    adj_in = tf.SparseTensor(indices=adj_in.indices, values=values, dense_shape=adj_in.dense_shape)
-
-                    # compute gates_out
-                    gates_out = tf.matmul(gcn_in_2d, w_gate_out)
-                    adj_out *= tf.transpose(gates_out)
-                    gates_bias = tf.squeeze(tf.nn.embedding_lookup(b_gate_out, labels_out.values, name='gates_lab'))
-                    values = tf.nn.sigmoid(adj_out.values + gates_bias)
-                    adj_out = tf.SparseTensor(indices=adj_out.indices, values=values, dense_shape=adj_out.dense_shape)
-
-                    # compute gates_loop
-                    gates_loop = tf.nn.sigmoid(tf.matmul(gcn_in_2d, w_gate_loop) + b_gate_loop)
-                else:
-                    # Ideally have to normalize (sum or softmax) for gating too !
-                    adj_in = adj_in.__mul__(tf.sparse_reduce_sum(adj_in, axis=1))
-                    adj_out = adj_out.__mul__(tf.sparse_reduce_sum(adj_out, axis=1))
+                # if use_gating:
+                #     w_gate_in = tf.get_variable("weights_gate", [in_dim, 1],
+                #                                 initializer=tf.random_normal_initializer(stddev=0.01))
+                #     w_gate_out = tf.get_variable("weights_gate_inv", [in_dim, 1],
+                #                                  initializer=tf.random_normal_initializer(stddev=0.01))
+                #     w_gate_loop = tf.get_variable("weights_gate_loop", [in_dim, 1],
+                #                                   initializer=tf.random_normal_initializer(stddev=0.01))
+                #
+                #     b_gate_in = tf.get_variable("bias_gate", [max_labels],
+                #                                 initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01))
+                #     b_gate_out = tf.get_variable("bias_gate_inv", [max_labels],
+                #                                  initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01))
+                #     b_gate_loop = tf.get_variable("bias_gate_loop", [1], initializer=tf.constant_initializer(1.))
+                #
+                #     # TODO Add edge dropout
+                #
+                #     # compute gates_in
+                #     gates_in = tf.matmul(gcn_in_2d, w_gate_in)
+                #     adj_in *= tf.transpose(gates_in)
+                #     gates_bias = tf.squeeze(tf.nn.embedding_lookup(b_gate_in, labels_in.values, name='gates_lab'))
+                #     values = tf.nn.sigmoid(adj_in.values + gates_bias)
+                #     adj_in = tf.SparseTensor(indices=adj_in.indices, values=values, dense_shape=adj_in.dense_shape)
+                #
+                #     # compute gates_out
+                #     gates_out = tf.matmul(gcn_in_2d, w_gate_out)
+                #     adj_out *= tf.transpose(gates_out)
+                #     gates_bias = tf.squeeze(tf.nn.embedding_lookup(b_gate_out, labels_out.values, name='gates_lab'))
+                #     values = tf.nn.sigmoid(adj_out.values + gates_bias)
+                #     adj_out = tf.SparseTensor(indices=adj_out.indices, values=values, dense_shape=adj_out.dense_shape)
+                #
+                #     # compute gates_loop
+                #     gates_loop = tf.nn.sigmoid(tf.matmul(gcn_in_2d, w_gate_loop) + b_gate_loop)
+                # else:
+                #     # Ideally have to normalize (sum or softmax) for gating too !
+                #     adj_in = adj_in.__mul__(tf.sparse_reduce_sum(adj_in, axis=1))
+                #     adj_out = adj_out.__mul__(tf.sparse_reduce_sum(adj_out, axis=1))
 
                 # Do convolution for adj_in
                 h_in = tf.matmul(gcn_in_2d, w_in)
                 h_in = tf.sparse_tensor_dense_matmul(adj_in, h_in)
-                labels_pad, _ = tf.sparse_fill_empty_rows(labels_in, 0)
-                labels_weights, _ = tf.sparse_fill_empty_rows(adj_in, 0.)
-                labels = tf.nn.embedding_lookup_sparse(b_in, labels_pad, labels_weights, combiner='sum')
+                # labels_pad, _ = tf.sparse_fill_empty_rows(labels_in, 0)
+                # labels_weights, _ = tf.sparse_fill_empty_rows(adj_in, 0.)
+                # labels = tf.nn.embedding_lookup_sparse(b_in, labels_pad, labels_weights, combiner='sum')
 
-                h_in = h_in + labels
+                # h_in = h_in + labels
                 h_in = tf.reshape(h_in, tf.shape(gcn_in))
 
                 # Do convolution for adj_in
                 h_out = tf.matmul(gcn_in_2d, w_out)
                 h_out = tf.sparse_tensor_dense_matmul(adj_out, h_out)
-                labels_out_pad, _ = tf.sparse_fill_empty_rows(labels_out, 0)
-                labels_out_weights, _ = tf.sparse_fill_empty_rows(adj_out, 0.)
-                labels_out = tf.nn.embedding_lookup_sparse(b_out, labels_out_pad, labels_out_weights, combiner='sum')
-                h_out = h_out + labels_out
+                # labels_out_pad, _ = tf.sparse_fill_empty_rows(labels_out, 0)
+                # labels_out_weights, _ = tf.sparse_fill_empty_rows(adj_out, 0.)
+                # labels_out = tf.nn.embedding_lookup_sparse(b_out, labels_out_pad, labels_out_weights, combiner='sum')
+                # h_out = h_out + labels_out
                 h_out = tf.reshape(h_out, tf.shape(gcn_in))
 
                 # graph convolution, loops
