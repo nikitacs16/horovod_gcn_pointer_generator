@@ -297,7 +297,7 @@ class SummarizationModel(object):
                 t_indices = tf.transpose(adj_out[b][l].indices, [1, 0])
                 t_indices += max_words * l
                 indices.append(t_indices)
-                b_data.append(tf.ones([tf.shape(t_indices)[0]]) * l)
+                b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
         indices = tf.concat(indices, axis=0)
         b_data = tf.concat(b_data, axis=0)
         adj_out = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
