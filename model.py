@@ -273,13 +273,13 @@ class SummarizationModel(object):
             max_labels = 1
 
         # construct single adjacency matrix
-        max_words = tf.shape(adj_in[0][0].dense_shape[0])
+        max_words = tf.cast(tf.shape(adj_in[0][0].dense_shape[0]), dtype=tf.int64)
         indices = []
         b_data = []
         for b in range(batch_size):
             for l in range(max_labels):
                 t_indices = tf.transpose(adj_in[b][l].indices, [1, 0])
-                t_indices += max_words * tf.cast(l, dtype=tf.int64)
+                t_indices += max_words
                 indices.append(t_indices)
                 b_data.append(tf.ones([indices[b].shape[0]]) * l)
         indices = tf.stack(indices, axis=0)
