@@ -280,7 +280,7 @@ class SummarizationModel(object):
         for b in range(batch_size):
             for l in range(max_labels):
                 t_indices = tf.transpose(adj_in[b][l].indices, [1, 0])
-                t_indices += max_words * l
+                t_indices += max_words * b
                 indices.append(t_indices)
                 b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
         indices = tf.transpose(tf.concat(indices, axis=1), [1, 0])
@@ -294,7 +294,7 @@ class SummarizationModel(object):
         for b in range(batch_size):
             for l in range(max_labels):
                 t_indices = tf.transpose(adj_out[b][l].indices, [1, 0])
-                t_indices += max_words * l
+                t_indices += max_words * b
                 indices.append(t_indices)
                 b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
         indices = tf.transpose(tf.concat(indices, axis=1), [1, 0])
