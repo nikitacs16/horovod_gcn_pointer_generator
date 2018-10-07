@@ -279,9 +279,9 @@ class SummarizationModel(object):
         for b in range(batch_size):
             for l in range(max_labels):
                 t_indices = tf.transpose(adj_in[b][l].indices, [1, 0])
-                t_indices += max_words
+                t_indices += max_words * l
                 indices.append(t_indices)
-                b_data.append(tf.ones([indices[b].shape[0]]) * l)
+                b_data.append(tf.ones([tf.shape(t_indices)[0]]) * l)
         indices = tf.stack(indices, axis=0)
         b_data = tf.stack(b_data, axis=0)
         adj_in = tf.SparseTensor(indices=indices, values=tf.ones(tf.shape(indices)[0]),
