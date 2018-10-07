@@ -284,7 +284,7 @@ class SummarizationModel(object):
                 indices.append(t_indices)
                 b_data.append(tf.ones([tf.shape(t_indices)[0]]) * l)
         indices = tf.concat(indices, axis=0)
-        b_data = tf.stack(b_data, axis=0)
+        b_data = tf.concat(b_data, axis=0)
         adj_in = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
                                  dense_shape=[batch_size * max_words, batch_size * max_words])
         labels_in = tf.SparseTensor(indices=indices, values=b_data,
@@ -299,6 +299,7 @@ class SummarizationModel(object):
                 indices.append(t_indices)
                 b_data.append(tf.ones([tf.shape(t_indices)[0]]) * l)
         indices = tf.concat(indices, axis=0)
+        b_data = tf.concat(b_data, axis=0)
         adj_out = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
                                   dense_shape=[batch_size * max_words, batch_size * max_words])
         labels_out = tf.SparseTensor(indices=indices, values=b_data,
