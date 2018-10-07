@@ -282,7 +282,7 @@ class SummarizationModel(object):
                 t_indices = tf.transpose(adj_in[b][l].indices, [1, 0])
                 t_indices += max_words * l
                 indices.append(t_indices)
-                b_data.append(tf.ones([tf.shape(t_indices)[0]]) * l)
+                b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
         indices = tf.concat(indices, axis=0)
         b_data = tf.concat(b_data, axis=0)
         adj_in = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
@@ -372,7 +372,6 @@ class SummarizationModel(object):
                 h_in = tf.matmul(gcn_in_2d, w_in)
                 h_in = tf.sparse_tensor_dense_matmul(adj_in, h_in)
                 labels_pad, _ = tf.sparse_fill_empty_rows(labels_in, 0)
-
                 labels_weights, _ = tf.sparse_fill_empty_rows(adj_in, 0.)
                 labels = tf.nn.embedding_lookup_sparse(b_in, labels_pad, labels_weights, combiner='sum')
 
