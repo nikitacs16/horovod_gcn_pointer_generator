@@ -274,7 +274,7 @@ class SummarizationModel(object):
 
         # construct single adjacency matrix
         # max_words = tf.cast(tf.shape(adj_in[0][0].dense_shape[0]), dtype=tf.int64)
-        max_words = self._max_word_seq_len
+        max_words = tf.cast(self._max_word_seq_len, dtype=tf.int64)
         indices = []
         b_data = []
         for b in range(batch_size):
