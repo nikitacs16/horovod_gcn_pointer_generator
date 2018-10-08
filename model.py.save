@@ -273,35 +273,35 @@ class SummarizationModel(object):
             max_labels = 1
 
         # construct single adjacency matrix
-        # max_words = tf.cast(tf.shape(adj_in[0][0].dense_shape[0]), dtype=tf.int64)
-        max_words = tf.cast(self._max_word_seq_len, dtype=tf.int64)
+        max_words = tf.cast(tf.shape(adj_in[0][0].dense_shape[0]), dtype=tf.int64)
         indices = []
         b_data = []
         for b in range(batch_size):
             for l in range(max_labels):
-                t_indices = adj_in[b][l].indices
-                t_indices += max_words * b
+                t_indices = tf.transpose(adj_in[b][l].indices, [1, 0])
+                t_indices += max_words * l
                 indices.append(t_indices)
-                b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
-        indices = tf.concat(indices, axis=0)
-        b_data = tf.concat(b_data, axis=0)
-        adj_in = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
+                b_data.append(tf.ones([tf.shape(t_indices)[0]]) * l)
+        indices = tf.stack(indices, axis=0)
+        b_data = tf.stack(b_data, axis=0)
+        adj_in = tf.SparseTensor(indices=indices, values=tf.ones((tf.shape(indices)[0])),
                                  dense_shape=[batch_size * max_words, batch_size * max_words])
-        labels_in = tf.SparseTensor(indices=indices, values=b_data, dense_shape=[batch_size * max_words, batch_size * max_words])
+        labels_in = tf.SparseTensor(indices=indices, values=b_data,
+                                    dense_shape=[batch_size * max_words, batch_size * max_words])
 
         indices = []
         b_data = []
         for b in range(batch_size):
             for l in range(max_labels):
-                t_indices = adj_out[b][l].indices
-                t_indices += max_words * b
+                t_indices = tf.transpose(adj_out[b][l].indices, [1, 0])
+                t_indices += max_words * l
                 indices.append(t_indices)
-                b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
-        indices = tf.concat(indices, axis=0)
-        b_data = tf.concat(b_data, axis=0)
-        adj_out = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
+                b_data.append(tf.ones([indices[b].shape[0]]) * l)
+        indices = tf.stack(indices, axis=0)
+        adj_out = tf.SparseTensor(indices=indices, values=tf.ones(tf.shape(indices)[0]),
                                   dense_shape=[batch_size * max_words, batch_size * max_words])
-        labels_out = tf.SparseTensor(indices=indices, values=b_data, dense_shape=[batch_size * max_words, batch_size * max_words])
+        labels_out = tf.SparseTensor(indices=indices, values=b_data,
+                                     dense_shape=[batch_size * max_words, batch_size * max_words])
 
         out = [gcn_in]
 
@@ -312,6 +312,8 @@ class SummarizationModel(object):
                 in_dim = gcn_dim
 
             with tf.variable_scope('%s-%d' % (name, layer)):
+
+                act_sum = tf.zeros([batch_size * max_nodes, gcn_dim])
 
                 w_in = tf.get_variable("weights", [in_dim, gcn_dim],
                                        initializer=tf.random_normal_initializer(stddev=0.01))
@@ -327,7 +329,7 @@ class SummarizationModel(object):
                                         initializer=tf.random_normal_initializer(stddev=0.01))
                 b_loop = tf.get_variable("bias_loop", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01))
 
-                gates_loop = 1.
+                gates_loop = tf.constant_initializer(1.)
 
                 if use_gating:
                     w_gate_in = tf.get_variable("weights_gate", [in_dim, 1],
@@ -370,11 +372,12 @@ class SummarizationModel(object):
                 h_in = tf.matmul(gcn_in_2d, w_in)
                 h_in = tf.sparse_tensor_dense_matmul(adj_in, h_in)
                 labels_pad, _ = tf.sparse_fill_empty_rows(labels_in, 0)
+
                 labels_weights, _ = tf.sparse_fill_empty_rows(adj_in, 0.)
-                labels = tf.nn.embedding_lookup_sparse(b_in, labels_pad, labels_weights, combiner='sum')
+                labels = tf.nn.embedding_lookup_sparse(b, labels_pad, labels_weights, combiner='sum')
 
                 h_in = h_in + labels
-                h_in = tf.reshape(h_in, [batch_size, self._max_word_seq_len, gcn_dim])
+                h_in = tf.reshape(h_in, tf.shape(gcn_in))
 
                 # Do convolution for adj_in
                 h_out = tf.matmul(gcn_in_2d, w_out)
@@ -383,24 +386,20 @@ class SummarizationModel(object):
                 labels_out_weights, _ = tf.sparse_fill_empty_rows(adj_out, 0.)
                 labels_out = tf.nn.embedding_lookup_sparse(b_out, labels_out_pad, labels_out_weights, combiner='sum')
                 h_out = h_out + labels_out
-                h_out = tf.reshape(h_out, [batch_size, self._max_word_seq_len, gcn_dim])
+                h_out = tf.reshape(h_out, tf.shape(gcn_in))
 
                 # graph convolution, loops
                 h_loop = tf.matmul(gcn_in_2d, w_loop) + b_loop
                 h_loop = h_loop * gates_loop
-		tf.logging.info('before')	
-		tf.logging.info(h_loop.get_shape())
-                h_loop = tf.reshape(h_loop, [batch_size, self._max_word_seq_len, gcn_dim])
-		tf.logging.info('after')
-		tf.logging.info(h_loop.get_shape())
+                h_loop = tf.reshape(h_loop, tf.shape(gcn_in))
+
                 # final result is the sum of those (with residual connection to inputs)
                 h = tf.nn.relu(h_in + h_out + h_loop)
-		#tf.logging.info(tf.shape(h))
+
                 if use_skip:
-		    
                     return h + gcn_in
                 else:
-                    return h 
+                    return h
         return 0
 
     def _add_gcn_layer_2(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out,
