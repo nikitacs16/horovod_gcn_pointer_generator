@@ -279,11 +279,13 @@ class SummarizationModel(object):
         b_data = []
         for b in range(batch_size):
             for l in range(max_labels):
-                t_indices = tf.transpose(adj_in[b][l].indices, [1, 0])
+                t_indices = adj_in[b][l].indices
+		tf.logging.info('t_indices')
+		tf.logging.info(t_indices.get_shape())
                 t_indices += max_words * l
                 indices.append(t_indices)
-                b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
-        indices = tf.transpose(tf.concat(indices, axis=1), [1, 0])
+                b_data.append(tf.ones([tf.shape(t_indices)[1]], dtype=tf.int32) * l)
+        indices = tf.concat(indices, axis=0)
         b_data = tf.concat(b_data, axis=0)
         adj_in = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
                                  dense_shape=[batch_size * max_words, batch_size * max_words])
@@ -294,13 +296,13 @@ class SummarizationModel(object):
         b_data = []
         for b in range(batch_size):
             for l in range(max_labels):
-                t_indices = tf.transpose(adj_out[b][l].indices, [1, 0])
+                t_indices = adj_out[b][l].indices
                 t_indices += max_words * l
                 indices.append(t_indices)
-                b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
-        indices = tf.transpose(tf.concat(indices, axis=1), [1, 0])
+                b_data.append(tf.ones([tf.shape(t_indices)[1]], dtype=tf.int32) * l)
+        indices = tf.concat(indices, axis=0)
         b_data = tf.concat(b_data, axis=0)
-        adj_out = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
+        adj_out = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[1]]),
                                   dense_shape=[batch_size * max_words, batch_size * max_words])
         labels_out = tf.SparseTensor(indices=indices, values=b_data,
                                      dense_shape=[batch_size * max_words, batch_size * max_words])
