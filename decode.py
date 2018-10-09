@@ -23,9 +23,11 @@ import beam_search
 import data
 import json
 import pyrouge
+import bleu
 import util
 import logging
 import numpy as np
+import glob
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -98,6 +100,7 @@ class BeamSearchDecoder(object):
         tf.logging.info("Decoder has finished reading dataset for single_pass.")
         tf.logging.info("Output has been saved in %s and %s. Now starting ROUGE eval...", self._rouge_ref_dir, self._rouge_dec_dir)
         results_dict = rouge_eval(self._rouge_ref_dir, self._rouge_dec_dir)
+        results_dict['bleu'] = bleu_eval(self._rouge_ref_dir, self._rouge_dec_dir)
         rouge_log(results_dict, self._decode_dir)
         return
 
@@ -229,6 +232,21 @@ def rouge_eval(ref_dir, dec_dir):
   rouge_results = r.convert_and_evaluate()
   return r.output_to_dict(rouge_results)
 
+def bleu_eval (ref_dir, dec_dir):
+  ref = []
+  dec = []
+  for i, j in zip(sorted(glob.glob(dec_dir+'*.txt')),sorted(glob.glob(e+'*.txt'))):
+    ref_tex = ''
+    dec_tex = ''
+    for k in open(i).readlines():
+      dec_tex = dec_tex + k.strip()
+    for l in open(j).readlines():
+      ref_tex = ref_tex + l.strip()
+    ref.append(ref_tex)
+    dec.append(dec_tex)
+  bleu_score = bleu.moses_multi_bleu(dec,ref)
+  return bleu_score
+
 
 def rouge_log(results_dict, dir_to_write):
   """Log ROUGE results to screen and write to file.
@@ -247,6 +265,7 @@ def rouge_log(results_dict, dir_to_write):
       val_cb = results_dict[key_cb]
       val_ce = results_dict[key_ce]
       log_str += "%s: %.4f with confidence interval (%.4f, %.4f)\n" % (key, val, val_cb, val_ce)
+  log_str += "%s: %.4f" %('bleu',results_dict['bleu'])
   tf.logging.info(log_str) # log to screen
   results_file = os.path.join(dir_to_write, "ROUGE_results.txt")
   tf.logging.info("Writing final ROUGE results to %s...", results_file)
