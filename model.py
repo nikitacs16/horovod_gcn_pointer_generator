@@ -369,6 +369,7 @@ class SummarizationModel(object):
 
 					adj_out = adj_out.__mul__(tf.sparse_reduce_sum(adj_out, axis=1))
 
+				'''
 				# Do convolution for adj_in
 				h_in = tf.matmul(gcn_in_2d, w_in)
 				h_in = tf.sparse_tensor_dense_matmul(adj_in, h_in)
@@ -378,9 +379,9 @@ class SummarizationModel(object):
 
 				h_in = h_in + labels
 				h_in = tf.reshape(h_in, [batch_size, self._max_word_seq_len, gcn_dim])
-
+	
 				if dropout != 1.0: h_in = tf.nn.dropout(h_in, keep_prob=dropout) #this is normal dropout
-
+				'''
 
 				# Do convolution for adj_in
 				h_out = tf.matmul(gcn_in_2d, w_out)
@@ -402,8 +403,8 @@ class SummarizationModel(object):
 				if dropout != 1.0: h_loop = tf.nn.dropout(h_loop, keep_prob=dropout) #this is normal dropout
 
 			    # final result is the sum of those (with residual connection to inputs)
-				h = tf.nn.relu(h_in + h_out + h_loop)
-				
+				#h = tf.nn.relu(h_in + h_out + h_loop)
+				h = tf.nn.relu(h_out+h_loop)
 
 				if use_skip:
 					b_skip = tf.get_variable('b_skip', [1], initializer=tf.constant_initializer(0.0))
