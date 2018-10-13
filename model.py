@@ -375,9 +375,9 @@ class SummarizationModel(object):
 				h_in = tf.sparse_tensor_dense_matmul(adj_in, h_in)
 				labels_pad, _ = tf.sparse_fill_empty_rows(labels_in, 0)
 				labels_weights, _ = tf.sparse_fill_empty_rows(adj_in, 0.)
-				labels = tf.nn.embedding_lookup_sparse(b_in, labels_pad, labels_weights, combiner='sum')
+				labels_in_embed = tf.nn.embedding_lookup_sparse(b_in, labels_pad, labels_weights, combiner='sum')
 
-				h_in = h_in + labels
+				h_in = h_in + labels_in_embed
 				h_in = tf.reshape(h_in, [batch_size, self._max_word_seq_len, gcn_dim])
 	
 				if dropout != 1.0: h_in = tf.nn.dropout(h_in, keep_prob=dropout) #this is normal dropout
@@ -388,8 +388,8 @@ class SummarizationModel(object):
 				h_out = tf.sparse_tensor_dense_matmul(adj_out, h_out)
 				labels_out_pad, _ = tf.sparse_fill_empty_rows(labels_out, 0)
 				labels_out_weights, _ = tf.sparse_fill_empty_rows(adj_out, 0.)
-				labels_out = tf.nn.embedding_lookup_sparse(b_out, labels_out_pad, labels_out_weights, combiner='sum')
-				h_out = h_out + labels_out
+				labels_out_embed = tf.nn.embedding_lookup_sparse(b_out, labels_out_pad, labels_out_weights, combiner='sum')
+				h_out = h_out + labels_out_embed
 				h_out = tf.reshape(h_out, [batch_size, self._max_word_seq_len, gcn_dim])
 
 				if dropout != 1.0: h_out = tf.nn.dropout(h_out, keep_prob=dropout) #this is normal dropout
