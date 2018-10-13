@@ -277,11 +277,12 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
   if FLAGS.use_save_at:
     epoch_dir = os.path.join(FLAGS.log_root, "epoch")
     if not os.path.exists(epoch_dir): os.makedirs(epoch_dir)
-  if os.path.exists(os.path.join(epoch_dir,'epoch.txt')):
-    f = open(os.path.join(epoch_dir,'epoch.txt'),'a')
+  
+  if os.path.exists(os.path.join(FLAGS.log_root,'epoch.txt')):
+    f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'a')
   else:
-    f = open(os.path.join(epoch_dir,'epoch.txt'),'w')
-    t_epoch = time.time()
+    f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'w')
+  t_epoch = time.time()
   with sess_context_manager as sess:
     if FLAGS.debug: # start the tensorflow debugger
       sess = tf_debug.LocalCLIDebugWrapperSession(sess)
