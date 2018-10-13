@@ -267,15 +267,17 @@ class SummarizationModel(object):
 	def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out,
 						  neighbour_count, num_layers=1,
 						  use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN",
-						  use_label_information=False):
+						  use_label_information=False, loop_dropout=1.0):
 
 		if not self._hps.use_label_information:
 			max_labels = 1
 
+		
+
 		# construct single adjacency matrix
 		# max_words = tf.cast(tf.shape(adj_in[0][0].dense_shape[0]), dtype=tf.int64)
 		max_words = tf.cast(self._max_word_seq_len, dtype=tf.int64)
-		indices = []
+		indices = []	
 		b_data = []
 		for b in range(batch_size):
 			for l in range(max_labels):
@@ -399,6 +401,10 @@ class SummarizationModel(object):
 				h_loop = tf.matmul(gcn_in_2d, w_loop) + b_loop
 				h_loop = h_loop * gates_loop
 				h_loop = tf.reshape(h_loop, [batch_size, self._max_word_seq_len, gcn_dim])
+
+				#loop dropout. consider self as a neighbour loop_probability times only
+
+
 			    
 				if dropout != 1.0: h_loop = tf.nn.dropout(h_loop, keep_prob=dropout) #this is normal dropout
 
@@ -621,7 +627,8 @@ class SummarizationModel(object):
 												  num_layers=hps.word_gcn_layers,
 												  use_gating=hps.word_gcn_gating, use_skip=hps.word_gcn_skip,
 												  dropout=self._word_gcn_dropout,
-												  name="gcn_word")
+												  name="gcn_word",
+												  loop_dropout= hps.word_loop_dropout)
 				
 
 				######## INTERM CONCAT ##########
@@ -672,7 +679,8 @@ class SummarizationModel(object):
 															num_layers=hps.query_gcn_layers,
 															use_gating=hps.query_gcn_gating, use_skip=hps.query_gcn_skip,
 															dropout=self._query_gcn_dropout,
-															name="gcn_query")
+															name="gcn_query",
+															loop_dropout=hps.query_loop_dropout)
 
 						########## INTERM CONCAT ##############
 						if hps.concat_with_word_embedding:
@@ -750,7 +758,8 @@ class SummarizationModel(object):
 												  num_layers=hps.word_gcn_layers,
 												  use_gating=hps.word_gcn_gating, use_skip=hps.word_gcn_skip,
 												  dropout=self._word_gcn_dropout,
-												  name="gcn_word")
+												  name="gcn_word",
+												  loop_dropout=hps.word_loop_dropout)
 
 					
 					############## UPPPER CONCAT ###############
@@ -807,7 +816,10 @@ class SummarizationModel(object):
 															num_layers=hps.query_gcn_layers,
 															use_gating=hps.query_gcn_gating, use_skip=hps.query_gcn_skip,
 															dropout=self._query_gcn_dropout,
-															name="gcn_query")
+															name="gcn_query",
+															loop_dropout=hps.query_loop_dropout)
+						
+
 						############ UPPER CONCAT ############
 
 						if self._hps.concat_gcn_lstm: 

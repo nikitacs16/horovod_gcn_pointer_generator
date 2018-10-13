@@ -344,12 +344,10 @@ dep_list = ['cc', 'agent', 'ccomp', 'prt', 'meta', 'nsubjpass', 'csubj', 'conj',
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 
-def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_labels=45, label_dict=dep_dict,flow_alone=False, flow_combined=False):
+def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_labels=45, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0):
     adj_main_in, adj_main_out = [], []
     neighbour_count = np.ones((batch_size,max_nodes))
-    # tf.logging.info(max_labels)
-    # tf.logging.info(len(dep_list))
-    #tf.logging.info(use_label_information)
+    
     for edge_list in batch_list:
         adj_in, adj_out = {}, {}
 
@@ -363,15 +361,27 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_l
         for src, dest, lbl_ in edge_list:
             if src >= max_nodes or dest >= max_nodes:
                 continue
+            
+
+                if x > keep_prob:
+                    continue
+            
 
             if flow_alone:
                 lbl = 0
                 if src+1 < max_nodes:
-                    out_ind[lbl].append((src, src+1))
-                    out_data[lbl].append(1.0)
+                    x = np.random.uniform()
 
-                    in_ind[lbl].append((src, src+1))
-                    in_data[lbl].append(1.0)
+                    if x<= keep_prob:
+                        out_ind[lbl].append((src, src+1))
+                        out_data[lbl].append(1.0)
+                    
+                    x = np.random.uniform()
+                    
+                    if x<=keep_prob:
+                        in_ind[lbl].append((src+1, src))
+                        in_data[lbl].append(1.0)
+                    
                     neighbour_count[count][dest] += 1
 
             else:    
@@ -381,26 +391,28 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_l
                 lbl = label_dict[lbl_]
                 if not use_label_information: #all assigned the same label information
                     lbl = 0 
-                out_ind[lbl].append((src, dest))
-                out_data[lbl].append(1.0)
-
-                in_ind[lbl].append((dest, src))
-                in_data[lbl].append(1.0)
                 
+                x = np.random.uniform()
+                if x<=keep_prob:
+                    out_ind[lbl].append((src, dest))
+                    out_data[lbl].append(1.0)
+
+                x = np.random.uniform()
+                if x<=keep_prob:    
+                    in_ind[lbl].append((dest, src))
+                    in_data[lbl].append(1.0)
+                    
                 if flow_combined and dest!=src+1:
                     if not use_label_information: #all assigned the same label information
                         lbl = 0
                     else:
                         lbl = 'flow'
-                    out_ind[lbl].append((src, dest))
+                    out_ind[lbl].append((src, src+1))
                     out_data[lbl].append(1.0)
 
-                    in_ind[lbl].append((dest, src))
+                    in_ind[lbl].append((src+1, src))
                     in_data[lbl].append(1.0)    
-                    neighbour_count[count][dest] += 1 
-
-                
-            
+                    neighbour_count[count][dest] += 1                      
 
 
         count = count + 1
