@@ -38,7 +38,7 @@ STOP_DECODING = '[STOP]'  # This has a vocab id, which is used at the end of unt
 
 
 # Note: none of <s>, </s>, [PAD], [UNK], [START], [STOP] should appear in the vocab file.
-
+np.random.seed(seed=123)
 
 class Vocab(object):
     """Vocabulary class for mapping between words and ids (integers)"""
@@ -362,11 +362,6 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_l
             if src >= max_nodes or dest >= max_nodes:
                 continue
             
-
-                if x > keep_prob:
-                    continue
-            
-
             if flow_alone:
                 lbl = 0
                 if src+1 < max_nodes:
@@ -421,12 +416,16 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_l
             max_labels = 1
 
         for lbl in range(max_labels):
-            if lbl not in out_ind and lbl not in in_ind:
-                adj_in[lbl] = sp.coo_matrix((max_nodes, max_nodes))
+            if lbl not in out_ind:
                 adj_out[lbl] = sp.coo_matrix((max_nodes, max_nodes))
             else:
-                adj_in[lbl] = sp.coo_matrix((in_data[lbl], zip(*in_ind[lbl])), shape=(max_nodes, max_nodes))
                 adj_out[lbl] = sp.coo_matrix((out_data[lbl], zip(*out_ind[lbl])), shape=(max_nodes, max_nodes))
+            
+            if lbl not in in_ind:
+                adj_in[lbl] = sp.coo_matrix((max_nodes, max_nodes))
+            else:
+                adj_in[lbl] = sp.coo_matrix((in_data[lbl], zip(*in_ind[lbl])), shape=(max_nodes, max_nodes))
+
 
         adj_main_in.append(adj_in)
         adj_main_out.append(adj_out)

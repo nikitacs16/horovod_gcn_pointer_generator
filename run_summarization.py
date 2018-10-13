@@ -273,9 +273,15 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
   tf.logging.info("starting run_training")
   batch_count = 0
   #new_saver = tf.train.Saver()
+
   if FLAGS.use_save_at:
     epoch_dir = os.path.join(FLAGS.log_root, "epoch")
     if not os.path.exists(epoch_dir): os.makedirs(epoch_dir)
+  if os.path.exists(os.join(epoch_dir,'epoch.txt'))
+    f = open(os.join(epoch_dir,'epoch.txt'),'a')
+  else:
+    f = open(os.join(epoch_dir,'epoch.txt'),'w')
+    t_epoch = time.time()
   with sess_context_manager as sess:
     if FLAGS.debug: # start the tensorflow debugger
       sess = tf_debug.LocalCLIDebugWrapperSession(sess)
@@ -308,6 +314,11 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       if train_step % 100 == 0: # flush the summary writer every so often
         summary_writer.flush()
 
+      if train_step%FLAGS.save_steps == 0:
+        t_now = time.time()
+        f.write('seconds for epoch %d : %.3f'% (train_step/FLAGS.save_steps,t_epoch-t_now))
+        t_epoch = t_now
+          
       if FLAGS.use_stop_after:
         if train_step >= FLAGS.stop_steps:
           tf.logging.info('Stopping as epoch limit completed')
