@@ -317,7 +317,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
 
       if train_step%FLAGS.save_steps == 0:
         t_now = time.time()
-        f.write('seconds for epoch %d : %.3f'% (train_step/FLAGS.save_steps,t_epoch-t_now))
+        f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_epoch-t_now))
         t_epoch = t_now
           
       if FLAGS.use_stop_after:
