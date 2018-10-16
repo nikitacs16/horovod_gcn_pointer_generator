@@ -800,10 +800,10 @@ class SummarizationModel(object):
 									w_interm_query = tf.get_variable('w_interm_query', [hps.emb_dim, hps.hidden_dim * 2], initializer=tf.contrib.layers.xavier_initializer(),  regularizer=self._regularizer)
 									emb_query_inputs = tf.tensordot(emb_query_inputs, w_interm_query, axes=[[2], [0]])
 								
-								gcn_in = b_interm_query * emb_query_inputs + (1.0 - b_interm_query) * self._query_states
+								q_gcn_in = b_interm_query * emb_query_inputs + (1.0 - b_interm_query) * self._query_states
 							
 							else:
-								gcn_in = self._query_states 
+								q_gcn_in = self._query_states 
 
 
 

@@ -235,7 +235,7 @@ def rouge_eval(ref_dir, dec_dir):
 def bleu_eval (ref_dir, dec_dir):
   ref = []
   dec = []
-  for i, j in zip(sorted(glob.glob(dec_dir+'*.txt')),sorted(glob.glob(e+'*.txt'))):
+  for i, j in zip(sorted(glob.glob(dec_dir+'*.txt')),sorted(glob.glob(ref_dir+'*.txt'))):
     ref_tex = ''
     dec_tex = ''
     for k in open(i).readlines():
