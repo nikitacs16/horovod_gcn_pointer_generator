@@ -233,6 +233,8 @@ def rouge_eval(ref_dir, dec_dir):
   return r.output_to_dict(rouge_results)
 
 def bleu_eval (ref_dir, dec_dir):
+  ref_dir = ref_dir + '/'
+  dec_dir = dec_dir + '/'
   ref = []
   dec = []
   for i, j in zip(sorted(glob.glob(dec_dir+'*.txt')),sorted(glob.glob(ref_dir+'*.txt'))):
