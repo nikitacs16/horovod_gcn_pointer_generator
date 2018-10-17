@@ -272,7 +272,7 @@ class SummarizationModel(object):
 		if not self._hps.use_label_information:
 			max_labels = 1
 
-		
+		tf.logging.info(max_nodes)
 
 		# construct single adjacency matrix
 		# max_words = tf.cast(tf.shape(adj_in[0][0].dense_shape[0]), dtype=tf.int64)
@@ -290,7 +290,7 @@ class SummarizationModel(object):
 		adj_in = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
 								 dense_shape=[batch_size * max_words, batch_size * max_words])
 		labels_in = tf.SparseTensor(indices=indices, values=b_data, dense_shape=[batch_size * max_words, batch_size * max_words])
-
+		
 		indices = []
 		b_data = []
 		for b in range(batch_size):
@@ -306,7 +306,7 @@ class SummarizationModel(object):
 		labels_out = tf.SparseTensor(indices=indices, values=b_data, dense_shape=[batch_size * max_words, batch_size * max_words])
 
 		out = [gcn_in]
-
+		tf.logging.info('before layers')
 		for layer in range(num_layers):
 			gcn_in = out[-1]
 			if len(out) > 1:
@@ -380,7 +380,7 @@ class SummarizationModel(object):
 				labels_in_embed = tf.nn.embedding_lookup_sparse(b_in, labels_pad, labels_weights, combiner='sum')
 
 				h_in = h_in + labels_in_embed
-				h_in = tf.reshape(h_in, [batch_size, self._max_word_seq_len, gcn_dim])
+				h_in = tf.reshape(h_in, [batch_size, max_nodes, gcn_dim])
 	
 				if dropout != 1.0: h_in = tf.nn.dropout(h_in, keep_prob=dropout) #this is normal dropout
 				
@@ -392,7 +392,7 @@ class SummarizationModel(object):
 				labels_out_weights, _ = tf.sparse_fill_empty_rows(adj_out, 0.)
 				labels_out_embed = tf.nn.embedding_lookup_sparse(b_out, labels_out_pad, labels_out_weights, combiner='sum')
 				h_out = h_out + labels_out_embed
-				h_out = tf.reshape(h_out, [batch_size, self._max_word_seq_len, gcn_dim])
+				h_out = tf.reshape(h_out, [batch_size, max_nodes, gcn_dim])
 
 				if dropout != 1.0: h_out = tf.nn.dropout(h_out, keep_prob=dropout) #this is normal dropout
 
@@ -400,7 +400,7 @@ class SummarizationModel(object):
 				# graph convolution, loops
 				h_loop = tf.matmul(gcn_in_2d, w_loop) + b_loop
 				h_loop = h_loop * gates_loop
-				h_loop = tf.reshape(h_loop, [batch_size, self._max_word_seq_len, gcn_dim])
+				h_loop = tf.reshape(h_loop, [batch_size, max_nodes, gcn_dim])
 
 				#loop dropout. consider self as a neighbour loop_probability times only
 
