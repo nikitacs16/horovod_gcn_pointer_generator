@@ -40,6 +40,9 @@ print(FLAGS.config_file)
 tf.logging.info(FLAGS.config_file)
 config = yaml.load(open(FLAGS.config_file,'r'))
 
+tf.app.flags.DEFINE_integer('seed',123,'which epoch to test')
+
+
 # GPU device 
 tf.app.flags.DEFINE_string('gpu_device_id',config['gpu_device_id'],'allocate gpu to which device')
 os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
@@ -403,8 +406,13 @@ def main(unused_argv):
 
   if FLAGS.mode == 'eval':
     FLAGS.data_path = config['dev_path']
+    FLAGS.word_gcn_edge_dropout = 1.0
+    FLAGS.query_gcn_edge_dropout = 1.0
+
   
   if FLAGS.mode == 'decode':
+    FLAGS.word_gcn_edge_dropout = 1.0
+    FLAGS.query_gcn_edge_dropout = 1.0
     FLAGS.single_pass = True
     FLAGS.data_path = config['test_path']
     if FLAGS.use_val_as_test:
