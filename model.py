@@ -141,8 +141,7 @@ class SummarizationModel(object):
 				self._word_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='dropout')
 
 			self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
-			self._word_neighbour_count = tf.placeholder(tf.float32, [hps.batch_size, None], name='word_neighbour_count')
-
+	
 		if FLAGS.query_gcn:
 			self._query_adj_in = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_in_{}'.format(lbl)) for lbl
@@ -157,9 +156,7 @@ class SummarizationModel(object):
 				self._query_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='query_dropout')
 
 			self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
-			self._query_neighbour_count = tf.placeholder(tf.float32, [hps.batch_size, None],
-														 name='query_neighbour_count')
-
+	
 		# decoder part
 		self._dec_batch = tf.placeholder(tf.int32, [hps.batch_size, hps.max_dec_steps], name='dec_batch')
 		self._target_batch = tf.placeholder(tf.int32, [hps.batch_size, hps.max_dec_steps], name='target_batch')
@@ -193,7 +190,6 @@ class SummarizationModel(object):
 
 		if FLAGS.word_gcn:
 			feed_dict[self._max_word_seq_len] = batch.max_word_len
-			feed_dict[self._word_neighbour_count] = batch.word_neighbour_count
 			word_adj_in = batch.word_adj_in
 			word_adj_out = batch.word_adj_out
 			for i in range(hps.batch_size):
@@ -210,7 +206,6 @@ class SummarizationModel(object):
 
 		if FLAGS.query_gcn:
 			feed_dict[self._max_query_seq_len] = batch.max_query_len
-			feed_dict[self._query_neighbour_count] = batch.query_neighbour_count
 			query_adj_in = batch.query_adj_in
 			query_adj_out = batch.query_adj_out
 			for i in range(hps.batch_size):
@@ -265,7 +260,7 @@ class SummarizationModel(object):
 		return encoder_outputs, fw_st, bw_st
 
 	def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out,
-						  neighbour_count, num_layers=1,
+						  num_layers=1,
 						  use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN",
 						  use_label_information=False, loop_dropout=1.0):
 
@@ -623,7 +618,7 @@ class SummarizationModel(object):
 				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
 												  batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
 												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
-												  adj_out=self._word_adj_out, neighbour_count=self._word_neighbour_count,
+												  adj_out=self._word_adj_out, 
 												  num_layers=hps.word_gcn_layers,
 												  use_gating=hps.word_gcn_gating, use_skip=hps.word_gcn_skip,
 												  dropout=self._word_gcn_dropout,
@@ -675,7 +670,6 @@ class SummarizationModel(object):
 															max_labels=hps.num_word_dependency_labels,
 															adj_in=self._query_adj_in,
 															adj_out=self._query_adj_out,
-															neighbour_count=self._query_neighbour_count,
 															num_layers=hps.query_gcn_layers,
 															use_gating=hps.query_gcn_gating, use_skip=hps.query_gcn_skip,
 															dropout=self._query_gcn_dropout,
@@ -754,7 +748,6 @@ class SummarizationModel(object):
 												  batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
 												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
 												  adj_out=self._word_adj_out,
-												  neighbour_count=self._word_neighbour_count,
 												  num_layers=hps.word_gcn_layers,
 												  use_gating=hps.word_gcn_gating, use_skip=hps.word_gcn_skip,
 												  dropout=self._word_gcn_dropout,
@@ -812,7 +805,6 @@ class SummarizationModel(object):
 															max_labels=hps.num_word_dependency_labels,
 															adj_in=self._query_adj_in,
 															adj_out=self._query_adj_out,
-															neighbour_count=self._query_neighbour_count,
 															num_layers=hps.query_gcn_layers,
 															use_gating=hps.query_gcn_gating, use_skip=hps.query_gcn_skip,
 															dropout=self._query_gcn_dropout,

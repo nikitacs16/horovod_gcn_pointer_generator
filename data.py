@@ -38,7 +38,6 @@ STOP_DECODING = '[STOP]'  # This has a vocab id, which is used at the end of unt
 
 
 # Note: none of <s>, </s>, [PAD], [UNK], [START], [STOP] should appear in the vocab file.
-np.random.seed(seed=123)
 
 class Vocab(object):
     """Vocabulary class for mapping between words and ids (integers)"""
@@ -346,7 +345,6 @@ dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_labels=45, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0):
     adj_main_in, adj_main_out = [], []
-    neighbour_count = np.ones((batch_size,max_nodes))
     
     for edge_list in batch_list:
         adj_in, adj_out = {}, {}
@@ -377,11 +375,8 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_l
                         in_ind[lbl].append((src+1, src))
                         in_data[lbl].append(1.0)
                     
-                    neighbour_count[count][dest] += 1
-
+               
             else:    
-                if lbl_!='ROOT':
-                  neighbour_count[count][dest] += 1 
                 
                 lbl = label_dict[lbl_]
                 if not use_label_information: #all assigned the same label information
@@ -407,8 +402,7 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_l
 
                     in_ind[lbl].append((src+1, src))
                     in_data[lbl].append(1.0)    
-                    neighbour_count[count][dest] += 1                      
-
+        
 
         count = count + 1
 
@@ -431,7 +425,7 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_l
         adj_main_out.append(adj_out)
         # print(adj_main_in)
 
-    return adj_main_in, adj_main_out, neighbour_count
+    return adj_main_in, adj_main_out
 
 
 def create_glove_embedding_matrix (vocab,vocab_size,emb_dim,glove_path):

@@ -35,12 +35,9 @@ import yaml
 FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_string('config_file', 'config.yaml', 'pass the config_file through command line if new expt')
-print('before')
-print(FLAGS.config_file)
 tf.logging.info(FLAGS.config_file)
 config = yaml.load(open(FLAGS.config_file,'r'))
 
-tf.app.flags.DEFINE_integer('seed',123,'which epoch to test')
 
 
 # GPU device 
@@ -257,13 +254,15 @@ def setup_training(model, batcher):
                      is_chief=True,
                      saver=saver,
                      summary_op=None,
-                     save_summaries_secs=60, # save summaries for tensorboard every 60 secs
+                     save_summaries_secs=0, # save summaries for tensorboard every 60 secs
                      save_model_secs=FLAGS.save_model_secs,                    
                      global_step=model.global_step)
+
   summary_writer = sv.summary_writer
   tf.logging.info("Preparing or waiting for session...")
   sess_context_manager = sv.prepare_or_wait_for_session(config=util.get_config())
   tf.logging.info("Created session.")
+  
   try:
     run_training(model, batcher, sess_context_manager, sv, summary_writer,saver) # this is an infinite loop until interrupted
   except KeyboardInterrupt:
@@ -293,11 +292,14 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
     while True: # repeats until interrupted
       batch = batcher.next_batch()
       
-          
+      model_save_path = os.path.join(FLAGS.log_root, "train","checkpoint-")
+
       tf.logging.info('running training step...')
+      
       t0=time.time()
       results = model.run_train_step(sess, batch)
       t1=time.time()
+      
       tf.logging.info('seconds for training step: %.3f', t1-t0)
       loss = results['loss']
       tf.logging.info('loss: %f', loss) # print the loss to screen
@@ -318,11 +320,19 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       if train_step % 100 == 0: # flush the summary writer every so often
         summary_writer.flush()
 
+      
+      if train_step % 200 == 0:
+        saver.save(sess, model_save_path, global_step=train_step)
+
+      
+
       if train_step%FLAGS.save_steps == 0:
         t_now = time.time()
         f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
         t_epoch = t_now
           
+      
+
       if FLAGS.use_stop_after:
         if train_step >= FLAGS.stop_steps:
           tf.logging.info('Stopping as epoch limit completed')
@@ -388,7 +398,7 @@ def run_eval(model, batcher, vocab):
       summary_writer.flush()
 
     if FLAGS.use_stop_after:
-        if train_step >= FLAGS.stop_steps:
+        if (train_step + 300)  - FLAGS.stop_steps > 0:
           tf.logging.info('Stopping as epoch limit completed')
           exit()
 
@@ -477,6 +487,7 @@ def main(unused_argv):
   tf.logging.info(tf.flags.FLAGS.__flags)  
      
   tf.set_random_seed(111) # a seed value for randomness
+  np.random.seed(111)
 
   if hps.mode == 'train':
     print "creating model..."
