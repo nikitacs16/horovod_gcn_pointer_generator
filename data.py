@@ -114,7 +114,7 @@ class Vocab(object):
     
     def set_glove_embedding(self,fpath,embedding_dim):
         """ Creates glove embedding_matrix from file path"""
-        emb = np.random.rand(self._count,embedding_dim)
+        emb = np.random.randn(self._count,embedding_dim)
         with open(fpath) as f: #python 3.x support 
             for k,line in enumerate(f):
                 fields = line.split()

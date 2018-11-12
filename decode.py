@@ -22,7 +22,7 @@ import tensorflow as tf
 import beam_search
 import data
 import json
-import pyrouge
+#import pyrouge
 import bleu
 import util
 import logging

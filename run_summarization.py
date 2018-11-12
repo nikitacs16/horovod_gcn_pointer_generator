@@ -21,6 +21,7 @@ import time
 import os
 import tensorflow as tf
 import numpy as np
+np.random.seed(111)
 from collections import namedtuple
 from data import Vocab
 from batcher import Batcher
@@ -254,8 +255,8 @@ def setup_training(model, batcher):
                      is_chief=True,
                      saver=saver,
                      summary_op=None,
-                     save_summaries_secs=0, # save summaries for tensorboard every 60 secs
-                     save_model_secs=FLAGS.save_model_secs,                    
+                     save_summaries_secs=60, # save summaries for tensorboard every 60 secs
+                     save_model_secs=0,                    
                      global_step=model.global_step)
 
   summary_writer = sv.summary_writer
@@ -487,7 +488,7 @@ def main(unused_argv):
   tf.logging.info(tf.flags.FLAGS.__flags)  
      
   tf.set_random_seed(111) # a seed value for randomness
-  np.random.seed(111)
+ 
 
   if hps.mode == 'train':
     print "creating model..."
