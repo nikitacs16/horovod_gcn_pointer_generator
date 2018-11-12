@@ -19,9 +19,12 @@
 import sys
 import time
 import os
-import tensorflow as tf
+import random
+random.seed(111)
 import numpy as np
 np.random.seed(111)
+import tensorflow as tf
+tf.set_random_seed(111) # a seed value for randomness
 from collections import namedtuple
 from data import Vocab
 from batcher import Batcher
@@ -487,8 +490,7 @@ def main(unused_argv):
 
   tf.logging.info(tf.flags.FLAGS.__flags)  
      
-  tf.set_random_seed(111) # a seed value for randomness
- 
+  
 
   if hps.mode == 'train':
     print "creating model..."
