@@ -325,7 +325,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
         summary_writer.flush()
 
       
-      if train_step % 200 == 0:
+      if train_step %  1000 == 0: #evaluate half an epoch
         saver.save(sess, model_save_path, global_step=train_step)
 
       
@@ -351,8 +351,8 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
 
 
 
-
-
+'''
+#the one with running average loss
 def run_eval(model, batcher, vocab):
   """Repeatedly runs eval iterations, logging to screen and writing summaries. Saves the model with the best loss seen so far."""
   model.build_graph() # build the graph
@@ -405,6 +405,63 @@ def run_eval(model, batcher, vocab):
         if (train_step + 300)  - FLAGS.stop_steps > 0:
           tf.logging.info('Stopping as epoch limit completed')
           exit()
+'''
+
+#epoch loss
+
+def run_eval(model, batcher, vocab):
+  """Repeatedly runs eval iterations, logging to screen and writing summaries. Saves the model with the best loss seen so far."""
+  model.build_graph() # build the graph
+  saver = tf.train.Saver(max_to_keep=3) # we will keep 3 best checkpoints at a time
+  sess = tf.Session(config=util.get_config())
+  eval_dir = os.path.join(FLAGS.log_root, "eval") # make a subdir of the root dir for eval data
+  bestmodel_save_path = os.path.join(eval_dir, 'bestmodel') # this is where checkpoints of best models are saved
+  summary_writer = tf.summary.FileWriter(eval_dir)
+  running_avg_loss = 0 # the eval job keeps a smoother, running average loss to tell it when to implement early stopping
+  best_loss = None  # will hold the best loss achieved so far
+
+  while True:
+    _ = util.load_ckpt(saver, sess) # load a new checkpoint
+    while True:
+      batch = batcher.next_batch() # get the next batch
+
+      if batch is None:
+        break
+      # run eval on the batch
+      results = model.run_eval_step(sess, batch)
+      
+      # print the loss and coverage loss to screen
+      loss = results['loss']
+      if FLAGS.coverage:
+        coverage_loss = results['coverage_loss']
+        loss = loss + coverage_loss
+      # add summaries
+      summaries = results['summaries']
+      train_step = results['global_step']
+     
+      summary_writer.add_summary(summaries, train_step)
+
+      # calculate running avg loss
+      running_avg_loss = running_avg_loss + loss
+
+    # If running_avg_loss is best so far, save this checkpoint (early stopping).
+    # These checkpoints will appear as bestmodel-<iteration_number> in the eval dir
+    if best_loss is None or running_avg_loss < best_loss:
+      tf.logging.info('Found new best model with %.3f running_avg_loss. Saving to %s', running_avg_loss, bestmodel_save_path)
+      saver.save(sess, bestmodel_save_path, global_step=train_step, latest_filename='checkpoint_best')
+      best_loss = running_avg_loss
+
+    running_avg_loss = 0
+
+    # flush the summary writer every so often
+    if train_step % 100 == 0:
+      summary_writer.flush()
+
+    if FLAGS.use_stop_after:
+        if (train_step + 300)  - FLAGS.stop_steps > 0:
+          tf.logging.info('Stopping as epoch limit completed')
+          exit()
+
 
 def get_data(data_path):
   new_data = []
@@ -420,6 +477,8 @@ def main(unused_argv):
 
   if FLAGS.mode == 'eval':
     FLAGS.data_path = config['dev_path']
+    FLAGS.single_pass = True
+
     FLAGS.word_gcn_edge_dropout = 1.0
     FLAGS.query_gcn_edge_dropout = 1.0
 
@@ -467,9 +526,10 @@ def main(unused_argv):
     FLAGS.batch_size = FLAGS.beam_size
 
   # If single_pass=True, check we're in decode mode
+  '''
   if FLAGS.single_pass and FLAGS.mode!='decode':
     raise Exception("The single_pass flag should only be True in decode mode")
-
+  '''
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
   hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','simple_concat','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','stacked_lstm', 'word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'word_loop_dropout', 'query_loop_dropout']
   hps_dict = {}
