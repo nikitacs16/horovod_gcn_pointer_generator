@@ -35,6 +35,7 @@ from tensorflow.python import debug as tf_debug
 import pickle
 import glob
 import yaml
+import copy
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -279,7 +280,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
   tf.logging.info("starting run_training")
   batch_count = 0
   #new_saver = tf.train.Saver()
-
+  best_loss = 0.0
   if FLAGS.use_save_at:
     epoch_dir = os.path.join(FLAGS.log_root, "epoch")
     if not os.path.exists(epoch_dir): os.makedirs(epoch_dir)
@@ -289,6 +290,10 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
   else:
     f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'w')
   t_epoch = time.time()
+
+  
+
+
   with sess_context_manager as sess:
     if FLAGS.debug: # start the tensorflow debugger
       sess = tf_debug.LocalCLIDebugWrapperSession(sess)
@@ -327,8 +332,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       
       if train_step %  200 == 0: #evaluate half an epoch
         saver.save(sess, model_save_path, global_step=train_step)
-
-      
+        
 
       if train_step%FLAGS.save_steps == 0:
         t_now = time.time()
@@ -342,12 +346,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
           tf.logging.info('Stopping as epoch limit completed')
           exit()
 
-      if FLAGS.use_save_at:
-        if train_step%FLAGS.save_steps==0:
-          file_name = os.path.join(FLAGS.log_root,'epoch','epoch_' + str(train_step/FLAGS.save_steps))
-         
-          saver.save(sess,file_name)
-
+  
 
 
 
@@ -410,26 +409,39 @@ def run_eval(model, batcher, vocab):
 #epoch loss
 
 def run_eval(model, batcher, vocab):
+
   """Repeatedly runs eval iterations, logging to screen and writing summaries. Saves the model with the best loss seen so far."""
   model.build_graph() # build the graph
   saver = tf.train.Saver(max_to_keep=3) # we will keep 3 best checkpoints at a time
   sess = tf.Session(config=util.get_config())
+
   eval_dir = os.path.join(FLAGS.log_root, "eval") # make a subdir of the root dir for eval data
   bestmodel_save_path = os.path.join(eval_dir, 'bestmodel') # this is where checkpoints of best models are saved
+  if os.path.exists(os.path.join(FLAGS.log_root,'best_loss.txt')):
+    f_loss = open(os.path.join(FLAGS.log_root,'loss.txt'),'r')
+    for i in f.readlines():
+      best_loss = float(i)
+  else:
+    best_loss = None    
+  f_loss = open(os.path.join(FLAGS.log_root,'loss.txt'),'w')
   summary_writer = tf.summary.FileWriter(eval_dir)
   running_avg_loss = 0 # the eval job keeps a smoother, running average loss to tell it when to implement early stopping
   best_loss = None  # will hold the best loss achieved so far 
-  val_flag = False	
+  
+
   while True:
+
     _ = util.load_ckpt(saver, sess) # load a new checkpoint
+    
+
     while True:
+
       batch = batcher.next_batch() # get the next batch
 
       if batch is None:
-        tf.logging.info('broke')
-	tf.logging.info(running_avg_loss)
-	val_flag = True
+        tf.logging.info('Ended')
         break
+      
       # run eval on the batch
       results = model.run_eval_step(sess, batch)
       #tf.logging.info('ran eval')
@@ -457,8 +469,9 @@ def run_eval(model, batcher, vocab):
       saver.save(sess, bestmodel_save_path, global_step=train_step, latest_filename='checkpoint_best')
       best_loss = running_avg_loss
 
-    running_avg_loss = 0
-    loss = 0	
+    running_avg_loss = 0.0
+    loss = 0.0	
+    
     # flush the summary writer every so often
     if train_step % 100 == 0:
       summary_writer.flush()
