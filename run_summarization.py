@@ -407,8 +407,8 @@ def run_eval(model, batcher, vocab):
 '''
 
 #epoch loss
-
-def run_eval(model, batcher, vocab):
+global loaded_checkpoints
+def run_eval(model, batcher, vocab, hps):
 
   """Repeatedly runs eval iterations, logging to screen and writing summaries. Saves the model with the best loss seen so far."""
   model.build_graph() # build the graph
@@ -418,7 +418,7 @@ def run_eval(model, batcher, vocab):
   eval_dir = os.path.join(FLAGS.log_root, "eval") # make a subdir of the root dir for eval data
   bestmodel_save_path = os.path.join(eval_dir, 'bestmodel') # this is where checkpoints of best models are saved
   if os.path.exists(os.path.join(FLAGS.log_root,'best_loss.txt')):
-    f_loss = open(os.path.join(FLAGS.log_root,'loss.txt'),'r')
+    f_loss = open(os.path.join(FLAGS.log_root,'best_loss.txt'),'r')
     for i in f.readlines():
       best_loss = float(i)
   else:
@@ -428,18 +428,25 @@ def run_eval(model, batcher, vocab):
   running_avg_loss = 0 # the eval job keeps a smoother, running average loss to tell it when to implement early stopping
   best_loss = None  # will hold the best loss achieved so far 
   
+  loaded_checkpoints = []
+  not_seen = True 
 
   while True:
 
-    _ = util.load_ckpt(saver, sess) # load a new checkpoint
-    
+    checkpoint_name = util.load_ckpt(saver, sess) # load a new checkpoint
+    if checkpoint_name in loaded_checkpoints:
+      time.sleep(100)
+      not_seen = False
+    else:
+      loaded_checkpoints.append(checkpoint_name)
+      not_seen = True
 
-    while True:
+    while True and not_seen:
 
       batch = batcher.next_batch() # get the next batch
 
       if batch is None:
-        tf.logging.info('Ended')
+        batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
         break
       
       # run eval on the batch
@@ -468,6 +475,7 @@ def run_eval(model, batcher, vocab):
       tf.logging.info('Found new best model with %.3f running_avg_loss. Saving to %s', running_avg_loss, bestmodel_save_path)
       saver.save(sess, bestmodel_save_path, global_step=train_step, latest_filename='checkpoint_best')
       best_loss = running_avg_loss
+      f_loss.write(best_loss)
 
     running_avg_loss = 0.0
     loss = 0.0	
@@ -577,7 +585,13 @@ def main(unused_argv):
     setup_training(model, batcher)
   elif hps.mode == 'eval':
     model = SummarizationModel(hps, vocab)
-    run_eval(model, batcher, vocab)
+    try:
+      run_eval(model, batcher, vocab,hps)
+    except KeyboardInterrupt:
+      tf.logging.info("Caught keyboard interrupt on worker. Stopping supervisor...")
+      json.dump(loaded_checkpoints,open('loaded_checkpoints.json','w'))
+      sv.stop()
+
   elif hps.mode == 'decode':
     decode_model_hps = hps  # This will be the hyperparameters for the decoder model
     decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
