@@ -330,7 +330,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
         summary_writer.flush()
 
       
-      if train_step %  500 == 0: #evaluate half an epoch
+      if train_step %  200 == 0: #evaluate half an epoch
         saver.save(sess, model_save_path, global_step=train_step)
         
 
@@ -432,15 +432,13 @@ def run_eval(model, batcher, vocab, hps):
   not_seen = True 
 
   while True:
-    #tf.logging.info('Entered while')
+
     checkpoint_name = util.load_ckpt(saver, sess) # load a new checkpoint
     #tf.logging.info(checkpoint_name)
     if checkpoint_name in loaded_checkpoints:
       time.sleep(300)
-      #tf.logging.info(checkpoint_name)
       not_seen = False
     else:
-      #tf.logging.info(checkpoint_name)
       loaded_checkpoints.append(checkpoint_name)
       not_seen = True
 
@@ -451,8 +449,7 @@ def run_eval(model, batcher, vocab, hps):
       if batch is None:
         tf.logging.info(running_avg_loss)
         batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
-        
-        tf.logging.info(batcher._batch_queue)
+	tf.logging.info(
         break
       
       # run eval on the batch
@@ -476,8 +473,8 @@ def run_eval(model, batcher, vocab, hps):
 
     # If running_avg_loss is best so far, save this checkpoint (early stopping).
     # These checkpoints will appear as bestmodel-<iteration_number> in the eval dir
-    #tf.logging.info(running_avg_loss)
-    if best_loss is None or running_avg_loss < best_loss and not_seen:
+   
+    if best_loss is None or running_avg_loss < best_loss:
       tf.logging.info('Found new best model with %.3f running_avg_loss. Saving to %s', running_avg_loss, bestmodel_save_path)
       saver.save(sess, bestmodel_save_path, global_step=train_step, latest_filename='checkpoint_best')
       best_loss = running_avg_loss
