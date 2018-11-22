@@ -243,10 +243,10 @@ class SummarizationModel(object):
 		with tf.variable_scope(name):
 			if self._hps.use_lstm:
 				cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim,
-												  initializer=tf.contrib.layers.xavier_initializer(),
+												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
 												  state_is_tuple=True)
 				cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim,
-												  initializer=tf.contrib.layers.xavier_initializer(),
+												  initializer=tf.contrib.layers.xavier_initializer(seed=2),
 												  state_is_tuple=True)
 			else:
 				cell_fw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim)

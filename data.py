@@ -169,12 +169,19 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
 				random.shuffle(filelist)
 			for f in filelist:
 				reader = open(f, 'rb')
+                all_examples = []
 				while True:
 					len_bytes = reader.read(8)
-					if not len_bytes: break # finished reading this file
-					str_len = struct.unpack('q', len_bytes)[0]
+					if not len_bytes: 
+                        random.shuffle(all_examples)
+                        for k in all_examples:
+                            yield example_pb2.Example.FromString(k)
+                        break # finished reading this file
+					
+                    str_len = struct.unpack('q', len_bytes)[0]
 					example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
-					yield example_pb2.Example.FromString(example_str)
+					all_examples.append(example_str)
+
 			if single_pass:
 				print "example_generator completed reading all datafiles. No more data."
 				break
