@@ -332,8 +332,8 @@ class Batcher(object):
 			self._bucketing_cache_size = 1  # only load one batch's worth of examples before bucketing; this essentially means no bucketing
 			self._finished_reading = False  # this will tell us when we're finished reading the dataset
 		else:
-			self._num_example_q_threads = 16  # num threads to fill example queue
-			self._num_batch_q_threads = 4  # num threads to fill batch queue
+			self._num_example_q_threads = 1  # num threads to fill example queue
+			self._num_batch_q_threads = 1  # num threads to fill batch queue
 			self._bucketing_cache_size = 100  # how many batches-worth of examples to load into cache before bucketing
 
 		# Start the threads that load the queues
@@ -386,6 +386,7 @@ class Batcher(object):
 			while True:
 				try:
 					 article, abstract, word_edge_list, query, query_edge_list= input_gen.next() # read the next example from file. article and abstract are both strings.
+					 #tf.logging.info(random.randint(1,101))
 				except StopIteration: # if there are no more examples:
 					tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
 					if self._single_pass:

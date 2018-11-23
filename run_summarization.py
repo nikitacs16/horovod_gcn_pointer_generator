@@ -584,7 +584,7 @@ def main(unused_argv):
   tf.logging.info(tf.flags.FLAGS.__flags)  
      
   
-
+ 
   if hps.mode == 'train':
     print "creating model..."
     model = SummarizationModel(hps, vocab)
@@ -615,6 +615,7 @@ def main(unused_argv):
     setup_training(model, batcher)
   else:
     raise ValueError("The 'mode' flag must be one of train/eval/decode")
+   
 
 if __name__ == '__main__':
   tf.app.run()

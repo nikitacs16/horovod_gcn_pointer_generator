@@ -32,7 +32,6 @@ def run_eval_test(file_name,out_file_name):
 	#	subprocess.call(test_command, stdout=outfile)
 	os.system(test_command)	
 
-
 with open(file_name) as f:
 	doc = yaml.load(f)
 pool = Pool(processes=2)
@@ -40,7 +39,7 @@ res1 = pool.apply_async(run_train,[file_name,doc['exp_name']])
 res2 = pool.apply_async(run_eval,[file_name,doc['exp_name']])
 pool.close()
 pool.join()
-
+'''
 restore_best_model_command = 'python run_summarization.py --mode=restore_best_model --config_file ' + str(file_name)
 os.system(restore_best_model_command)
 pool = Pool(processes=2)
@@ -50,5 +49,9 @@ pool.close()
 pool.join()
 #print(i)
 
-os.system('python  run_summarization.py --mode=eval --config_file ' + str(file_name))	
+'''
+
+
+#os.system('python  run_summarization.py --mode=train --config_file ' + str(file_name))	
+
 print('Completed!')
