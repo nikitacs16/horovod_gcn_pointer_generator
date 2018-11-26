@@ -334,7 +334,7 @@ class Batcher(object):
 		else:
 			self._num_example_q_threads = 1  # num threads to fill example queue
 			self._num_batch_q_threads = 1  # num threads to fill batch queue
-			self._bucketing_cache_size = 100  # how many batches-worth of examples to load into cache before bucketing
+			self._bucketing_cache_size = 1  # how many batches-worth of examples to load into cache before bucketing
 
 		# Start the threads that load the queues
 		self._example_q_threads = []
@@ -342,7 +342,7 @@ class Batcher(object):
 			self._example_q_threads.append(Thread(name=str(k), target=self.fill_example_queue))
 			self._example_q_threads[-1].daemon = True
 			self._example_q_threads[-1].start()
-			time.sleep(0.001)
+
 		self._batch_q_threads = []
 		for _ in xrange(self._num_batch_q_threads):
 			self._batch_q_threads.append(Thread(target=self.fill_batch_queue))
@@ -444,8 +444,7 @@ class Batcher(object):
 				batches = []
 				for i in xrange(0, len(inputs), self._hps.batch_size):
 					batches.append(inputs[i:i + self._hps.batch_size])
-				if not self._single_pass:
-					shuffle(batches)
+				
 				for b in batches:  # each b is a list of Example objects
 					self._batch_queue.put(Batch(b, self._hps, self._vocab))
 

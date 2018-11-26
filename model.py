@@ -576,7 +576,7 @@ class SummarizationModel(object):
 
 		with tf.variable_scope('seq2seq'):
 			# Some initializers
-			self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag, hps.rand_unif_init_mag,seed=123)
+			self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag, hps.rand_unif_init_mag)
 			self.trunc_norm_init = tf.truncated_normal_initializer(stddev=hps.trunc_norm_init_std)
 
 			# Add embedding matrix (shared by the encoder and decoder inputs)

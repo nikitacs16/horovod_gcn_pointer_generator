@@ -24,7 +24,6 @@ random.seed(111)
 import numpy as np
 np.random.seed(111)
 import tensorflow as tf
-tf.set_random_seed(111) # a seed value for randomness
 from collections import namedtuple
 from data import Vocab
 from batcher import Batcher
@@ -495,7 +494,6 @@ def run_eval(model, batcher, vocab, hps):
           tf.logging.info('Stopping as epoch limit completed')
           exit()
 
-
 def get_data(data_path):
   new_data = []
   for f in sorted(glob.glob(data_path)):
@@ -583,7 +581,8 @@ def main(unused_argv):
 
   tf.logging.info(tf.flags.FLAGS.__flags)  
      
-  
+  tf.set_random_seed(111) # a seed value for randomness
+
  
   if hps.mode == 'train':
     print "creating model..."
