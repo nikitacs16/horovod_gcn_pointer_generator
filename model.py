@@ -323,7 +323,7 @@ class SummarizationModel(object):
 				b_in = tf.get_variable("bias_labels", [max_labels, gcn_dim],
 									   initializer=tf.random_normal_initializer(stddev=0.01, seed=5))
 				b_out = tf.get_variable("bias_labels_inv", [max_labels, gcn_dim],
-										initializer=tf.random_normal_initializer(stddev=0.01, , seed=6))
+										initializer=tf.random_normal_initializer(stddev=0.01, seed=6))
 				b_loop = tf.get_variable("bias_loop", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=7))
 
 				gates_loop = 1.
@@ -588,6 +588,7 @@ class SummarizationModel(object):
 						embedding = tf.get_variable('embedding', dtype=tf.float32,
 													initializer=tf.cast(self._vocab.glove_emb, tf.float32),
 													trainable=hps.emb_trainable, regularizer=self._regularizer)
+						tf.logging.info(embedding)
 
 					else:
 						embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32,
