@@ -246,7 +246,7 @@ class SummarizationModel(object):
 												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
 												  state_is_tuple=True)
 				cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim,
-												  initializer=tf.contrib.layers.xavier_initializer(seed=2),
+												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
 												  state_is_tuple=True)
 			else:
 				cell_fw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim)
@@ -313,33 +313,33 @@ class SummarizationModel(object):
 			with tf.variable_scope('%s-%d' % (name, layer)):
 
 				w_in = tf.get_variable("weights", [in_dim, gcn_dim],
-									   initializer=tf.random_normal_initializer(stddev=0.01))
+									   initializer=tf.random_normal_initializer(stddev=0.01, seed=2))
 				w_out = tf.get_variable("weights_inv", [in_dim, gcn_dim],
-										initializer=tf.random_normal_initializer(stddev=0.01))
+										initializer=tf.random_normal_initializer(stddev=0.01, seed=3))
 				w_loop = tf.get_variable("weights_loop", [in_dim, gcn_dim],
-										 initializer=tf.random_normal_initializer(stddev=0.01))
+										 initializer=tf.random_normal_initializer(stddev=0.01, seed=4))
 
 				# Layer biases
 				b_in = tf.get_variable("bias_labels", [max_labels, gcn_dim],
-									   initializer=tf.random_normal_initializer(stddev=0.01))
+									   initializer=tf.random_normal_initializer(stddev=0.01, seed=5))
 				b_out = tf.get_variable("bias_labels_inv", [max_labels, gcn_dim],
-										initializer=tf.random_normal_initializer(stddev=0.01))
-				b_loop = tf.get_variable("bias_loop", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01))
+										initializer=tf.random_normal_initializer(stddev=0.01, , seed=6))
+				b_loop = tf.get_variable("bias_loop", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=7))
 
 				gates_loop = 1.
 
 				if use_gating:
 					w_gate_in = tf.get_variable("weights_gate", [in_dim, 1],
-												initializer=tf.random_normal_initializer(stddev=0.01))
+												initializer=tf.random_normal_initializer(stddev=0.01, seed=8))
 					w_gate_out = tf.get_variable("weights_gate_inv", [in_dim, 1],
-												 initializer=tf.random_normal_initializer(stddev=0.01))
+												 initializer=tf.random_normal_initializer(stddev=0.01, seed=9))
 					w_gate_loop = tf.get_variable("weights_gate_loop", [in_dim, 1],
-												  initializer=tf.random_normal_initializer(stddev=0.01))
+												  initializer=tf.random_normal_initializer(stddev=0.01, seed=10))
 
 					b_gate_in = tf.get_variable("bias_gate", [max_labels],
-												initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01))
+												initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=11))
 					b_gate_out = tf.get_variable("bias_gate_inv", [max_labels],
-												 initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01))
+												 initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=12))
 					b_gate_loop = tf.get_variable("bias_gate_loop", [1], initializer=tf.constant_initializer(1.))
 
 					# TODO Add edge dropout
@@ -401,7 +401,7 @@ class SummarizationModel(object):
 
 
 			    
-				if dropout != 1.0: h_loop = tf.nn.dropout(h_loop, keep_prob=dropout) #this is normal dropout
+				if dropout != 1.0: h_loop = tf.nn.dropout(h_loop, keep_prob=dropout, seed=13) #this is normal dropout
 
 			    # final result is the sum of those (with residual connection to inputs)
 				h = tf.nn.relu(h_in + h_out + h_loop)
@@ -410,7 +410,7 @@ class SummarizationModel(object):
 				if use_skip:
 					b_skip = tf.get_variable('b_skip', [1], initializer=tf.constant_initializer(0.0))
 					if in_dim!=gcn_dim:
-						w_adjust = tf.get_variable('w_adjust', [in_dim, gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+						w_adjust = tf.get_variable('w_adjust', [in_dim, gcn_dim], initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=14), regularizer=self._regularizer)
 						gcn_in = tf.tensordot(gcn_in, w_adjust, axes=[[2], [0]])
 
 					h =  (1 - b_skip) *  h + b_skip * (gcn_in)
@@ -576,9 +576,10 @@ class SummarizationModel(object):
 
 		with tf.variable_scope('seq2seq'):
 			# Some initializers
-			self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag, hps.rand_unif_init_mag)
-			self.trunc_norm_init = tf.truncated_normal_initializer(stddev=hps.trunc_norm_init_std)
-
+			self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag, hps.rand_unif_init_mag,seed=123)
+			self.trunc_norm_init = tf.truncated_normal_initializer(stddev=hps.trunc_norm_init_std, seed=123)
+			self.gcn_weight_init = tf.random_normal_initializer(stddev=0.01, seed=123)
+			self.gcn_bias_init = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=123)
 			# Add embedding matrix (shared by the encoder and decoder inputs)
 			with tf.variable_scope('embedding'):
 				if hps.mode == "train":
