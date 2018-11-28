@@ -875,7 +875,7 @@ class SummarizationModel(object):
 							loss_per_step.append(losses)
 
 						# Apply dec_padding_mask and get loss
-						self._loss = _mask_and_avg(loss_per_step, self._dec_padding_mask)
+						self._loss = _mask_and_avg(loss_per_step, self._dec_padding_mask, hps.max_dec_steps)
 
 					else:  # baseline model
 						self._loss = tf.contrib.seq2seq.sequence_loss(tf.stack(vocab_scores, axis=1),
@@ -1090,7 +1090,11 @@ class SummarizationModel(object):
 		return results['ids'], results['probs'], new_states, attn_dists, p_gens, new_coverage
 
 
-def _mask_and_avg(values, padding_mask):
+
+def reduce_sum_lossop(x, max_dec_steps):
+	return tf.squeeze(tf.matmul(x, tf.ones([max_dec_steps, 1])))
+
+def _mask_and_avg(values, padding_mask, max_dec_steps):
 	"""Applies mask to values then returns overall average (a scalar)
   Args:
 	values: a list length max_dec_steps containing arrays shape (batch_size).
@@ -1098,8 +1102,10 @@ def _mask_and_avg(values, padding_mask):
   Returns:
 	a scalar
   """
-
-	dec_lens = tf.reduce_sum(padding_mask, axis=1)  # shape batch_size. float32
+  	#deterministic reduce_sum
+  
+	dec_lens = reduce_sum_lossop(padding_mask, max_dec_steps)  # shape batch_size. float32
+	
 	values_per_step = [v * padding_mask[:, dec_step] for dec_step, v in enumerate(values)]
 	values_per_ex = sum(values_per_step) / dec_lens  # shape (batch_size); normalized value for each batch member
 	return tf.reduce_mean(values_per_ex)  # overall average
