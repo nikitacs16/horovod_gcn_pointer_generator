@@ -259,7 +259,7 @@ def setup_training(model, batcher):
                      saver=saver,
                      summary_op=None,
                      save_summaries_secs=60, # save summaries for tensorboard every 60 secs
-                     save_model_secs=0,                    
+                     save_model_secs=600,                    
                      global_step=model.global_step)
 
   summary_writer = sv.summary_writer
@@ -328,10 +328,10 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       if train_step % 100 == 0: # flush the summary writer every so often
         summary_writer.flush()
 
-      
+      '''      
       if train_step %  500 == 0: #evaluate half an epoch
         saver.save(sess, model_save_path, global_step=train_step)
-        
+      '''        
 
       if train_step%FLAGS.save_steps == 0:
         t_now = time.time()
