@@ -1114,7 +1114,7 @@ def _mask_and_avg(values, padding_mask, max_dec_steps):
 	values_per_step = [v * padding_mask[:, dec_step] for dec_step, v in enumerate(values)]
 	values_per_ex = sum(values_per_step) / dec_lens  # shape (batch_size); normalized value for each batch member
 	#return tf.reduce_mean(values_per_ex)  # overall average
-	return tf.reduce_mean_op(values_per_ex,batch_size)
+	return reduce_mean_op(values_per_ex,batch_size)
 
 def _coverage_loss(attn_dists, padding_mask):
 	"""Calculates the coverage loss from the attention distributions.
