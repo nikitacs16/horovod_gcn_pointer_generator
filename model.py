@@ -1096,7 +1096,7 @@ def reduce_sum_lossop(x, max_dec_steps):
 
 def reduce_mean_op(x,divide_by):
 	#w = tf.reshape(tf.squeeze(tf.matmul(x,tf.transpose(x))))
-	w = tf.squeeze(tf.matmul(tf.reshape(x,[1,divide_by], tf.reshape(tf.ones(divide_by),[divide_by,1]))))		
+	w = tf.squeeze(tf.matmul(tf.reshape(x,[1,divide_by]), tf.reshape(tf.ones(divide_by),[divide_by,1])))		
 	return w/divide_by
 
 def _mask_and_avg(values, padding_mask, max_dec_steps):
