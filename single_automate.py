@@ -34,6 +34,7 @@ def run_eval_test(file_name,out_file_name):
 
 with open(file_name) as f:
 	doc = yaml.load(f)
+
 pool = Pool(processes=2)
 res1 = pool.apply_async(run_train,[file_name,doc['exp_name']])
 res2 = pool.apply_async(run_eval,[file_name,doc['exp_name']])
@@ -48,8 +49,8 @@ res2 = pool.apply_async(run_eval_test,[file_name,doc['exp_name']])
 pool.close()
 pool.join()
 #print(i)
-
 '''
+
 
 
 #os.system('python  run_summarization.py --mode=train --config_file ' + str(file_name))	

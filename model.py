@@ -1108,6 +1108,8 @@ def _mask_and_avg(values, padding_mask, max_dec_steps):
 	
 	values_per_step = [v * padding_mask[:, dec_step] for dec_step, v in enumerate(values)]
 	values_per_ex = sum(values_per_step) / dec_lens  # shape (batch_size); normalized value for each batch member
+	full_value  = sum(values_per_ex)
+	tf.logging.info(full_value)
 	return tf.reduce_mean(values_per_ex)  # overall average
 
 
