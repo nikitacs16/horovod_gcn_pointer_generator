@@ -1094,10 +1094,10 @@ class SummarizationModel(object):
 def reduce_sum_lossop(x, max_dec_steps):
 	return tf.squeeze(tf.matmul(x, tf.ones([max_dec_steps, 1])))
 
-def reduce_mean_op(x,divide_by):
-	#w = tf.reshape(tf.squeeze(tf.matmul(x,tf.transpose(x))))
-	w = tf.squeeze(tf.matmul(tf.reshape(x,[1,divide_by]), tf.reshape(tf.ones(divide_by),[divide_by,1])))		
-	return w/divide_by
+def reduce_mean_op(x):
+	divide_by = tf.shape(x)
+	w = tf.squeeze(tf.matmul(tf.reshape(x,[1,divide_by[0]]), tf.reshape(tf.ones(divide_by),[divide_by[0],1])))		
+	return w/tf.to_float(divide_by[0])
 
 def _mask_and_avg(values, padding_mask, max_dec_steps):
 	"""Applies mask to values then returns overall average (a scalar)
@@ -1107,14 +1107,17 @@ def _mask_and_avg(values, padding_mask, max_dec_steps):
   Returns:
 	a scalar
   """
+
   	#deterministic reduce_sum
-  	batch_size = len(values)
+  	#batch_size = tf.shape(padding_mask)[0]
+	#tf.logging.info('padding mask')
+	batch_s = tf.reshape(tf.shape(padding_mask)[0],[])
 	dec_lens = reduce_sum_lossop(padding_mask, max_dec_steps)  # shape batch_size. float32
 	
 	values_per_step = [v * padding_mask[:, dec_step] for dec_step, v in enumerate(values)]
 	values_per_ex = sum(values_per_step) / dec_lens  # shape (batch_size); normalized value for each batch member
 	#return tf.reduce_mean(values_per_ex)  # overall average
-	return reduce_mean_op(values_per_ex,batch_size)
+	return reduce_mean_op(values_per_ex)
 
 def _coverage_loss(attn_dists, padding_mask):
 	"""Calculates the coverage loss from the attention distributions.
