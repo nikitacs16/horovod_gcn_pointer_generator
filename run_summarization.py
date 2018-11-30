@@ -435,7 +435,7 @@ def run_eval(model, batcher, vocab, hps):
     checkpoint_name = util.load_ckpt(saver, sess) # load a new checkpoint
     #tf.logging.info(checkpoint_name)
     if checkpoint_name in loaded_checkpoints:
-      time.sleep(300)
+      time.sleep(100)
       #tf.logging.info(checkpoint_name)
       not_seen = False
     else:
@@ -480,7 +480,13 @@ def run_eval(model, batcher, vocab, hps):
       tf.logging.info('Found new best model with %.3f running_avg_loss. Saving to %s', running_avg_loss, bestmodel_save_path)
       saver.save(sess, bestmodel_save_path, global_step=train_step, latest_filename='checkpoint_best')
       best_loss = running_avg_loss
-      f_loss.write("%f"%(best_loss))
+      f_loss.write("%f\n"%(best_loss))
+
+
+    if FLAGS.use_stop_after:
+      if train_step >= FLAGS.stop_steps:
+        tf.logging.info('Stopping as epoch limit completed')
+        exit()
 
     running_avg_loss = 0.0
     loss = 0.0	
