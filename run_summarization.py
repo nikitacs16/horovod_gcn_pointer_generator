@@ -302,13 +302,11 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       
       model_save_path = os.path.join(FLAGS.log_root, "train","checkpoint-")
 
-      tf.logging.info('running training step...')
       
       t0=time.time()
       results = model.run_train_step(sess, batch)
       t1=time.time()
       
-      tf.logging.info('seconds for training step: %.3f', t1-t0)
       loss = results['loss']
       tf.logging.info('loss: %f', loss) # print the loss to screen
 
