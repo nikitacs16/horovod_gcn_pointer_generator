@@ -1,0 +1,1800 @@
+INFO:tensorflow:Starting seq2seq_attention in train mode...
+INFO:tensorflow:{'vocab_size': 25000, 'save_model_secs': 60, 'gpu_device_id': '0', 'tf_example_format': True, 'stacked_lstm': 0, 'data_path': '/home/nikita/data/finished_files/chunked/train_001.*', 'save_steps': 2125, 'convert_to_coverage_model': False, 'trunc_norm_init_std': 0.0001, 'query_gcn_edge_dropout': 1.0, 'concat_with_word_embedding': True, 'query_gcn_skip': True, 'word_gcn_skip': True, 'query_gcn_layers': 1, 'emb_trainable': True, 'flow_combined': False, 'use_gcn_lstm_parallel': False, 'word_gcn_layers': 2, 'restore_best_model': False, 'no_lstm_encoder': False, 'exp_name': 'holle_type_tlstm_gating_2_run_2', 'use_lstm': True, 'use_val_as_test': False, 'concat_gcn_lstm': False, 'max_dec_steps': 15, 'simple_concat': False, 'cov_loss_wt': 1.0, 'max_query_steps': 25, 'lr': 0.015, 'epoch_num': 0, 'use_glove': False, 'hidden_dim': 256, 'beta_l2': 0.0, 'log_root': '/home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2', 'max_enc_steps': 100, 'query_encoder': True, 'stop_steps': 40000, 'vocab_path': '/home/nikita/data/finished_files/vocab', 'query_gcn_gating': True, 'rand_unif_init_mag': 0.02, 'batch_size': 16, 'use_stop_after': True, 'adagrad_init_acc': 0.01, 'query_gcn_dropout': 1.0, 'coverage': False, 'max_grad_norm': 2.0, 'word_loop_dropout': 1.0, 'glove_path': '/datasets/data1/nlp/glove_embeddings/glove.6B.100d.txt', 'min_dec_steps': 3, 'pointer_gen': True, 'use_save_at': False, 'single_pass': False, 'word_gcn': True, 'word_gcn_gating': False, 'use_regularizer': False, 'use_label_information': True, 'no_lstm_query_encoder': False, 'config_file': '/home/nikita/config_2.yaml', 'adam_lr': 0.0004, 'word_gcn_edge_dropout': 1.0, 'emb_dim': 100, 'word_gcn_dropout': 1.0, 'word_gcn_dim': 512, 'query_gcn_dim': 128, 'query_gcn': False, 'optimizer': 'adam', 'flow_alone': False, 'test_by_epoch': False, 'debug': False, 'beam_size': 4, 'mode': 'train', 'query_loop_dropout': 1.0, 'use_gcn_before_lstm': False, 'max_to_keep': 7}
+INFO:tensorflow:Scale of 0 disables regularizer.
+INFO:tensorflow:Building graph...
+INFO:tensorflow:False
+INFO:tensorflow:Tensor("max_word_seq_len:0", shape=(), dtype=int32)
+INFO:tensorflow:before layers
+INFO:tensorflow:Adding attention_decoder timestep 0 of 15
+INFO:tensorflow:Adding attention_decoder timestep 1 of 15
+INFO:tensorflow:Adding attention_decoder timestep 2 of 15
+INFO:tensorflow:Adding attention_decoder timestep 3 of 15
+INFO:tensorflow:Adding attention_decoder timestep 4 of 15
+INFO:tensorflow:Adding attention_decoder timestep 5 of 15
+INFO:tensorflow:Adding attention_decoder timestep 6 of 15
+INFO:tensorflow:Adding attention_decoder timestep 7 of 15
+INFO:tensorflow:Adding attention_decoder timestep 8 of 15
+INFO:tensorflow:Adding attention_decoder timestep 9 of 15
+INFO:tensorflow:Adding attention_decoder timestep 10 of 15
+INFO:tensorflow:Adding attention_decoder timestep 11 of 15
+INFO:tensorflow:Adding attention_decoder timestep 12 of 15
+INFO:tensorflow:Adding attention_decoder timestep 13 of 15
+INFO:tensorflow:Adding attention_decoder timestep 14 of 15
+INFO:tensorflow:Time to build graph: 53 seconds
+INFO:tensorflow:Preparing or waiting for session...
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE3 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+INFO:tensorflow:Created session.
+INFO:tensorflow:starting run_training
+INFO:tensorflow:global_step/sec: 0
+INFO:tensorflow:loss: 5.997554
+INFO:tensorflow:Batch count: 1
+INFO:tensorflow:loss: 6.558756
+INFO:tensorflow:Batch count: 2
+INFO:tensorflow:loss: 6.553563
+INFO:tensorflow:Batch count: 3
+INFO:tensorflow:loss: 6.801354
+INFO:tensorflow:Batch count: 4
+INFO:tensorflow:loss: 7.359973
+INFO:tensorflow:Batch count: 5
+INFO:tensorflow:loss: 6.099111
+INFO:tensorflow:Batch count: 6
+INFO:tensorflow:Starting seq2seq_attention in eval mode...
+INFO:tensorflow:{'vocab_size': 25000, 'save_model_secs': 60, 'gpu_device_id': '0', 'tf_example_format': True, 'stacked_lstm': 0, 'data_path': '/home/nikita/data/finished_files/chunked/val_001.*', 'save_steps': 2125, 'convert_to_coverage_model': False, 'trunc_norm_init_std': 0.0001, 'query_gcn_edge_dropout': 1.0, 'concat_with_word_embedding': True, 'query_gcn_skip': True, 'word_gcn_skip': True, 'query_gcn_layers': 1, 'emb_trainable': True, 'flow_combined': False, 'use_gcn_lstm_parallel': False, 'word_gcn_layers': 2, 'restore_best_model': False, 'no_lstm_encoder': False, 'exp_name': 'holle_type_tlstm_gating_2_run_2', 'use_lstm': True, 'use_val_as_test': False, 'concat_gcn_lstm': False, 'max_dec_steps': 15, 'simple_concat': False, 'cov_loss_wt': 1.0, 'max_query_steps': 25, 'lr': 0.015, 'epoch_num': 0, 'use_glove': False, 'hidden_dim': 256, 'beta_l2': 0.0, 'log_root': '/home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2', 'max_enc_steps': 100, 'query_encoder': True, 'stop_steps': 40000, 'vocab_path': '/home/nikita/data/finished_files/vocab', 'query_gcn_gating': True, 'rand_unif_init_mag': 0.02, 'batch_size': 16, 'use_stop_after': True, 'adagrad_init_acc': 0.01, 'query_gcn_dropout': 1.0, 'coverage': False, 'max_grad_norm': 2.0, 'word_loop_dropout': 1.0, 'glove_path': '/datasets/data1/nlp/glove_embeddings/glove.6B.100d.txt', 'min_dec_steps': 3, 'pointer_gen': True, 'use_save_at': False, 'single_pass': True, 'word_gcn': True, 'word_gcn_gating': False, 'use_regularizer': False, 'use_label_information': True, 'no_lstm_query_encoder': False, 'config_file': '/home/nikita/config_2.yaml', 'adam_lr': 0.0004, 'word_gcn_edge_dropout': 1.0, 'emb_dim': 100, 'word_gcn_dropout': 1.0, 'word_gcn_dim': 512, 'query_gcn_dim': 128, 'query_gcn': False, 'optimizer': 'adam', 'flow_alone': False, 'test_by_epoch': False, 'debug': False, 'beam_size': 4, 'mode': 'eval', 'query_loop_dropout': 1.0, 'use_gcn_before_lstm': False, 'max_to_keep': 7}
+INFO:tensorflow:Scale of 0 disables regularizer.
+INFO:tensorflow:Building graph...
+INFO:tensorflow:False
+INFO:tensorflow:loss: 6.525702
+INFO:tensorflow:Batch count: 7
+INFO:tensorflow:loss: 7.274776
+INFO:tensorflow:Batch count: 8
+INFO:tensorflow:loss: 6.603735
+INFO:tensorflow:Batch count: 9
+INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
+INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
+INFO:tensorflow:loss: 5.713877
+INFO:tensorflow:Batch count: 10
+INFO:tensorflow:Tensor("max_word_seq_len:0", shape=(), dtype=int32)
+INFO:tensorflow:loss: 7.139627
+INFO:tensorflow:Batch count: 11
+INFO:tensorflow:loss: 7.160389
+INFO:tensorflow:Batch count: 12
+INFO:tensorflow:loss: 6.192182
+INFO:tensorflow:Batch count: 13
+INFO:tensorflow:loss: 6.893108
+INFO:tensorflow:Batch count: 14
+INFO:tensorflow:loss: 7.203310
+INFO:tensorflow:Batch count: 15
+INFO:tensorflow:loss: 6.723409
+INFO:tensorflow:Batch count: 16
+INFO:tensorflow:loss: 7.011390
+INFO:tensorflow:Batch count: 17
+INFO:tensorflow:loss: 6.509168
+INFO:tensorflow:Batch count: 18
+INFO:tensorflow:before layers
+INFO:tensorflow:Adding attention_decoder timestep 0 of 15
+INFO:tensorflow:Adding attention_decoder timestep 1 of 15
+INFO:tensorflow:Adding attention_decoder timestep 2 of 15
+INFO:tensorflow:Adding attention_decoder timestep 3 of 15
+INFO:tensorflow:Adding attention_decoder timestep 4 of 15
+INFO:tensorflow:Adding attention_decoder timestep 5 of 15
+INFO:tensorflow:Adding attention_decoder timestep 6 of 15
+INFO:tensorflow:Adding attention_decoder timestep 7 of 15
+INFO:tensorflow:Adding attention_decoder timestep 8 of 15
+INFO:tensorflow:Adding attention_decoder timestep 9 of 15
+INFO:tensorflow:Adding attention_decoder timestep 10 of 15
+INFO:tensorflow:Adding attention_decoder timestep 11 of 15
+INFO:tensorflow:Adding attention_decoder timestep 12 of 15
+INFO:tensorflow:Adding attention_decoder timestep 13 of 15
+INFO:tensorflow:Adding attention_decoder timestep 14 of 15
+INFO:tensorflow:Time to build graph: 36 seconds
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE3 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:global_step/sec: 0.299988
+INFO:tensorflow:loss: 6.481022
+INFO:tensorflow:Batch count: 19
+INFO:tensorflow:loss: 6.252182
+INFO:tensorflow:Batch count: 20
+INFO:tensorflow:loss: 6.643724
+INFO:tensorflow:Batch count: 21
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 7.539552
+INFO:tensorflow:Batch count: 22
+INFO:tensorflow:loss: 7.023729
+INFO:tensorflow:Batch count: 23
+INFO:tensorflow:loss: 6.153330
+INFO:tensorflow:Batch count: 24
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.890861
+INFO:tensorflow:Batch count: 25
+INFO:tensorflow:loss: 5.443472
+INFO:tensorflow:Batch count: 26
+INFO:tensorflow:loss: 5.243540
+INFO:tensorflow:Batch count: 27
+INFO:tensorflow:loss: 6.149541
+INFO:tensorflow:Batch count: 28
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.541974
+INFO:tensorflow:Batch count: 29
+INFO:tensorflow:loss: 5.856932
+INFO:tensorflow:Batch count: 30
+INFO:tensorflow:loss: 5.239794
+INFO:tensorflow:Batch count: 31
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.547291
+INFO:tensorflow:Batch count: 32
+INFO:tensorflow:loss: 4.981046
+INFO:tensorflow:Batch count: 33
+INFO:tensorflow:loss: 5.380712
+INFO:tensorflow:Batch count: 34
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.580342
+INFO:tensorflow:Batch count: 35
+INFO:tensorflow:loss: 5.925444
+INFO:tensorflow:Batch count: 36
+INFO:tensorflow:loss: 5.339628
+INFO:tensorflow:Batch count: 37
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:global_step/sec: 0.316664
+INFO:tensorflow:loss: 5.075314
+INFO:tensorflow:Batch count: 38
+INFO:tensorflow:loss: 5.254922
+INFO:tensorflow:Batch count: 39
+INFO:tensorflow:loss: 5.388875
+INFO:tensorflow:Batch count: 40
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.701151
+INFO:tensorflow:Batch count: 41
+INFO:tensorflow:loss: 5.646092
+INFO:tensorflow:Batch count: 42
+INFO:tensorflow:loss: 5.239396
+INFO:tensorflow:Batch count: 43
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.356321
+INFO:tensorflow:Batch count: 44
+INFO:tensorflow:loss: 5.700778
+INFO:tensorflow:Batch count: 45
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.266645
+INFO:tensorflow:Batch count: 46
+INFO:tensorflow:loss: 4.950816
+INFO:tensorflow:Batch count: 47
+INFO:tensorflow:loss: 5.352614
+INFO:tensorflow:Batch count: 48
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.738560
+INFO:tensorflow:Batch count: 49
+INFO:tensorflow:loss: 5.238222
+INFO:tensorflow:Batch count: 50
+INFO:tensorflow:loss: 5.593318
+INFO:tensorflow:Batch count: 51
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.776547
+INFO:tensorflow:Batch count: 52
+INFO:tensorflow:loss: 4.819908
+INFO:tensorflow:Batch count: 53
+INFO:tensorflow:loss: 5.237909
+INFO:tensorflow:Batch count: 54
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:global_step/sec: 0.28334
+INFO:tensorflow:loss: 5.704675
+INFO:tensorflow:Batch count: 55
+INFO:tensorflow:loss: 5.481421
+INFO:tensorflow:Batch count: 56
+INFO:tensorflow:loss: 4.972889
+INFO:tensorflow:Batch count: 57
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.252378
+INFO:tensorflow:Batch count: 58
+INFO:tensorflow:loss: 5.111669
+INFO:tensorflow:Batch count: 59
+INFO:tensorflow:loss: 5.265337
+INFO:tensorflow:Batch count: 60
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.111758
+INFO:tensorflow:Batch count: 61
+INFO:tensorflow:loss: 5.674724
+INFO:tensorflow:Batch count: 62
+INFO:tensorflow:loss: 5.628898
+INFO:tensorflow:Batch count: 63
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.002489
+INFO:tensorflow:Batch count: 64
+INFO:tensorflow:loss: 4.837693
+INFO:tensorflow:Batch count: 65
+INFO:tensorflow:loss: 5.036525
+INFO:tensorflow:Batch count: 66
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.410513
+INFO:tensorflow:Batch count: 67
+INFO:tensorflow:loss: 5.276463
+INFO:tensorflow:Batch count: 68
+INFO:tensorflow:loss: 5.109316
+INFO:tensorflow:Batch count: 69
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 4.508077
+INFO:tensorflow:Batch count: 70
+INFO:tensorflow:loss: 5.487385
+INFO:tensorflow:Batch count: 71
+INFO:tensorflow:loss: 4.972032
+INFO:tensorflow:Batch count: 72
+INFO:tensorflow:loss: 4.624908
+INFO:tensorflow:Batch count: 73
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:global_step/sec: 0.316667
+INFO:tensorflow:loss: 5.074823
+INFO:tensorflow:Batch count: 74
+INFO:tensorflow:loss: 5.150384
+INFO:tensorflow:Batch count: 75
+INFO:tensorflow:loss: 5.131679
+INFO:tensorflow:Batch count: 76
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 4.971543
+INFO:tensorflow:Batch count: 77
+INFO:tensorflow:loss: 5.270422
+INFO:tensorflow:Batch count: 78
+INFO:tensorflow:loss: 5.448049
+INFO:tensorflow:Batch count: 79
+INFO:tensorflow:loss: 4.682898
+INFO:tensorflow:Batch count: 80
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.060067
+INFO:tensorflow:Batch count: 81
+INFO:tensorflow:loss: 4.690701
+INFO:tensorflow:Batch count: 82
+INFO:tensorflow:loss: 4.990769
+INFO:tensorflow:Batch count: 83
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 4.793795
+INFO:tensorflow:Batch count: 84
+INFO:tensorflow:loss: 5.443419
+INFO:tensorflow:Batch count: 85
+INFO:tensorflow:loss: 5.233794
+INFO:tensorflow:Batch count: 86
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.154051
+INFO:tensorflow:Batch count: 87
+INFO:tensorflow:loss: 5.128675
+INFO:tensorflow:Batch count: 88
+INFO:tensorflow:loss: 4.812930
+INFO:tensorflow:Batch count: 89
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.120823
+INFO:tensorflow:Batch count: 90
+INFO:tensorflow:loss: 4.926149
+INFO:tensorflow:Batch count: 91
+INFO:tensorflow:loss: 5.468671
+INFO:tensorflow:Batch count: 92
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 4.813488
+INFO:tensorflow:Batch count: 93
+INFO:tensorflow:global_step/sec: 0.333338
+INFO:tensorflow:loss: 4.667800
+INFO:tensorflow:Batch count: 94
+INFO:tensorflow:loss: 4.554292
+INFO:tensorflow:Batch count: 95
+INFO:tensorflow:loss: 5.016026
+INFO:tensorflow:Batch count: 96
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 5.776227
+INFO:tensorflow:Batch count: 97
+INFO:tensorflow:loss: 4.760326
+INFO:tensorflow:Batch count: 98
+INFO:tensorflow:loss: 5.111006
+INFO:tensorflow:Batch count: 99
+INFO:tensorflow:Failed to load checkpoint from /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train. Sleeping for 10 secs...
+INFO:tensorflow:loss: 4.993902
+INFO:tensorflow:Batch count: 100
+INFO:tensorflow:loss: 4.988022
+INFO:tensorflow:Batch count: 101
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--100
+INFO:tensorflow:loss: 4.844185
+INFO:tensorflow:Batch count: 102
+INFO:tensorflow:loss: 5.287967
+INFO:tensorflow:Batch count: 103
+INFO:tensorflow:loss: 5.146497
+INFO:tensorflow:Batch count: 104
+INFO:tensorflow:loss: 4.879297
+INFO:tensorflow:Batch count: 105
+INFO:tensorflow:loss: 4.785866
+INFO:tensorflow:Batch count: 106
+INFO:tensorflow:loss: 4.978776
+INFO:tensorflow:Batch count: 107
+INFO:tensorflow:loss: 5.159540
+INFO:tensorflow:Batch count: 108
+INFO:tensorflow:loss: 5.198166
+INFO:tensorflow:Batch count: 109
+INFO:tensorflow:global_step/sec: 0.266665
+INFO:tensorflow:loss: 4.946294
+INFO:tensorflow:Batch count: 110
+INFO:tensorflow:loss: 4.778821
+INFO:tensorflow:Batch count: 111
+INFO:tensorflow:loss: 4.879151
+INFO:tensorflow:Batch count: 112
+INFO:tensorflow:loss: 4.996620
+INFO:tensorflow:Batch count: 113
+INFO:tensorflow:loss: 4.745054
+INFO:tensorflow:Batch count: 114
+INFO:tensorflow:loss: 4.795908
+INFO:tensorflow:Batch count: 115
+INFO:tensorflow:loss: 4.615495
+INFO:tensorflow:Batch count: 116
+INFO:tensorflow:loss: 5.064376
+INFO:tensorflow:Batch count: 117
+INFO:tensorflow:loss: 4.915902
+INFO:tensorflow:Batch count: 118
+INFO:tensorflow:loss: 5.126732
+INFO:tensorflow:Batch count: 119
+INFO:tensorflow:loss: 4.749839
+INFO:tensorflow:Batch count: 120
+INFO:tensorflow:loss: 5.421761
+INFO:tensorflow:Batch count: 121
+INFO:tensorflow:loss: 4.870792
+INFO:tensorflow:Batch count: 122
+INFO:tensorflow:loss: 5.261200
+INFO:tensorflow:Batch count: 123
+INFO:tensorflow:global_step/sec: 0.233327
+INFO:tensorflow:loss: 4.708277
+INFO:tensorflow:Batch count: 124
+INFO:tensorflow:loss: 4.577754
+INFO:tensorflow:Batch count: 125
+INFO:tensorflow:loss: 5.102824
+INFO:tensorflow:Batch count: 126
+INFO:tensorflow:loss: 5.037330
+INFO:tensorflow:Batch count: 127
+INFO:tensorflow:loss: 4.707823
+INFO:tensorflow:Batch count: 128
+INFO:tensorflow:loss: 4.977956
+INFO:tensorflow:Batch count: 129
+INFO:tensorflow:loss: 4.592826
+INFO:tensorflow:Batch count: 130
+INFO:tensorflow:loss: 4.514659
+INFO:tensorflow:Batch count: 131
+WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
+INFO:tensorflow:Finished reading dataset in single_pass mode.
+INFO:tensorflow:334.6300983428955
+INFO:tensorflow:<Queue.Queue instance at 0x7fb24f97fa28>
+INFO:tensorflow:Found new best model with 334.630 running_avg_loss. Saving to /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/eval/bestmodel
+INFO:tensorflow:loss: 4.889893
+INFO:tensorflow:Batch count: 132
+INFO:tensorflow:loss: 4.715139
+INFO:tensorflow:Batch count: 133
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--100
+INFO:tensorflow:loss: 4.694849
+INFO:tensorflow:Batch count: 134
+INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
+INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
+INFO:tensorflow:loss: 5.313184
+INFO:tensorflow:Batch count: 135
+INFO:tensorflow:loss: 4.847138
+INFO:tensorflow:Batch count: 136
+INFO:tensorflow:global_step/sec: 0.216675
+INFO:tensorflow:loss: 4.438470
+INFO:tensorflow:Batch count: 137
+INFO:tensorflow:loss: 4.350299
+INFO:tensorflow:Batch count: 138
+INFO:tensorflow:loss: 4.251917
+INFO:tensorflow:Batch count: 139
+INFO:tensorflow:loss: 4.924717
+INFO:tensorflow:Batch count: 140
+INFO:tensorflow:loss: 4.246477
+INFO:tensorflow:Batch count: 141
+INFO:tensorflow:loss: 4.864167
+INFO:tensorflow:Batch count: 142
+INFO:tensorflow:loss: 4.649806
+INFO:tensorflow:Batch count: 143
+INFO:tensorflow:loss: 4.718892
+INFO:tensorflow:Batch count: 144
+INFO:tensorflow:loss: 4.781626
+INFO:tensorflow:Batch count: 145
+INFO:tensorflow:loss: 4.851314
+INFO:tensorflow:Batch count: 146
+INFO:tensorflow:loss: 4.556689
+INFO:tensorflow:Batch count: 147
+INFO:tensorflow:loss: 4.374911
+INFO:tensorflow:Batch count: 148
+INFO:tensorflow:loss: 4.854639
+INFO:tensorflow:Batch count: 149
+INFO:tensorflow:loss: 3.942102
+INFO:tensorflow:Batch count: 150
+INFO:tensorflow:loss: 4.435695
+INFO:tensorflow:Batch count: 151
+INFO:tensorflow:loss: 4.578464
+INFO:tensorflow:Batch count: 152
+INFO:tensorflow:loss: 4.425581
+INFO:tensorflow:Batch count: 153
+INFO:tensorflow:global_step/sec: 0.283333
+INFO:tensorflow:loss: 4.475256
+INFO:tensorflow:Batch count: 154
+INFO:tensorflow:loss: 4.464068
+INFO:tensorflow:Batch count: 155
+INFO:tensorflow:loss: 4.857784
+INFO:tensorflow:Batch count: 156
+INFO:tensorflow:loss: 4.256655
+INFO:tensorflow:Batch count: 157
+INFO:tensorflow:loss: 5.288993
+INFO:tensorflow:Batch count: 158
+INFO:tensorflow:loss: 4.514217
+INFO:tensorflow:Batch count: 159
+INFO:tensorflow:loss: 4.178542
+INFO:tensorflow:Batch count: 160
+INFO:tensorflow:loss: 4.712327
+INFO:tensorflow:Batch count: 161
+INFO:tensorflow:loss: 4.283309
+INFO:tensorflow:Batch count: 162
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--100
+INFO:tensorflow:loss: 4.475894
+INFO:tensorflow:Batch count: 163
+INFO:tensorflow:loss: 4.879043
+INFO:tensorflow:Batch count: 164
+INFO:tensorflow:loss: 4.578009
+INFO:tensorflow:Batch count: 165
+INFO:tensorflow:loss: 4.182316
+INFO:tensorflow:Batch count: 166
+INFO:tensorflow:loss: 4.470124
+INFO:tensorflow:Batch count: 167
+INFO:tensorflow:loss: 4.756460
+INFO:tensorflow:Batch count: 168
+INFO:tensorflow:loss: 4.574347
+INFO:tensorflow:Batch count: 169
+INFO:tensorflow:loss: 4.434081
+INFO:tensorflow:Batch count: 170
+INFO:tensorflow:loss: 4.658851
+INFO:tensorflow:Batch count: 171
+INFO:tensorflow:loss: 4.916628
+INFO:tensorflow:Batch count: 172
+INFO:tensorflow:loss: 4.674420
+INFO:tensorflow:Batch count: 173
+INFO:tensorflow:loss: 4.726686
+INFO:tensorflow:Batch count: 174
+INFO:tensorflow:loss: 4.992925
+INFO:tensorflow:Batch count: 175
+INFO:tensorflow:loss: 4.789935
+INFO:tensorflow:Batch count: 176
+INFO:tensorflow:loss: 4.483720
+INFO:tensorflow:Batch count: 177
+INFO:tensorflow:loss: 5.260226
+INFO:tensorflow:Batch count: 178
+INFO:tensorflow:loss: 4.144176
+INFO:tensorflow:Batch count: 179
+INFO:tensorflow:loss: 4.865742
+INFO:tensorflow:Batch count: 180
+INFO:tensorflow:loss: 4.221264
+INFO:tensorflow:Batch count: 181
+INFO:tensorflow:loss: 4.971705
+INFO:tensorflow:Batch count: 182
+INFO:tensorflow:loss: 4.934981
+INFO:tensorflow:Batch count: 183
+INFO:tensorflow:loss: 4.582303
+INFO:tensorflow:Batch count: 184
+INFO:tensorflow:loss: 4.367061
+INFO:tensorflow:Batch count: 185
+INFO:tensorflow:loss: 3.993255
+INFO:tensorflow:Batch count: 186
+INFO:tensorflow:loss: 4.583411
+INFO:tensorflow:Batch count: 187
+INFO:tensorflow:loss: 4.630893
+INFO:tensorflow:Batch count: 188
+INFO:tensorflow:loss: 4.857842
+INFO:tensorflow:Batch count: 189
+INFO:tensorflow:loss: 4.250253
+INFO:tensorflow:Batch count: 190
+INFO:tensorflow:loss: 4.067826
+INFO:tensorflow:Batch count: 191
+INFO:tensorflow:loss: 4.842359
+INFO:tensorflow:Batch count: 192
+INFO:tensorflow:loss: 4.343648
+INFO:tensorflow:Batch count: 193
+INFO:tensorflow:loss: 4.206354
+INFO:tensorflow:Batch count: 194
+INFO:tensorflow:loss: 4.203672
+INFO:tensorflow:Batch count: 195
+INFO:tensorflow:loss: 4.281126
+INFO:tensorflow:Batch count: 196
+INFO:tensorflow:loss: 4.524124
+INFO:tensorflow:Batch count: 197
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--100
+INFO:tensorflow:loss: 3.578559
+INFO:tensorflow:Batch count: 198
+INFO:tensorflow:loss: 4.779464
+INFO:tensorflow:Batch count: 199
+INFO:tensorflow:loss: 4.665165
+INFO:tensorflow:Batch count: 200
+INFO:tensorflow:loss: 4.312472
+INFO:tensorflow:Batch count: 201
+INFO:tensorflow:loss: 4.534300
+INFO:tensorflow:Batch count: 202
+INFO:tensorflow:loss: 4.114388
+INFO:tensorflow:Batch count: 203
+INFO:tensorflow:loss: 4.201231
+INFO:tensorflow:Batch count: 204
+INFO:tensorflow:loss: 4.524894
+INFO:tensorflow:Batch count: 205
+INFO:tensorflow:loss: 4.442433
+INFO:tensorflow:Batch count: 206
+INFO:tensorflow:loss: 4.224612
+INFO:tensorflow:Batch count: 207
+INFO:tensorflow:loss: 3.965428
+INFO:tensorflow:Batch count: 208
+INFO:tensorflow:loss: 3.878727
+INFO:tensorflow:Batch count: 209
+INFO:tensorflow:loss: 4.218564
+INFO:tensorflow:Batch count: 210
+INFO:tensorflow:loss: 4.982130
+INFO:tensorflow:Batch count: 211
+INFO:tensorflow:loss: 4.245162
+INFO:tensorflow:Batch count: 212
+INFO:tensorflow:loss: 4.666534
+INFO:tensorflow:Batch count: 213
+INFO:tensorflow:loss: 4.327015
+INFO:tensorflow:Batch count: 214
+INFO:tensorflow:loss: 3.965559
+INFO:tensorflow:Batch count: 215
+INFO:tensorflow:loss: 4.213962
+INFO:tensorflow:Batch count: 216
+INFO:tensorflow:loss: 4.188561
+INFO:tensorflow:Batch count: 217
+INFO:tensorflow:loss: 4.568573
+INFO:tensorflow:Batch count: 218
+INFO:tensorflow:loss: 4.046030
+INFO:tensorflow:Batch count: 219
+INFO:tensorflow:loss: 5.097083
+INFO:tensorflow:Batch count: 220
+INFO:tensorflow:loss: 4.639092
+INFO:tensorflow:Batch count: 221
+INFO:tensorflow:loss: 4.005913
+INFO:tensorflow:Batch count: 222
+INFO:tensorflow:loss: 4.621538
+INFO:tensorflow:Batch count: 223
+INFO:tensorflow:loss: 4.969957
+INFO:tensorflow:Batch count: 224
+INFO:tensorflow:loss: 4.208754
+INFO:tensorflow:Batch count: 225
+INFO:tensorflow:loss: 4.816781
+INFO:tensorflow:Batch count: 226
+INFO:tensorflow:loss: 4.726501
+INFO:tensorflow:Batch count: 227
+INFO:tensorflow:loss: 4.909158
+INFO:tensorflow:Batch count: 228
+INFO:tensorflow:loss: 3.893486
+INFO:tensorflow:Batch count: 229
+INFO:tensorflow:loss: 5.100385
+INFO:tensorflow:Batch count: 230
+INFO:tensorflow:loss: 4.291037
+INFO:tensorflow:Batch count: 231
+INFO:tensorflow:loss: 4.401821
+INFO:tensorflow:Batch count: 232
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--200
+INFO:tensorflow:loss: 4.163744
+INFO:tensorflow:Batch count: 233
+INFO:tensorflow:loss: 4.016669
+INFO:tensorflow:Batch count: 234
+INFO:tensorflow:loss: 4.566256
+INFO:tensorflow:Batch count: 235
+INFO:tensorflow:loss: 4.507967
+INFO:tensorflow:Batch count: 236
+INFO:tensorflow:loss: 3.989846
+INFO:tensorflow:Batch count: 237
+INFO:tensorflow:loss: 4.641571
+INFO:tensorflow:Batch count: 238
+INFO:tensorflow:loss: 4.189963
+INFO:tensorflow:Batch count: 239
+INFO:tensorflow:loss: 4.689227
+INFO:tensorflow:Batch count: 240
+INFO:tensorflow:loss: 4.212595
+INFO:tensorflow:Batch count: 241
+INFO:tensorflow:loss: 5.016630
+INFO:tensorflow:Batch count: 242
+INFO:tensorflow:loss: 4.068539
+INFO:tensorflow:Batch count: 243
+INFO:tensorflow:loss: 4.504397
+INFO:tensorflow:Batch count: 244
+INFO:tensorflow:loss: 4.000704
+INFO:tensorflow:Batch count: 245
+INFO:tensorflow:loss: 4.239494
+INFO:tensorflow:Batch count: 246
+INFO:tensorflow:loss: 4.208849
+INFO:tensorflow:Batch count: 247
+INFO:tensorflow:loss: 4.525997
+INFO:tensorflow:Batch count: 248
+INFO:tensorflow:loss: 3.769093
+INFO:tensorflow:Batch count: 249
+INFO:tensorflow:loss: 4.353625
+INFO:tensorflow:Batch count: 250
+INFO:tensorflow:loss: 3.587923
+INFO:tensorflow:Batch count: 251
+INFO:tensorflow:loss: 4.346711
+INFO:tensorflow:Batch count: 252
+INFO:tensorflow:loss: 4.275423
+INFO:tensorflow:Batch count: 253
+INFO:tensorflow:loss: 4.098277
+INFO:tensorflow:Batch count: 254
+INFO:tensorflow:loss: 4.469136
+INFO:tensorflow:Batch count: 255
+INFO:tensorflow:loss: 4.136366
+INFO:tensorflow:Batch count: 256
+INFO:tensorflow:loss: 4.136483
+INFO:tensorflow:Batch count: 257
+WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
+INFO:tensorflow:Finished reading dataset in single_pass mode.
+INFO:tensorflow:inf
+INFO:tensorflow:<Queue.Queue instance at 0x7fb255755c20>
+INFO:tensorflow:loss: 4.067073
+INFO:tensorflow:Batch count: 258
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--200
+INFO:tensorflow:loss: 4.541186
+INFO:tensorflow:Batch count: 259
+INFO:tensorflow:loss: 3.987562
+INFO:tensorflow:Batch count: 260
+INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
+INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
+INFO:tensorflow:loss: 4.484468
+INFO:tensorflow:Batch count: 261
+INFO:tensorflow:loss: 4.324498
+INFO:tensorflow:Batch count: 262
+INFO:tensorflow:loss: 3.508108
+INFO:tensorflow:Batch count: 263
+INFO:tensorflow:loss: 3.838985
+INFO:tensorflow:Batch count: 264
+INFO:tensorflow:loss: 4.412752
+INFO:tensorflow:Batch count: 265
+INFO:tensorflow:loss: 4.382526
+INFO:tensorflow:Batch count: 266
+INFO:tensorflow:loss: 4.353876
+INFO:tensorflow:Batch count: 267
+INFO:tensorflow:loss: 4.531624
+INFO:tensorflow:Batch count: 268
+INFO:tensorflow:loss: 4.429733
+INFO:tensorflow:Batch count: 269
+INFO:tensorflow:loss: 3.899107
+INFO:tensorflow:Batch count: 270
+INFO:tensorflow:loss: 4.392802
+INFO:tensorflow:Batch count: 271
+INFO:tensorflow:loss: 4.406379
+INFO:tensorflow:Batch count: 272
+INFO:tensorflow:loss: 4.203999
+INFO:tensorflow:Batch count: 273
+INFO:tensorflow:loss: 3.861491
+INFO:tensorflow:Batch count: 274
+INFO:tensorflow:loss: 5.025455
+INFO:tensorflow:Batch count: 275
+INFO:tensorflow:loss: 3.758415
+INFO:tensorflow:Batch count: 276
+INFO:tensorflow:loss: 4.012310
+INFO:tensorflow:Batch count: 277
+INFO:tensorflow:loss: 4.230596
+INFO:tensorflow:Batch count: 278
+INFO:tensorflow:loss: 3.921747
+INFO:tensorflow:Batch count: 279
+INFO:tensorflow:loss: 3.889869
+INFO:tensorflow:Batch count: 280
+INFO:tensorflow:loss: 3.877767
+INFO:tensorflow:Batch count: 281
+INFO:tensorflow:loss: 3.874869
+INFO:tensorflow:Batch count: 282
+INFO:tensorflow:loss: 4.517264
+INFO:tensorflow:Batch count: 283
+INFO:tensorflow:loss: 3.624414
+INFO:tensorflow:Batch count: 284
+INFO:tensorflow:loss: 4.211316
+INFO:tensorflow:Batch count: 285
+INFO:tensorflow:loss: 4.022725
+INFO:tensorflow:Batch count: 286
+INFO:tensorflow:loss: 3.990260
+INFO:tensorflow:Batch count: 287
+INFO:tensorflow:loss: 4.167766
+INFO:tensorflow:Batch count: 288
+INFO:tensorflow:loss: 4.538847
+INFO:tensorflow:Batch count: 289
+INFO:tensorflow:loss: 4.669174
+INFO:tensorflow:Batch count: 290
+INFO:tensorflow:loss: 4.758357
+INFO:tensorflow:Batch count: 291
+INFO:tensorflow:loss: 3.877071
+INFO:tensorflow:Batch count: 292
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--200
+INFO:tensorflow:loss: 3.995015
+INFO:tensorflow:Batch count: 293
+INFO:tensorflow:loss: 4.123158
+INFO:tensorflow:Batch count: 294
+INFO:tensorflow:loss: 4.823054
+INFO:tensorflow:Batch count: 295
+INFO:tensorflow:loss: 3.975699
+INFO:tensorflow:Batch count: 296
+INFO:tensorflow:loss: 4.134414
+INFO:tensorflow:Batch count: 297
+INFO:tensorflow:loss: 4.096560
+INFO:tensorflow:Batch count: 298
+INFO:tensorflow:loss: 3.998430
+INFO:tensorflow:Batch count: 299
+INFO:tensorflow:loss: 3.844620
+INFO:tensorflow:Batch count: 300
+INFO:tensorflow:loss: 4.193420
+INFO:tensorflow:Batch count: 301
+INFO:tensorflow:loss: 4.677124
+INFO:tensorflow:Batch count: 302
+INFO:tensorflow:loss: 4.269052
+INFO:tensorflow:Batch count: 303
+INFO:tensorflow:loss: 4.203497
+INFO:tensorflow:Batch count: 304
+INFO:tensorflow:loss: 4.287856
+INFO:tensorflow:Batch count: 305
+INFO:tensorflow:loss: 4.013039
+INFO:tensorflow:Batch count: 306
+INFO:tensorflow:loss: 4.834725
+INFO:tensorflow:Batch count: 307
+INFO:tensorflow:loss: 4.613041
+INFO:tensorflow:Batch count: 308
+INFO:tensorflow:loss: 4.197184
+INFO:tensorflow:Batch count: 309
+INFO:tensorflow:loss: 4.224480
+INFO:tensorflow:Batch count: 310
+INFO:tensorflow:loss: 4.514558
+INFO:tensorflow:Batch count: 311
+INFO:tensorflow:loss: 4.272211
+INFO:tensorflow:Batch count: 312
+INFO:tensorflow:loss: 4.369394
+INFO:tensorflow:Batch count: 313
+INFO:tensorflow:loss: 4.469975
+INFO:tensorflow:Batch count: 314
+INFO:tensorflow:loss: 4.238349
+INFO:tensorflow:Batch count: 315
+INFO:tensorflow:loss: 3.719655
+INFO:tensorflow:Batch count: 316
+INFO:tensorflow:loss: 4.087208
+INFO:tensorflow:Batch count: 317
+INFO:tensorflow:loss: 3.361379
+INFO:tensorflow:Batch count: 318
+INFO:tensorflow:loss: 3.657331
+INFO:tensorflow:Batch count: 319
+INFO:tensorflow:loss: 3.806006
+INFO:tensorflow:Batch count: 320
+INFO:tensorflow:loss: 4.249784
+INFO:tensorflow:Batch count: 321
+INFO:tensorflow:loss: 4.144287
+INFO:tensorflow:Batch count: 322
+INFO:tensorflow:loss: 4.121926
+INFO:tensorflow:Batch count: 323
+INFO:tensorflow:loss: 3.509416
+INFO:tensorflow:Batch count: 324
+INFO:tensorflow:loss: 4.034448
+INFO:tensorflow:Batch count: 325
+INFO:tensorflow:loss: 3.871934
+INFO:tensorflow:Batch count: 326
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--300
+INFO:tensorflow:loss: 4.419579
+INFO:tensorflow:Batch count: 327
+INFO:tensorflow:loss: 3.906631
+INFO:tensorflow:Batch count: 328
+INFO:tensorflow:loss: 3.834545
+INFO:tensorflow:Batch count: 329
+INFO:tensorflow:loss: 4.636703
+INFO:tensorflow:Batch count: 330
+INFO:tensorflow:loss: 4.180047
+INFO:tensorflow:Batch count: 331
+INFO:tensorflow:loss: 3.789404
+INFO:tensorflow:Batch count: 332
+INFO:tensorflow:loss: 3.786824
+INFO:tensorflow:Batch count: 333
+INFO:tensorflow:loss: 4.168392
+INFO:tensorflow:Batch count: 334
+INFO:tensorflow:loss: 4.295949
+INFO:tensorflow:Batch count: 335
+INFO:tensorflow:loss: 3.854463
+INFO:tensorflow:Batch count: 336
+INFO:tensorflow:loss: 4.435149
+INFO:tensorflow:Batch count: 337
+INFO:tensorflow:loss: 4.253936
+INFO:tensorflow:Batch count: 338
+INFO:tensorflow:loss: 3.994374
+INFO:tensorflow:Batch count: 339
+INFO:tensorflow:loss: 3.927333
+INFO:tensorflow:Batch count: 340
+INFO:tensorflow:loss: 4.386767
+INFO:tensorflow:Batch count: 341
+INFO:tensorflow:loss: 4.158128
+INFO:tensorflow:Batch count: 342
+INFO:tensorflow:loss: 4.449205
+INFO:tensorflow:Batch count: 343
+INFO:tensorflow:loss: 4.371112
+INFO:tensorflow:Batch count: 344
+INFO:tensorflow:loss: 4.058907
+INFO:tensorflow:Batch count: 345
+INFO:tensorflow:loss: 4.580977
+INFO:tensorflow:Batch count: 346
+INFO:tensorflow:loss: 3.853758
+INFO:tensorflow:Batch count: 347
+INFO:tensorflow:loss: 3.972239
+INFO:tensorflow:Batch count: 348
+INFO:tensorflow:loss: 3.878159
+INFO:tensorflow:Batch count: 349
+INFO:tensorflow:loss: 4.212744
+INFO:tensorflow:Batch count: 350
+INFO:tensorflow:loss: 3.770003
+INFO:tensorflow:Batch count: 351
+INFO:tensorflow:loss: 3.559724
+INFO:tensorflow:Batch count: 352
+INFO:tensorflow:loss: 4.246382
+INFO:tensorflow:Batch count: 353
+WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
+INFO:tensorflow:Finished reading dataset in single_pass mode.
+INFO:tensorflow:358.79637336730957
+INFO:tensorflow:<Queue.Queue instance at 0x7fb2548e98c0>
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--300
+INFO:tensorflow:loss: 3.624084
+INFO:tensorflow:Batch count: 354
+INFO:tensorflow:loss: 3.817153
+INFO:tensorflow:Batch count: 355
+INFO:tensorflow:loss: 3.478353
+INFO:tensorflow:Batch count: 356
+INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
+INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
+INFO:tensorflow:loss: 4.093668
+INFO:tensorflow:Batch count: 357
+INFO:tensorflow:loss: 4.169044
+INFO:tensorflow:Batch count: 358
+INFO:tensorflow:loss: 3.753689
+INFO:tensorflow:Batch count: 359
+INFO:tensorflow:loss: 4.170094
+INFO:tensorflow:Batch count: 360
+INFO:tensorflow:loss: 3.874888
+INFO:tensorflow:Batch count: 361
+INFO:tensorflow:loss: 4.007460
+INFO:tensorflow:Batch count: 362
+INFO:tensorflow:loss: 3.449801
+INFO:tensorflow:Batch count: 363
+INFO:tensorflow:loss: 3.479921
+INFO:tensorflow:Batch count: 364
+INFO:tensorflow:loss: 4.119208
+INFO:tensorflow:Batch count: 365
+INFO:tensorflow:loss: 4.710872
+INFO:tensorflow:Batch count: 366
+INFO:tensorflow:loss: 4.089954
+INFO:tensorflow:Batch count: 367
+INFO:tensorflow:loss: 3.875806
+INFO:tensorflow:Batch count: 368
+INFO:tensorflow:loss: 3.802940
+INFO:tensorflow:Batch count: 369
+INFO:tensorflow:loss: 4.343474
+INFO:tensorflow:Batch count: 370
+INFO:tensorflow:loss: 4.153128
+INFO:tensorflow:Batch count: 371
+INFO:tensorflow:loss: 4.488690
+INFO:tensorflow:Batch count: 372
+INFO:tensorflow:loss: 4.429949
+INFO:tensorflow:Batch count: 373
+INFO:tensorflow:loss: 4.757515
+INFO:tensorflow:Batch count: 374
+INFO:tensorflow:loss: 4.103652
+INFO:tensorflow:Batch count: 375
+INFO:tensorflow:loss: 3.559467
+INFO:tensorflow:Batch count: 376
+INFO:tensorflow:loss: 3.913158
+INFO:tensorflow:Batch count: 377
+INFO:tensorflow:loss: 3.717884
+INFO:tensorflow:Batch count: 378
+INFO:tensorflow:loss: 3.671891
+INFO:tensorflow:Batch count: 379
+INFO:tensorflow:loss: 3.583878
+INFO:tensorflow:Batch count: 380
+INFO:tensorflow:loss: 3.757713
+INFO:tensorflow:Batch count: 381
+INFO:tensorflow:loss: 3.667793
+INFO:tensorflow:Batch count: 382
+INFO:tensorflow:loss: 3.684941
+INFO:tensorflow:Batch count: 383
+INFO:tensorflow:loss: 3.660740
+INFO:tensorflow:Batch count: 384
+INFO:tensorflow:loss: 3.927648
+INFO:tensorflow:Batch count: 385
+INFO:tensorflow:loss: 4.202615
+INFO:tensorflow:Batch count: 386
+INFO:tensorflow:loss: 4.215017
+INFO:tensorflow:Batch count: 387
+INFO:tensorflow:loss: 3.634262
+INFO:tensorflow:Batch count: 388
+INFO:tensorflow:loss: 4.113808
+INFO:tensorflow:Batch count: 389
+INFO:tensorflow:loss: 3.474158
+INFO:tensorflow:Batch count: 390
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--300
+INFO:tensorflow:loss: 3.656674
+INFO:tensorflow:Batch count: 391
+INFO:tensorflow:loss: 4.017075
+INFO:tensorflow:Batch count: 392
+INFO:tensorflow:loss: 3.959076
+INFO:tensorflow:Batch count: 393
+INFO:tensorflow:loss: 4.257935
+INFO:tensorflow:Batch count: 394
+INFO:tensorflow:loss: 4.409232
+INFO:tensorflow:Batch count: 395
+INFO:tensorflow:loss: 3.214165
+INFO:tensorflow:Batch count: 396
+INFO:tensorflow:loss: 3.314892
+INFO:tensorflow:Batch count: 397
+INFO:tensorflow:loss: 4.036158
+INFO:tensorflow:Batch count: 398
+INFO:tensorflow:loss: 3.313541
+INFO:tensorflow:Batch count: 399
+INFO:tensorflow:loss: 3.769368
+INFO:tensorflow:Batch count: 400
+INFO:tensorflow:loss: 4.004632
+INFO:tensorflow:Batch count: 401
+INFO:tensorflow:loss: 3.528069
+INFO:tensorflow:Batch count: 402
+INFO:tensorflow:loss: 3.887533
+INFO:tensorflow:Batch count: 403
+INFO:tensorflow:loss: 3.888346
+INFO:tensorflow:Batch count: 404
+INFO:tensorflow:loss: 3.713580
+INFO:tensorflow:Batch count: 405
+INFO:tensorflow:loss: 3.962788
+INFO:tensorflow:Batch count: 406
+INFO:tensorflow:loss: 4.310111
+INFO:tensorflow:Batch count: 407
+INFO:tensorflow:loss: 3.293802
+INFO:tensorflow:Batch count: 408
+INFO:tensorflow:loss: 3.868613
+INFO:tensorflow:Batch count: 409
+INFO:tensorflow:loss: 3.964231
+INFO:tensorflow:Batch count: 410
+INFO:tensorflow:loss: 3.755748
+INFO:tensorflow:Batch count: 411
+INFO:tensorflow:loss: 3.707678
+INFO:tensorflow:Batch count: 412
+INFO:tensorflow:loss: 4.362717
+INFO:tensorflow:Batch count: 413
+INFO:tensorflow:loss: 3.622803
+INFO:tensorflow:Batch count: 414
+INFO:tensorflow:loss: 4.097909
+INFO:tensorflow:Batch count: 415
+INFO:tensorflow:loss: 3.936065
+INFO:tensorflow:Batch count: 416
+INFO:tensorflow:loss: 3.771148
+INFO:tensorflow:Batch count: 417
+INFO:tensorflow:loss: 3.722231
+INFO:tensorflow:Batch count: 418
+INFO:tensorflow:loss: 3.843542
+INFO:tensorflow:Batch count: 419
+INFO:tensorflow:loss: 4.146427
+INFO:tensorflow:Batch count: 420
+INFO:tensorflow:loss: 3.662787
+INFO:tensorflow:Batch count: 421
+INFO:tensorflow:loss: 3.880672
+INFO:tensorflow:Batch count: 422
+INFO:tensorflow:loss: 4.126344
+INFO:tensorflow:Batch count: 423
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--400
+INFO:tensorflow:loss: 4.055757
+INFO:tensorflow:Batch count: 424
+INFO:tensorflow:loss: 3.924207
+INFO:tensorflow:Batch count: 425
+INFO:tensorflow:loss: 3.961211
+INFO:tensorflow:Batch count: 426
+INFO:tensorflow:loss: 4.818078
+INFO:tensorflow:Batch count: 427
+INFO:tensorflow:loss: 3.623812
+INFO:tensorflow:Batch count: 428
+INFO:tensorflow:loss: 3.970576
+INFO:tensorflow:Batch count: 429
+INFO:tensorflow:loss: 3.846455
+INFO:tensorflow:Batch count: 430
+INFO:tensorflow:loss: 4.021750
+INFO:tensorflow:Batch count: 431
+INFO:tensorflow:loss: 3.578446
+INFO:tensorflow:Batch count: 432
+INFO:tensorflow:loss: 2.973467
+INFO:tensorflow:Batch count: 433
+INFO:tensorflow:loss: 4.166611
+INFO:tensorflow:Batch count: 434
+INFO:tensorflow:loss: 4.499743
+INFO:tensorflow:Batch count: 435
+INFO:tensorflow:loss: 3.719470
+INFO:tensorflow:Batch count: 436
+INFO:tensorflow:loss: 4.226282
+INFO:tensorflow:Batch count: 437
+INFO:tensorflow:loss: 3.477857
+INFO:tensorflow:Batch count: 438
+INFO:tensorflow:loss: 4.284952
+INFO:tensorflow:Batch count: 439
+INFO:tensorflow:loss: 3.104013
+INFO:tensorflow:Batch count: 440
+INFO:tensorflow:loss: 4.331000
+INFO:tensorflow:Batch count: 441
+INFO:tensorflow:loss: 4.278218
+INFO:tensorflow:Batch count: 442
+INFO:tensorflow:loss: 3.467145
+INFO:tensorflow:Batch count: 443
+INFO:tensorflow:loss: 3.891165
+INFO:tensorflow:Batch count: 444
+INFO:tensorflow:loss: 3.620337
+INFO:tensorflow:Batch count: 445
+INFO:tensorflow:loss: 2.905731
+INFO:tensorflow:Batch count: 446
+INFO:tensorflow:loss: 3.512333
+INFO:tensorflow:Batch count: 447
+INFO:tensorflow:loss: 3.069377
+INFO:tensorflow:Batch count: 448
+INFO:tensorflow:loss: 3.668292
+INFO:tensorflow:Batch count: 449
+INFO:tensorflow:loss: 3.691747
+INFO:tensorflow:Batch count: 450
+WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
+INFO:tensorflow:Finished reading dataset in single_pass mode.
+INFO:tensorflow:365.6784610748291
+INFO:tensorflow:<Queue.Queue instance at 0x7fb2315bbfc8>
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--400
+INFO:tensorflow:loss: 3.395603
+INFO:tensorflow:Batch count: 451
+INFO:tensorflow:loss: 2.836175
+INFO:tensorflow:Batch count: 452
+INFO:tensorflow:loss: 3.324319
+INFO:tensorflow:Batch count: 453
+INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
+INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
+INFO:tensorflow:loss: 4.425254
+INFO:tensorflow:Batch count: 454
+INFO:tensorflow:loss: 3.547819
+INFO:tensorflow:Batch count: 455
+INFO:tensorflow:loss: 3.922278
+INFO:tensorflow:Batch count: 456
+INFO:tensorflow:loss: 3.554183
+INFO:tensorflow:Batch count: 457
+INFO:tensorflow:loss: 3.385109
+INFO:tensorflow:Batch count: 458
+INFO:tensorflow:loss: 3.669785
+INFO:tensorflow:Batch count: 459
+INFO:tensorflow:loss: 3.841446
+INFO:tensorflow:Batch count: 460
+INFO:tensorflow:loss: 3.849211
+INFO:tensorflow:Batch count: 461
+INFO:tensorflow:loss: 3.571352
+INFO:tensorflow:Batch count: 462
+INFO:tensorflow:loss: 3.408475
+INFO:tensorflow:Batch count: 463
+INFO:tensorflow:loss: 3.364607
+INFO:tensorflow:Batch count: 464
+INFO:tensorflow:loss: 4.071036
+INFO:tensorflow:Batch count: 465
+INFO:tensorflow:loss: 3.925886
+INFO:tensorflow:Batch count: 466
+INFO:tensorflow:loss: 3.750343
+INFO:tensorflow:Batch count: 467
+INFO:tensorflow:loss: 3.475574
+INFO:tensorflow:Batch count: 468
+INFO:tensorflow:loss: 3.934210
+INFO:tensorflow:Batch count: 469
+INFO:tensorflow:loss: 3.853995
+INFO:tensorflow:Batch count: 470
+INFO:tensorflow:loss: 4.025265
+INFO:tensorflow:Batch count: 471
+INFO:tensorflow:loss: 3.915900
+INFO:tensorflow:Batch count: 472
+INFO:tensorflow:loss: 3.819276
+INFO:tensorflow:Batch count: 473
+INFO:tensorflow:loss: 3.655746
+INFO:tensorflow:Batch count: 474
+INFO:tensorflow:loss: 3.868730
+INFO:tensorflow:Batch count: 475
+INFO:tensorflow:loss: 3.571777
+INFO:tensorflow:Batch count: 476
+INFO:tensorflow:loss: 3.320791
+INFO:tensorflow:Batch count: 477
+INFO:tensorflow:loss: 3.447399
+INFO:tensorflow:Batch count: 478
+INFO:tensorflow:loss: 4.073080
+INFO:tensorflow:Batch count: 479
+INFO:tensorflow:loss: 3.329636
+INFO:tensorflow:Batch count: 480
+INFO:tensorflow:loss: 3.775290
+INFO:tensorflow:Batch count: 481
+INFO:tensorflow:loss: 3.674603
+INFO:tensorflow:Batch count: 482
+INFO:tensorflow:loss: 3.319174
+INFO:tensorflow:Batch count: 483
+INFO:tensorflow:loss: 4.002237
+INFO:tensorflow:Batch count: 484
+INFO:tensorflow:loss: 3.310744
+INFO:tensorflow:Batch count: 485
+INFO:tensorflow:loss: 3.981507
+INFO:tensorflow:Batch count: 486
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--400
+INFO:tensorflow:loss: 4.470209
+INFO:tensorflow:Batch count: 487
+INFO:tensorflow:loss: 3.895988
+INFO:tensorflow:Batch count: 488
+INFO:tensorflow:loss: 3.914016
+INFO:tensorflow:Batch count: 489
+INFO:tensorflow:loss: 3.551947
+INFO:tensorflow:Batch count: 490
+INFO:tensorflow:loss: 4.035684
+INFO:tensorflow:Batch count: 491
+INFO:tensorflow:loss: 3.503926
+INFO:tensorflow:Batch count: 492
+INFO:tensorflow:loss: 3.941147
+INFO:tensorflow:Batch count: 493
+INFO:tensorflow:loss: 3.370269
+INFO:tensorflow:Batch count: 494
+INFO:tensorflow:loss: 3.301932
+INFO:tensorflow:Batch count: 495
+INFO:tensorflow:loss: 3.478600
+INFO:tensorflow:Batch count: 496
+INFO:tensorflow:loss: 3.369101
+INFO:tensorflow:Batch count: 497
+INFO:tensorflow:loss: 3.944333
+INFO:tensorflow:Batch count: 498
+INFO:tensorflow:loss: 3.031954
+INFO:tensorflow:Batch count: 499
+INFO:tensorflow:loss: 3.752600
+INFO:tensorflow:Batch count: 500
+INFO:tensorflow:loss: 3.513120
+INFO:tensorflow:Batch count: 501
+INFO:tensorflow:loss: 2.601084
+INFO:tensorflow:Batch count: 502
+INFO:tensorflow:loss: 3.436765
+INFO:tensorflow:Batch count: 503
+INFO:tensorflow:loss: 4.148624
+INFO:tensorflow:Batch count: 504
+INFO:tensorflow:loss: 2.945780
+INFO:tensorflow:Batch count: 505
+INFO:tensorflow:loss: 3.335959
+INFO:tensorflow:Batch count: 506
+INFO:tensorflow:loss: 3.607674
+INFO:tensorflow:Batch count: 507
+INFO:tensorflow:loss: 2.830337
+INFO:tensorflow:Batch count: 508
+INFO:tensorflow:loss: 3.938866
+INFO:tensorflow:Batch count: 509
+INFO:tensorflow:loss: 3.198549
+INFO:tensorflow:Batch count: 510
+INFO:tensorflow:loss: 2.928401
+INFO:tensorflow:Batch count: 511
+INFO:tensorflow:loss: 3.045501
+INFO:tensorflow:Batch count: 512
+INFO:tensorflow:loss: 4.123244
+INFO:tensorflow:Batch count: 513
+INFO:tensorflow:loss: 4.197222
+INFO:tensorflow:Batch count: 514
+INFO:tensorflow:loss: 4.302526
+INFO:tensorflow:Batch count: 515
+INFO:tensorflow:loss: 3.316113
+INFO:tensorflow:Batch count: 516
+INFO:tensorflow:loss: 3.243265
+INFO:tensorflow:Batch count: 517
+INFO:tensorflow:loss: 3.469024
+INFO:tensorflow:Batch count: 518
+INFO:tensorflow:loss: 3.564697
+INFO:tensorflow:Batch count: 519
+INFO:tensorflow:loss: 4.060512
+INFO:tensorflow:Batch count: 520
+INFO:tensorflow:loss: 3.300831
+INFO:tensorflow:Batch count: 521
+INFO:tensorflow:loss: 3.907540
+INFO:tensorflow:Batch count: 522
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--500
+INFO:tensorflow:loss: 2.933931
+INFO:tensorflow:Batch count: 523
+INFO:tensorflow:loss: 3.081083
+INFO:tensorflow:Batch count: 524
+INFO:tensorflow:loss: 3.744036
+INFO:tensorflow:Batch count: 525
+INFO:tensorflow:loss: 3.149634
+INFO:tensorflow:Batch count: 526
+INFO:tensorflow:loss: 3.500785
+INFO:tensorflow:Batch count: 527
+INFO:tensorflow:loss: 4.512957
+INFO:tensorflow:Batch count: 528
+INFO:tensorflow:loss: 2.709273
+INFO:tensorflow:Batch count: 529
+INFO:tensorflow:loss: 4.334675
+INFO:tensorflow:Batch count: 530
+INFO:tensorflow:loss: 3.764436
+INFO:tensorflow:Batch count: 531
+INFO:tensorflow:loss: 3.589363
+INFO:tensorflow:Batch count: 532
+INFO:tensorflow:loss: 3.761688
+INFO:tensorflow:Batch count: 533
+INFO:tensorflow:loss: 3.399067
+INFO:tensorflow:Batch count: 534
+INFO:tensorflow:loss: 3.686898
+INFO:tensorflow:Batch count: 535
+INFO:tensorflow:loss: 3.447447
+INFO:tensorflow:Batch count: 536
+INFO:tensorflow:loss: 3.607229
+INFO:tensorflow:Batch count: 537
+INFO:tensorflow:loss: 3.487440
+INFO:tensorflow:Batch count: 538
+INFO:tensorflow:loss: 3.453154
+INFO:tensorflow:Batch count: 539
+INFO:tensorflow:loss: 3.473131
+INFO:tensorflow:Batch count: 540
+INFO:tensorflow:loss: 3.998252
+INFO:tensorflow:Batch count: 541
+INFO:tensorflow:loss: 3.998748
+INFO:tensorflow:Batch count: 542
+INFO:tensorflow:loss: 3.662717
+INFO:tensorflow:Batch count: 543
+INFO:tensorflow:loss: 4.105999
+INFO:tensorflow:Batch count: 544
+INFO:tensorflow:loss: 3.938709
+INFO:tensorflow:Batch count: 545
+INFO:tensorflow:loss: 3.483335
+INFO:tensorflow:Batch count: 546
+INFO:tensorflow:loss: 3.941105
+INFO:tensorflow:Batch count: 547
+INFO:tensorflow:loss: 3.889580
+INFO:tensorflow:Batch count: 548
+INFO:tensorflow:loss: 3.326301
+INFO:tensorflow:Batch count: 549
+WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
+INFO:tensorflow:Finished reading dataset in single_pass mode.
+INFO:tensorflow:358.4426851272583
+INFO:tensorflow:<Queue.Queue instance at 0x7fb243bd5ab8>
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--500
+INFO:tensorflow:loss: 2.853289
+INFO:tensorflow:Batch count: 550
+INFO:tensorflow:loss: 4.257203
+INFO:tensorflow:Batch count: 551
+INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
+INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
+INFO:tensorflow:loss: 3.659325
+INFO:tensorflow:Batch count: 552
+INFO:tensorflow:loss: 3.389745
+INFO:tensorflow:Batch count: 553
+INFO:tensorflow:loss: 3.531417
+INFO:tensorflow:Batch count: 554
+INFO:tensorflow:loss: 3.225561
+INFO:tensorflow:Batch count: 555
+INFO:tensorflow:loss: 3.701739
+INFO:tensorflow:Batch count: 556
+INFO:tensorflow:loss: 3.665957
+INFO:tensorflow:Batch count: 557
+INFO:tensorflow:loss: 3.496692
+INFO:tensorflow:Batch count: 558
+INFO:tensorflow:loss: 3.168122
+INFO:tensorflow:Batch count: 559
+INFO:tensorflow:loss: 3.915680
+INFO:tensorflow:Batch count: 560
+INFO:tensorflow:loss: 4.077337
+INFO:tensorflow:Batch count: 561
+INFO:tensorflow:loss: 3.413613
+INFO:tensorflow:Batch count: 562
+INFO:tensorflow:loss: 3.255261
+INFO:tensorflow:Batch count: 563
+INFO:tensorflow:loss: 3.314359
+INFO:tensorflow:Batch count: 564
+INFO:tensorflow:loss: 3.678246
+INFO:tensorflow:Batch count: 565
+INFO:tensorflow:loss: 3.647506
+INFO:tensorflow:Batch count: 566
+INFO:tensorflow:loss: 3.584358
+INFO:tensorflow:Batch count: 567
+INFO:tensorflow:loss: 3.027561
+INFO:tensorflow:Batch count: 568
+INFO:tensorflow:loss: 4.304909
+INFO:tensorflow:Batch count: 569
+INFO:tensorflow:loss: 3.632994
+INFO:tensorflow:Batch count: 570
+INFO:tensorflow:loss: 2.593107
+INFO:tensorflow:Batch count: 571
+INFO:tensorflow:loss: 2.992460
+INFO:tensorflow:Batch count: 572
+INFO:tensorflow:loss: 3.845889
+INFO:tensorflow:Batch count: 573
+INFO:tensorflow:loss: 4.011970
+INFO:tensorflow:Batch count: 574
+INFO:tensorflow:loss: 3.738310
+INFO:tensorflow:Batch count: 575
+INFO:tensorflow:loss: 3.102649
+INFO:tensorflow:Batch count: 576
+INFO:tensorflow:loss: 3.612726
+INFO:tensorflow:Batch count: 577
+INFO:tensorflow:loss: 3.169925
+INFO:tensorflow:Batch count: 578
+INFO:tensorflow:loss: 3.209219
+INFO:tensorflow:Batch count: 579
+INFO:tensorflow:loss: 3.153860
+INFO:tensorflow:Batch count: 580
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--500
+INFO:tensorflow:loss: 3.226935
+INFO:tensorflow:Batch count: 581
+INFO:tensorflow:loss: 3.367799
+INFO:tensorflow:Batch count: 582
+INFO:tensorflow:loss: 2.936917
+INFO:tensorflow:Batch count: 583
+INFO:tensorflow:loss: 2.634179
+INFO:tensorflow:Batch count: 584
+INFO:tensorflow:loss: 3.915076
+INFO:tensorflow:Batch count: 585
+INFO:tensorflow:loss: 3.269941
+INFO:tensorflow:Batch count: 586
+INFO:tensorflow:loss: 3.015546
+INFO:tensorflow:Batch count: 587
+INFO:tensorflow:loss: 3.525450
+INFO:tensorflow:Batch count: 588
+INFO:tensorflow:loss: 3.918712
+INFO:tensorflow:Batch count: 589
+INFO:tensorflow:loss: 3.292304
+INFO:tensorflow:Batch count: 590
+INFO:tensorflow:loss: 4.408656
+INFO:tensorflow:Batch count: 591
+INFO:tensorflow:loss: 3.590654
+INFO:tensorflow:Batch count: 592
+INFO:tensorflow:loss: 3.117475
+INFO:tensorflow:Batch count: 593
+INFO:tensorflow:loss: 3.742894
+INFO:tensorflow:Batch count: 594
+INFO:tensorflow:loss: 3.675470
+INFO:tensorflow:Batch count: 595
+INFO:tensorflow:loss: 3.866794
+INFO:tensorflow:Batch count: 596
+INFO:tensorflow:loss: 3.669319
+INFO:tensorflow:Batch count: 597
+INFO:tensorflow:loss: 2.868002
+INFO:tensorflow:Batch count: 598
+INFO:tensorflow:loss: 3.502336
+INFO:tensorflow:Batch count: 599
+INFO:tensorflow:loss: 3.310462
+INFO:tensorflow:Batch count: 600
+INFO:tensorflow:loss: 3.245862
+INFO:tensorflow:Batch count: 601
+INFO:tensorflow:loss: 3.736794
+INFO:tensorflow:Batch count: 602
+INFO:tensorflow:loss: 2.981817
+INFO:tensorflow:Batch count: 603
+INFO:tensorflow:loss: 3.243239
+INFO:tensorflow:Batch count: 604
+INFO:tensorflow:loss: 3.480673
+INFO:tensorflow:Batch count: 605
+INFO:tensorflow:loss: 3.392413
+INFO:tensorflow:Batch count: 606
+INFO:tensorflow:loss: 3.558827
+INFO:tensorflow:Batch count: 607
+INFO:tensorflow:loss: 3.426125
+INFO:tensorflow:Batch count: 608
+INFO:tensorflow:loss: 3.606735
+INFO:tensorflow:Batch count: 609
+INFO:tensorflow:loss: 3.700058
+INFO:tensorflow:Batch count: 610
+INFO:tensorflow:loss: 3.637661
+INFO:tensorflow:Batch count: 611
+INFO:tensorflow:loss: 4.212229
+INFO:tensorflow:Batch count: 612
+INFO:tensorflow:loss: 3.110983
+INFO:tensorflow:Batch count: 613
+INFO:tensorflow:loss: 3.299802
+INFO:tensorflow:Batch count: 614
+INFO:tensorflow:loss: 3.541893
+INFO:tensorflow:Batch count: 615
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--600
+INFO:tensorflow:loss: 3.632691
+INFO:tensorflow:Batch count: 616
+INFO:tensorflow:loss: 2.935470
+INFO:tensorflow:Batch count: 617
+INFO:tensorflow:loss: 3.771579
+INFO:tensorflow:Batch count: 618
+INFO:tensorflow:loss: 3.675587
+INFO:tensorflow:Batch count: 619
+INFO:tensorflow:loss: 3.583683
+INFO:tensorflow:Batch count: 620
+INFO:tensorflow:loss: 3.360601
+INFO:tensorflow:Batch count: 621
+INFO:tensorflow:loss: 3.820618
+INFO:tensorflow:Batch count: 622
+INFO:tensorflow:loss: 4.078118
+INFO:tensorflow:Batch count: 623
+INFO:tensorflow:loss: 4.063134
+INFO:tensorflow:Batch count: 624
+INFO:tensorflow:loss: 3.394570
+INFO:tensorflow:Batch count: 625
+INFO:tensorflow:loss: 3.372908
+INFO:tensorflow:Batch count: 626
+INFO:tensorflow:loss: 2.745008
+INFO:tensorflow:Batch count: 627
+INFO:tensorflow:loss: 3.367903
+INFO:tensorflow:Batch count: 628
+INFO:tensorflow:loss: 3.974697
+INFO:tensorflow:Batch count: 629
+INFO:tensorflow:loss: 3.291052
+INFO:tensorflow:Batch count: 630
+INFO:tensorflow:loss: 3.000975
+INFO:tensorflow:Batch count: 631
+INFO:tensorflow:loss: 3.716691
+INFO:tensorflow:Batch count: 632
+INFO:tensorflow:loss: 4.102277
+INFO:tensorflow:Batch count: 633
+INFO:tensorflow:loss: 4.047149
+INFO:tensorflow:Batch count: 634
+INFO:tensorflow:loss: 3.201360
+INFO:tensorflow:Batch count: 635
+INFO:tensorflow:loss: 3.467199
+INFO:tensorflow:Batch count: 636
+INFO:tensorflow:loss: 3.251636
+INFO:tensorflow:Batch count: 637
+INFO:tensorflow:loss: 3.365148
+INFO:tensorflow:Batch count: 638
+INFO:tensorflow:loss: 2.908524
+INFO:tensorflow:Batch count: 639
+INFO:tensorflow:loss: 3.494546
+INFO:tensorflow:Batch count: 640
+INFO:tensorflow:loss: 3.434973
+INFO:tensorflow:Batch count: 641
+INFO:tensorflow:loss: 3.108274
+INFO:tensorflow:Batch count: 642
+WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
+INFO:tensorflow:Finished reading dataset in single_pass mode.
+INFO:tensorflow:373.2991008758545
+INFO:tensorflow:<Queue.Queue instance at 0x7fb24e31aef0>
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--600
+INFO:tensorflow:loss: 3.235117
+INFO:tensorflow:Batch count: 643
+INFO:tensorflow:loss: 3.412485
+INFO:tensorflow:Batch count: 644
+INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
+INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
+INFO:tensorflow:loss: 3.940623
+INFO:tensorflow:Batch count: 645
+INFO:tensorflow:loss: 3.129106
+INFO:tensorflow:Batch count: 646
+INFO:tensorflow:loss: 3.512327
+INFO:tensorflow:Batch count: 647
+INFO:tensorflow:loss: 3.370623
+INFO:tensorflow:Batch count: 648
+INFO:tensorflow:loss: 3.657581
+INFO:tensorflow:Batch count: 649
+INFO:tensorflow:loss: 3.172087
+INFO:tensorflow:Batch count: 650
+INFO:tensorflow:loss: 3.462357
+INFO:tensorflow:Batch count: 651
+INFO:tensorflow:loss: 3.406274
+INFO:tensorflow:Batch count: 652
+INFO:tensorflow:loss: 4.074967
+INFO:tensorflow:Batch count: 653
+INFO:tensorflow:loss: 3.364724
+INFO:tensorflow:Batch count: 654
+INFO:tensorflow:loss: 3.857036
+INFO:tensorflow:Batch count: 655
+INFO:tensorflow:loss: 3.336369
+INFO:tensorflow:Batch count: 656
+INFO:tensorflow:loss: 3.433744
+INFO:tensorflow:Batch count: 657
+INFO:tensorflow:loss: 3.456479
+INFO:tensorflow:Batch count: 658
+INFO:tensorflow:loss: 2.877228
+INFO:tensorflow:Batch count: 659
+INFO:tensorflow:loss: 3.255015
+INFO:tensorflow:Batch count: 660
+INFO:tensorflow:loss: 2.795300
+INFO:tensorflow:Batch count: 661
+INFO:tensorflow:loss: 3.140638
+INFO:tensorflow:Batch count: 662
+INFO:tensorflow:loss: 3.288497
+INFO:tensorflow:Batch count: 663
+INFO:tensorflow:loss: 3.782158
+INFO:tensorflow:Batch count: 664
+INFO:tensorflow:loss: 2.341071
+INFO:tensorflow:Batch count: 665
+INFO:tensorflow:loss: 3.228016
+INFO:tensorflow:Batch count: 666
+INFO:tensorflow:loss: 3.440340
+INFO:tensorflow:Batch count: 667
+INFO:tensorflow:loss: 4.143920
+INFO:tensorflow:Batch count: 668
+INFO:tensorflow:loss: 3.353556
+INFO:tensorflow:Batch count: 669
+INFO:tensorflow:loss: 3.367007
+INFO:tensorflow:Batch count: 670
+INFO:tensorflow:loss: 2.544672
+INFO:tensorflow:Batch count: 671
+INFO:tensorflow:loss: 2.857171
+INFO:tensorflow:Batch count: 672
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--600
+INFO:tensorflow:loss: 2.942962
+INFO:tensorflow:Batch count: 673
+INFO:tensorflow:loss: 2.920379
+INFO:tensorflow:Batch count: 674
+INFO:tensorflow:loss: 3.028084
+INFO:tensorflow:Batch count: 675
+INFO:tensorflow:loss: 3.418923
+INFO:tensorflow:Batch count: 676
+INFO:tensorflow:loss: 3.675576
+INFO:tensorflow:Batch count: 677
+INFO:tensorflow:loss: 3.654735
+INFO:tensorflow:Batch count: 678
+INFO:tensorflow:loss: 2.920046
+INFO:tensorflow:Batch count: 679
+INFO:tensorflow:loss: 3.129428
+INFO:tensorflow:Batch count: 680
+INFO:tensorflow:loss: 2.862326
+INFO:tensorflow:Batch count: 681
+INFO:tensorflow:loss: 3.041278
+INFO:tensorflow:Batch count: 682
+INFO:tensorflow:loss: 2.979844
+INFO:tensorflow:Batch count: 683
+INFO:tensorflow:loss: 4.180959
+INFO:tensorflow:Batch count: 684
+INFO:tensorflow:loss: 3.278798
+INFO:tensorflow:Batch count: 685
+INFO:tensorflow:loss: 4.018497
+INFO:tensorflow:Batch count: 686
+INFO:tensorflow:loss: 3.068989
+INFO:tensorflow:Batch count: 687
+INFO:tensorflow:loss: 3.339587
+INFO:tensorflow:Batch count: 688
+INFO:tensorflow:loss: 2.974065
+INFO:tensorflow:Batch count: 689
+INFO:tensorflow:loss: 3.152104
+INFO:tensorflow:Batch count: 690
+INFO:tensorflow:loss: 3.081517
+INFO:tensorflow:Batch count: 691
+INFO:tensorflow:loss: 3.535539
+INFO:tensorflow:Batch count: 692
+INFO:tensorflow:loss: 2.836105
+INFO:tensorflow:Batch count: 693
+INFO:tensorflow:loss: 2.933887
+INFO:tensorflow:Batch count: 694
+INFO:tensorflow:loss: 3.582819
+INFO:tensorflow:Batch count: 695
+INFO:tensorflow:loss: 3.433969
+INFO:tensorflow:Batch count: 696
+INFO:tensorflow:loss: 3.606181
+INFO:tensorflow:Batch count: 697
+INFO:tensorflow:loss: 3.163025
+INFO:tensorflow:Batch count: 698
+INFO:tensorflow:loss: 3.064038
+INFO:tensorflow:Batch count: 699
+INFO:tensorflow:loss: 3.201210
+INFO:tensorflow:Batch count: 700
+INFO:tensorflow:loss: 2.713239
+INFO:tensorflow:Batch count: 701
+INFO:tensorflow:loss: 2.911485
+INFO:tensorflow:Batch count: 702
+INFO:tensorflow:loss: 2.947056
+INFO:tensorflow:Batch count: 703
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--700
+INFO:tensorflow:loss: 3.129979
+INFO:tensorflow:Batch count: 704
+INFO:tensorflow:loss: 3.710389
+INFO:tensorflow:Batch count: 705
+INFO:tensorflow:loss: 3.045213
+INFO:tensorflow:Batch count: 706
+INFO:tensorflow:loss: 3.062534
+INFO:tensorflow:Batch count: 707
+INFO:tensorflow:loss: 3.850165
+INFO:tensorflow:Batch count: 708
+INFO:tensorflow:loss: 3.421920
+INFO:tensorflow:Batch count: 709
+INFO:tensorflow:loss: 2.791366
+INFO:tensorflow:Batch count: 710
+INFO:tensorflow:loss: 3.211860
+INFO:tensorflow:Batch count: 711
+INFO:tensorflow:loss: 3.740567
+INFO:tensorflow:Batch count: 712
+INFO:tensorflow:loss: 3.075981
+INFO:tensorflow:Batch count: 713
+INFO:tensorflow:loss: 3.091376
+INFO:tensorflow:Batch count: 714
+INFO:tensorflow:loss: 3.807891
+INFO:tensorflow:Batch count: 715
+INFO:tensorflow:loss: 3.583068
+INFO:tensorflow:Batch count: 716
+INFO:tensorflow:loss: 3.875779
+INFO:tensorflow:Batch count: 717
+INFO:tensorflow:loss: 2.965845
+INFO:tensorflow:Batch count: 718
+INFO:tensorflow:loss: 3.340167
+INFO:tensorflow:Batch count: 719
+INFO:tensorflow:loss: 3.182244
+INFO:tensorflow:Batch count: 720
+INFO:tensorflow:loss: 4.282174
+INFO:tensorflow:Batch count: 721
+INFO:tensorflow:loss: 3.295652
+INFO:tensorflow:Batch count: 722
+INFO:tensorflow:loss: 3.086067
+INFO:tensorflow:Batch count: 723
+INFO:tensorflow:loss: 3.403065
+INFO:tensorflow:Batch count: 724
+INFO:tensorflow:loss: 3.406907
+INFO:tensorflow:Batch count: 725
+INFO:tensorflow:loss: 3.573828
+INFO:tensorflow:Batch count: 726
+INFO:tensorflow:loss: 3.147240
+INFO:tensorflow:Batch count: 727
+INFO:tensorflow:loss: 3.770015
+INFO:tensorflow:Batch count: 728
+INFO:tensorflow:loss: 3.351326
+INFO:tensorflow:Batch count: 729
+INFO:tensorflow:loss: 3.826309
+INFO:tensorflow:Batch count: 730
+WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
+INFO:tensorflow:Finished reading dataset in single_pass mode.
+INFO:tensorflow:375.94254302978516
+INFO:tensorflow:<Queue.Queue instance at 0x7fb255c18908>
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--700
+INFO:tensorflow:loss: 2.884617
+INFO:tensorflow:Batch count: 731
+INFO:tensorflow:loss: 3.080174
+INFO:tensorflow:Batch count: 732
+INFO:tensorflow:loss: 2.598406
+INFO:tensorflow:Batch count: 733
+INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
+INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
+INFO:tensorflow:loss: 2.592412
+INFO:tensorflow:Batch count: 734
+INFO:tensorflow:loss: 3.734260
+INFO:tensorflow:Batch count: 735
+INFO:tensorflow:loss: 3.520983
+INFO:tensorflow:Batch count: 736
+INFO:tensorflow:loss: 3.265153
+INFO:tensorflow:Batch count: 737
+INFO:tensorflow:loss: 3.679077
+INFO:tensorflow:Batch count: 738
+INFO:tensorflow:loss: 3.491918
+INFO:tensorflow:Batch count: 739
+INFO:tensorflow:loss: 2.694432
+INFO:tensorflow:Batch count: 740
+INFO:tensorflow:loss: 3.076650
+INFO:tensorflow:Batch count: 741
+INFO:tensorflow:loss: 2.707041
+INFO:tensorflow:Batch count: 742
+INFO:tensorflow:loss: 3.196209
+INFO:tensorflow:Batch count: 743
+INFO:tensorflow:loss: 3.710558
+INFO:tensorflow:Batch count: 744
+INFO:tensorflow:loss: 2.901992
+INFO:tensorflow:Batch count: 745
+INFO:tensorflow:loss: 2.648759
+INFO:tensorflow:Batch count: 746
+INFO:tensorflow:loss: 3.721910
+INFO:tensorflow:Batch count: 747
+INFO:tensorflow:loss: 3.296942
+INFO:tensorflow:Batch count: 748
+INFO:tensorflow:loss: 3.568330
+INFO:tensorflow:Batch count: 749
+INFO:tensorflow:loss: 3.174796
+INFO:tensorflow:Batch count: 750
+INFO:tensorflow:loss: 2.417083
+INFO:tensorflow:Batch count: 751
+INFO:tensorflow:loss: 3.721110
+INFO:tensorflow:Batch count: 752
+INFO:tensorflow:loss: 3.559448
+INFO:tensorflow:Batch count: 753
+INFO:tensorflow:loss: 3.113725
+INFO:tensorflow:Batch count: 754
+INFO:tensorflow:loss: 2.677539
+INFO:tensorflow:Batch count: 755
+INFO:tensorflow:loss: 3.025053
+INFO:tensorflow:Batch count: 756
+INFO:tensorflow:loss: 3.477220
+INFO:tensorflow:Batch count: 757
+INFO:tensorflow:loss: 3.371751
+INFO:tensorflow:Batch count: 758
+INFO:tensorflow:loss: 3.246576
+INFO:tensorflow:Batch count: 759
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--700
+INFO:tensorflow:loss: 3.650195
+INFO:tensorflow:Batch count: 760
+INFO:tensorflow:loss: 2.659409
+INFO:tensorflow:Batch count: 761
+INFO:tensorflow:loss: 3.046336
+INFO:tensorflow:Batch count: 762
+INFO:tensorflow:loss: 3.077135
+INFO:tensorflow:Batch count: 763
+INFO:tensorflow:loss: 2.402657
+INFO:tensorflow:Batch count: 764
+INFO:tensorflow:loss: 3.810761
+INFO:tensorflow:Batch count: 765
+INFO:tensorflow:loss: 3.464240
+INFO:tensorflow:Batch count: 766
+INFO:tensorflow:loss: 2.961914
+INFO:tensorflow:Batch count: 767
+INFO:tensorflow:loss: 2.666120
+INFO:tensorflow:Batch count: 768
+INFO:tensorflow:loss: 2.870649
+INFO:tensorflow:Batch count: 769
+INFO:tensorflow:loss: 3.463130
+INFO:tensorflow:Batch count: 770
+INFO:tensorflow:loss: 2.487533
+INFO:tensorflow:Batch count: 771
+INFO:tensorflow:loss: 2.556043
+INFO:tensorflow:Batch count: 772
+INFO:tensorflow:loss: 3.505908
+INFO:tensorflow:Batch count: 773
+INFO:tensorflow:loss: 2.364798
+INFO:tensorflow:Batch count: 774
+INFO:tensorflow:loss: 3.121761
+INFO:tensorflow:Batch count: 775
+INFO:tensorflow:loss: 3.542290
+INFO:tensorflow:Batch count: 776
+INFO:tensorflow:loss: 3.222500
+INFO:tensorflow:Batch count: 777
+INFO:tensorflow:loss: 3.615515
+INFO:tensorflow:Batch count: 778
+INFO:tensorflow:loss: 2.733048
+INFO:tensorflow:Batch count: 779
+INFO:tensorflow:loss: 3.218967
+INFO:tensorflow:Batch count: 780
+INFO:tensorflow:loss: 3.077068
+INFO:tensorflow:Batch count: 781
+INFO:tensorflow:loss: 3.156294
+INFO:tensorflow:Batch count: 782
+INFO:tensorflow:loss: 2.377788
+INFO:tensorflow:Batch count: 783
+INFO:tensorflow:loss: 3.237442
+INFO:tensorflow:Batch count: 784
+INFO:tensorflow:loss: 3.606539
+INFO:tensorflow:Batch count: 785
+INFO:tensorflow:loss: 2.853396
+INFO:tensorflow:Batch count: 786
+INFO:tensorflow:loss: 3.689007
+INFO:tensorflow:Batch count: 787
+INFO:tensorflow:loss: 2.787977
+INFO:tensorflow:Batch count: 788
+INFO:tensorflow:loss: 3.376114
+INFO:tensorflow:Batch count: 789
+INFO:tensorflow:loss: 3.268713
+INFO:tensorflow:Batch count: 790
+INFO:tensorflow:loss: 2.447852
+INFO:tensorflow:Batch count: 791
+INFO:tensorflow:loss: 3.542116
+INFO:tensorflow:Batch count: 792
+INFO:tensorflow:loss: 3.427652
+INFO:tensorflow:Batch count: 793
+INFO:tensorflow:Loading checkpoint /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/checkpoint--700
+INFO:tensorflow:loss: 2.944693
+INFO:tensorflow:Batch count: 794
+INFO:tensorflow:loss: 3.293058
+INFO:tensorflow:Batch count: 795
+INFO:tensorflow:loss: 3.261793
+INFO:tensorflow:Batch count: 796
+INFO:tensorflow:loss: 3.476243
+INFO:tensorflow:Batch count: 797
+INFO:tensorflow:loss: 3.178011
+INFO:tensorflow:Batch count: 798
+INFO:tensorflow:loss: 3.059590
+INFO:tensorflow:Batch count: 799
+INFO:tensorflow:loss: 3.933066
+INFO:tensorflow:Batch count: 800
+INFO:tensorflow:Caught keyboard interrupt on worker. Stopping supervisor...
+max_size of vocab was specified as 25000; we now have 25000 words. Stopping reading.
+Finished constructing vocabulary of 25000 total words. Last word added: chucky!)are
+example_generator completed reading all datafiles. No more data.
+example_generator completed reading all datafiles. No more data.
+example_generator completed reading all datafiles. No more data.
+example_generator completed reading all datafiles. No more data.
+example_generator completed reading all datafiles. No more data.
+example_generator completed reading all datafiles. No more data.
+example_generator completed reading all datafiles. No more data.
+example_generator completed reading all datafiles. No more data.
+Traceback (most recent call last):
+  File "run_summarization.py", line 624, in <module>
+    tf.app.run()
+  File "/home/nikita/anaconda3/envs/oldpy27/lib/python2.7/site-packages/tensorflow/python/platform/app.py", line 44, in run
+    _sys.exit(main(_sys.argv[:1] + flags_passthrough))
+  File "run_summarization.py", line 601, in main
+    json.dump(loaded_checkpoints,open('loaded_checkpoints.json','w'))
+NameError: global name 'json' is not defined
+INFO:tensorflow:Caught keyboard interrupt on worker. Stopping supervisor...
+max_size of vocab was specified as 25000; we now have 25000 words. Stopping reading.
+Finished constructing vocabulary of 25000 total words. Last word added: chucky!)are
+creating model...
+Writing word embedding metadata file to /home/nikita/data/gttp_holle_logs/ablation/holle_type_tlstm_gating_2_run_2/train/vocab_metadata.tsv...
+Traceback (most recent call last):
+  File "single_automate.py", line 42, in <module>
+    pool.join()
+  File "/home/nikita/anaconda3/envs/oldpy27/lib/python2.7/multiprocessing/pool.py", line 475, in join
+    self._worker_handler.join()
+  File "/home/nikita/anaconda3/envs/oldpy27/lib/python2.7/threading.py", line 940, in join
+    self.__block.wait()
+  File "/home/nikita/anaconda3/envs/oldpy27/lib/python2.7/threading.py", line 340, in wait
+    waiter.acquire()
+KeyboardInterrupt

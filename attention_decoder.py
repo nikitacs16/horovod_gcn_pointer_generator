@@ -24,7 +24,9 @@ from tensorflow.python.ops import math_ops
 
 # Note: this function is based on tf.contrib.legacy_seq2seq_attention_decoder, which is now outdated.
 # In the future, it would make more sense to write variants on the attention mechanism using the new seq2seq library for tensorflow 1.0: https://www.tensorflow.org/api_guides/python/contrib.seq2seq#Attention
-
+def reduce_sum_det(x):
+    v = tf.reshape(x, [1, -1])
+    return tf.reshape(tf.matmul(v, tf.ones_like(v), transpose_b=True), [])
 
 def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding_mask, cell, use_query=False,query_states=None, query_padding_mask=None, use_lstm=True,initial_state_attention=False, pointer_gen=True, use_coverage=False, prev_coverage=None):
   """
@@ -133,9 +135,9 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
             q_dist = masked_attention(q,query_padding_mask)
             query_vector = math_ops.reduce_sum(array_ops.reshape(q_dist, [batch_size, -1, 1, 1]) * query_states, [1, 2]) # shape (batch_size, q_attn_size). q*
             query_vector = array_ops.reshape(query_vector, [-1, query_attn_size]) #This is q* 
-	  with variable_scope.variable_scope("query_z"):
+          with variable_scope.variable_scope("query_z"):
             query_z = linear(query_vector, attention_vec_size, False,name='query_z')   #This is qz
-	    query_z = tf.expand_dims(tf.expand_dims(query_z, 1),1)   
+            query_z = tf.expand_dims(tf.expand_dims(query_z, 1),1)   
         
         
         
