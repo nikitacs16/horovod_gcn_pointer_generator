@@ -592,11 +592,11 @@ def main(unused_argv):
   tf.set_random_seed(111) # a seed value for randomness
 
  
-  if hps.mode == 'train':
+  if hps.mode.value == 'train':
     print "creating model..."
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
-  elif hps.mode == 'eval':
+  elif hps.mode.value == 'eval':
     model = SummarizationModel(hps, vocab)
     try:
       run_eval(model, batcher, vocab,hps)
@@ -605,7 +605,7 @@ def main(unused_argv):
       json.dump(loaded_checkpoints,open('loaded_checkpoints.json','w'))
       sv.stop()
 
-  elif hps.mode == 'decode':
+  elif hps.mode.value == 'decode':
     decode_model_hps = hps  # This will be the hyperparameters for the decoder model
     decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
     model = SummarizationModel(decode_model_hps, vocab)
@@ -614,10 +614,10 @@ def main(unused_argv):
     else:
       decoder = BeamSearchDecoder(model, batcher, vocab)
     decoder.decode() # decode indefinitely (unless single_pass=True, in which case deocde the dataset exactly once)
-  elif hps.mode == 'restore_best_model':
+  elif hps.mode.value == 'restore_best_model':
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
-  elif hps.mode == 'convert_to_coverage_model':
+  elif hps.mode.value == 'convert_to_coverage_model':
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
   else:

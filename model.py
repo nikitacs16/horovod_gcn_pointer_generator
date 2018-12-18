@@ -242,15 +242,15 @@ class SummarizationModel(object):
 		"""
 		with tf.variable_scope(name):
 			if self._hps.use_lstm:
-				cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim,
+				cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim.value,
 												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
 												  state_is_tuple=True)
-				cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim,
+				cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim.value,
 												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
 												  state_is_tuple=True)
 			else:
-				cell_fw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim)
-				cell_bw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim)
+				cell_fw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value)
+				cell_bw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value)
 
 			(encoder_outputs, (fw_st, bw_st)) = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs,
 																				dtype=tf.float32,
@@ -430,7 +430,7 @@ class SummarizationModel(object):
 	Returns:
 	  state: LSTMStateTuple with hidden_dim units.
 	"""
-		hidden_dim = self._hps.hidden_dim
+		hidden_dim = self._hps.hidden_dim.value
 		with tf.variable_scope('reduce_final_st'):
 			if self._hps.use_lstm:
 				# Define weights and biases to reduce the cell and reduce the state
@@ -529,7 +529,7 @@ class SummarizationModel(object):
 
 			# Concatenate some zeros to each vocabulary dist, to hold the probabilities for in-article OOV words
 			extended_vsize = self._vocab.size() + self._max_art_oovs  # the maximum (over the batch) size of the extended vocabulary
-			extra_zeros = tf.zeros((self._hps.batch_size, self._max_art_oovs))
+			extra_zeros = tf.zeros((self._hps.batch_size.value, self._max_art_oovs))
 			vocab_dists_extended = [tf.concat(axis=1, values=[dist, extra_zeros]) for dist in
 									vocab_dists]  # list length max_dec_steps of shape (batch_size, extended_vsize)
 
@@ -537,12 +537,12 @@ class SummarizationModel(object):
 			# This means that if a_i = 0.1 and the ith encoder word is w, and w has index 500 in the vocabulary, then we add 0.1 onto the 500th entry of the final distribution
 			# This is done for each decoder timestep.
 			# This is fiddly; we use tf.scatter_nd to do the projection
-			batch_nums = tf.range(0, limit=self._hps.batch_size)  # shape (batch_size)
+			batch_nums = tf.range(0, limit=self._hps.batch_size.value)  # shape (batch_size)
 			batch_nums = tf.expand_dims(batch_nums, 1)  # shape (batch_size, 1)
 			attn_len = tf.shape(self._enc_batch_extend_vocab)[1]  # number of states we attend over
 			batch_nums = tf.tile(batch_nums, [1, attn_len])  # shape (batch_size, attn_len)
 			indices = tf.stack((batch_nums, self._enc_batch_extend_vocab), axis=2)  # shape (batch_size, enc_t, 2)
-			shape = [self._hps.batch_size, extended_vsize]
+			shape = [self._hps.batch_size.value, extended_vsize]
 			attn_dists_projected = [tf.scatter_nd(indices, copy_dist, shape) for copy_dist in
 									attn_dists]  # list length max_dec_steps (batch_size, extended_vsize)
 
@@ -730,7 +730,7 @@ class SummarizationModel(object):
 					
 					else:
 						######### INTERM CONCAT ########
-						in_dim = self._hps.hidden_dim * 2
+						in_dim = self._hps.hidden_dim.value * 2
 
 						if self._hps.concat_with_word_embedding:  # interm concat
 							b_interm_word = tf.get_variable('b_interm_word', [1], initializer=tf.constant_initializer(0.0))
@@ -778,14 +778,14 @@ class SummarizationModel(object):
 					if not self._hps.no_lstm_query_encoder:
 						query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens, name='query_encoder')
 						self._query_states = query_outputs
-						q_in_dim = self._hps.hidden_dim * 2
+						q_in_dim = self._hps.hidden_dim.value * 2
 						
 					if self._hps.query_gcn:
 						if self._hps.use_gcn_lstm_parallel or self._hps.no_lstm_query_encoder:
 							q_gcn_in = emb_query_inputs
 							q_in_dim = hps.emb_dim
 						else:
-							q_in_dim = self._hps.hidden_dim * 2
+							q_in_dim = self._hps.hidden_dim.value * 2
 
 							######### INTERM CONCAT ############
 							if self._hps.concat_with_word_embedding:  # interm concat
@@ -914,16 +914,16 @@ class SummarizationModel(object):
 
 		# Clip the gradients
 		with tf.device("/gpu:0"):
-			grads, global_norm = tf.clip_by_global_norm(gradients, self._hps.max_grad_norm)
+			grads, global_norm = tf.clip_by_global_norm(gradients, self._hps.max_grad_norm.value)
 
 		# Add a summary
 		tf.summary.scalar('global_norm', global_norm)
 
 		# Apply adagrad optimizer
 		if self._hps.optimizer == 'adagrad':
-			optimizer = tf.train.AdagradOptimizer(self._hps.lr, initial_accumulator_value=self._hps.adagrad_init_acc)
+			optimizer = tf.train.AdagradOptimizer(self._hps.lr.value, initial_accumulator_value=self._hps.adagrad_init_acc.value)
 		if self._hps.optimizer == 'adam':
-			optimizer = tf.train.AdamOptimizer(learning_rate=self._hps.adam_lr)
+			optimizer = tf.train.AdamOptimizer(learning_rate=self._hps.adam_lr.value)
 		with tf.device("/gpu:0"):
 			self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step,
 													   name='train_step')
@@ -938,7 +938,7 @@ class SummarizationModel(object):
 			self._add_seq2seq()
 
 		self.global_step = tf.Variable(0, name='global_step', trainable=False)
-		if self._hps.mode == 'train':
+		if self._hps.mode.value == 'train':
 			self._add_train_op()
 		self._summaries = tf.summary.merge_all()
 		t1 = time.time()
