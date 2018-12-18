@@ -97,12 +97,12 @@ class SummarizationModel(object):
 		self._hps = hps
 		self._vocab = vocab
 		self.use_glove = hps.use_glove
-		if hps.mode == 'train':
-			if hps.use_glove:
-				self._vocab.set_glove_embedding(hps.glove_path, hps.emb_dim)
+		if hps.mode.value == 'train':
+			if hps.use_glove.value:
+				self._vocab.set_glove_embedding(hps.glove_path.value, hps.emb_dim.value)
 
-		if hps.use_regularizer:
-			self.beta_l2 = hps.beta_l2
+		if hps.use_regularizer.value:
+			self.beta_l2 = hps.beta_l2.value
 		else:
 			self.beta_l2 = 0.0
 
@@ -113,44 +113,44 @@ class SummarizationModel(object):
 		hps = self._hps
 
 		# encoder part
-		self._enc_batch = tf.placeholder(tf.int32, [hps.batch_size, None], name='enc_batch')
-		self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size], name='enc_lens')
-		self._enc_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, None], name='enc_padding_mask')
+		self._enc_batch = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='enc_batch')
+		self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size.value], name='enc_lens')
+		self._enc_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='enc_padding_mask')
 
-		if FLAGS.query_encoder:
-			self._query_batch = tf.placeholder(tf.int32, [hps.batch_size, None], name='query_batch')
-			self._query_lens = tf.placeholder(tf.int32, [hps.batch_size], name='query_lens')
-			self._query_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, None], name='query_padding_mask')
+		if FLAGS.query_encoder.value:
+			self._query_batch = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='query_batch')
+			self._query_lens = tf.placeholder(tf.int32, [hps.batch_size.value], name='query_lens')
+			self._query_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='query_padding_mask')
 
-		if FLAGS.pointer_gen:
-			self._enc_batch_extend_vocab = tf.placeholder(tf.int32, [hps.batch_size, None],
+		if FLAGS.pointer_gen.value:
+			self._enc_batch_extend_vocab = tf.placeholder(tf.int32, [hps.batch_size.value, None],
 														  name='enc_batch_extend_vocab')
 			self._max_art_oovs = tf.placeholder(tf.int32, [], name='max_art_oovs')
 
-		if FLAGS.word_gcn:
-			# tf.logging.info(hps.num_word_dependency_labels)
+		if FLAGS.word_gcn.value:
+			# tf.logging.info(hps.num_word_dependency_labels.value)
 			self._word_adj_in = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_in_{}'.format(lbl)) for lbl
-				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
+				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
 			self._word_adj_out = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_out_{}'.format(lbl)) for lbl
-				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
+				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
 			if hps.mode == 'train':
-				self._word_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout, shape=(), name='dropout')
+				self._word_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout.value, shape=(), name='dropout')
 			else:
 				self._word_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='dropout')
 
 			self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
 	
-		if FLAGS.query_gcn:
+		if FLAGS.query_gcn.value:
 			self._query_adj_in = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_in_{}'.format(lbl)) for lbl
-				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
+				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
 			self._query_adj_out = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_out_{}'.format(lbl)) for lbl
-				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size)]
+				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
 			if hps.mode == 'train':
-				self._query_gcn_dropout = tf.placeholder_with_default(hps.query_gcn_dropout, shape=(),
+				self._query_gcn_dropout = tf.placeholder_with_default(hps.query_gcn_dropout.value, shape=(),
 																	  name='query_dropout')
 			else:
 				self._query_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='query_dropout')
@@ -158,13 +158,13 @@ class SummarizationModel(object):
 			self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
 	
 		# decoder part
-		self._dec_batch = tf.placeholder(tf.int32, [hps.batch_size, hps.max_dec_steps], name='dec_batch')
-		self._target_batch = tf.placeholder(tf.int32, [hps.batch_size, hps.max_dec_steps], name='target_batch')
-		self._dec_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, hps.max_dec_steps],
+		self._dec_batch = tf.placeholder(tf.int32, [hps.batch_size.value, hps.max_dec_steps.value], name='dec_batch')
+		self._target_batch = tf.placeholder(tf.int32, [hps.batch_size.value, hps.max_dec_steps.value], name='target_batch')
+		self._dec_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, hps.max_dec_steps.value],
 												name='dec_padding_mask')
 
-		if hps.mode == "decode" and hps.coverage:
-			self.prev_coverage = tf.placeholder(tf.float32, [hps.batch_size, None], name='prev_coverage')
+		if hps.mode.value == "decode" and hps.coverage.value:
+			self.prev_coverage = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='prev_coverage')
 
 	def _make_feed_dict(self, batch, just_enc=False):
 		"""Make a feed dictionary mapping parts of the batch to the appropriate placeholders.
@@ -192,8 +192,8 @@ class SummarizationModel(object):
 			feed_dict[self._max_word_seq_len] = batch.max_word_len
 			word_adj_in = batch.word_adj_in
 			word_adj_out = batch.word_adj_out
-			for i in range(hps.batch_size):
-				for lbl in range(hps.num_word_dependency_labels):
+			for i in range(hps.batch_size.value):
+				for lbl in range(hps.num_word_dependency_labels.value):
 					feed_dict[self._word_adj_in[i][lbl]] = tf.SparseTensorValue(
 						indices=np.array([word_adj_in[i][lbl].row, word_adj_in[i][lbl].col]).T,
 						values=word_adj_in[i][lbl].data,
@@ -208,8 +208,8 @@ class SummarizationModel(object):
 			feed_dict[self._max_query_seq_len] = batch.max_query_len
 			query_adj_in = batch.query_adj_in
 			query_adj_out = batch.query_adj_out
-			for i in range(hps.batch_size):
-				for lbl in range(hps.num_word_dependency_labels):
+			for i in range(hps.batch_size.value):
+				for lbl in range(hps.num_word_dependency_labels.value):
 					feed_dict[self._query_adj_in[i][lbl]] = tf.SparseTensorValue(
 						indices=np.array([query_adj_in[i][lbl].row, query_adj_in[i][lbl].col]).T,
 						values=query_adj_in[i][lbl].data,
@@ -241,7 +241,7 @@ class SummarizationModel(object):
 			Each are LSTMStateTuples of shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
 		"""
 		with tf.variable_scope(name):
-			if self._hps.use_lstm:
+			if self._hps.use_lstm.value:
 				cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim.value,
 												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
 												  state_is_tuple=True)
@@ -264,7 +264,7 @@ class SummarizationModel(object):
 						  use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN",
 						  use_label_information=False, loop_dropout=1.0):
 
-		if not self._hps.use_label_information:
+		if not self._hps.use_label_information.value:
 			max_labels = 1
 
 		tf.logging.info(max_nodes)
@@ -432,7 +432,7 @@ class SummarizationModel(object):
 	"""
 		hidden_dim = self._hps.hidden_dim.value
 		with tf.variable_scope('reduce_final_st'):
-			if self._hps.use_lstm:
+			if self._hps.use_lstm.value:
 				# Define weights and biases to reduce the cell and reduce the state
 				w_reduce_c = tf.get_variable('w_reduce_c', [hidden_dim * 2, hidden_dim], dtype=tf.float32,
 											 initializer=self.rand_unif_init, regularizer=self._regularizer)
@@ -446,7 +446,7 @@ class SummarizationModel(object):
 										 initializer=self.rand_unif_init, regularizer=self._regularizer)
 
 			# Apply linear layer
-			if self._hps.use_lstm:
+			if self._hps.use_lstm.value:
 				old_c = tf.concat(axis=1, values=[fw_st.c, bw_st.c])  # Concatenation of fw and bw cell
 				new_c = tf.nn.relu(tf.matmul(old_c, w_reduce_c) + bias_reduce_c)  # Get new cell from old cell
 
@@ -456,7 +456,7 @@ class SummarizationModel(object):
 				old_h = tf.concat(axis=1, values=[fw_st, bw_st])  # Concatenation of fw and bw state
 				new_h = tf.nn.relu(tf.matmul(old_h, w_reduce_h) + bias_reduce_h)  # Get new state from old state
 
-			if self._hps.use_lstm:
+			if self._hps.use_lstm.value:
 				return tf.contrib.rnn.LSTMStateTuple(new_c, new_h)  # Return new cell and state
 			else:
 				return new_h
@@ -475,19 +475,19 @@ class SummarizationModel(object):
 	  coverage: A tensor, the current coverage vector
 	"""
 		hps = self._hps
-		if hps.use_lstm:
-			cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim, state_is_tuple=True, initializer=self.rand_unif_init)
+		if hps.use_lstm.value:
+			cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim.value, state_is_tuple=True, initializer=self.rand_unif_init)
 		else:
-			cell = tf.contrib.rnn.BasicRNNCell(hps.hidden_dim)
+			cell = tf.contrib.rnn.BasicRNNCell(hps.hidden_dim.value)
 
-		if hps.no_lstm_encoder:
-			self._dec_in_state = get_initial_cell_state(cell, make_variable_state_initializer(), hps.batch_size,
+		if hps.no_lstm_encoder.value:
+			self._dec_in_state = get_initial_cell_state(cell, make_variable_state_initializer(), hps.batch_size.value,
 														tf.float32)
 		# TODO Feed the averaged gcn word vectors
 
-		prev_coverage = self.prev_coverage if hps.mode == "decode" and hps.coverage else None  # In decode mode, we run attention_decoder one step at a time and so need to pass in the previous step's coverage vector each time
+		prev_coverage = self.prev_coverage if hps.mode.value == "decode" and hps.coverage.value else None  # In decode mode, we run attention_decoder one step at a time and so need to pass in the previous step's coverage vector each time
 
-		if hps.query_encoder:
+		if hps.query_encoder.value:
 			outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
 																				 self._enc_states,
 																				 self._enc_padding_mask,
@@ -495,19 +495,19 @@ class SummarizationModel(object):
 																				 query_states=self._query_states,
 																				 query_padding_mask=self._query_padding_mask,
 																				 initial_state_attention=(
-																							 hps.mode == "decode"),
-																				 use_lstm=hps.use_lstm,
-																				 pointer_gen=hps.pointer_gen,
-																				 use_coverage=hps.coverage,
+																							 hps.mode.value == "decode"),
+																				 use_lstm=hps.use_lstm.value,
+																				 pointer_gen=hps.pointer_gen.value,
+																				 use_coverage=hps.coverage.value,
 																				 prev_coverage=prev_coverage)
 		else:
 			outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
 																				 self._enc_states,
 																				 self._enc_padding_mask,
 																				 cell, initial_state_attention=(
-							hps.mode == "decode"), use_lstm=hps.use_lstm,
-																				 pointer_gen=hps.pointer_gen,
-																				 use_coverage=hps.coverage,
+							hps.mode.value == "decode"), use_lstm=hps.use_lstm.value,
+																				 pointer_gen=hps.pointer_gen.value,
+																				 use_coverage=hps.coverage.value,
 																				 prev_coverage=prev_coverage)
 
 		return outputs, out_state, attn_dists, p_gens, coverage
@@ -576,64 +576,62 @@ class SummarizationModel(object):
 
 		with tf.variable_scope('seq2seq'):
 			# Some initializers
-			self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag, hps.rand_unif_init_mag,seed=123)
-			self.trunc_norm_init = tf.truncated_normal_initializer(stddev=hps.trunc_norm_init_std, seed=123)
+			self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag.value, hps.rand_unif_init_mag.value,seed=123)
+			self.trunc_norm_init = tf.truncated_normal_initializer(stddev=hps.trunc_norm_init_std.value, seed=123)
 			self.gcn_weight_init = tf.random_normal_initializer(stddev=0.01, seed=123)
 			self.gcn_bias_init = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=123)
 			# Add embedding matrix (shared by the encoder and decoder inputs)
 			with tf.variable_scope('embedding'):
-				if hps.mode == "train":
+				if hps.mode.value == "train":
 					if self.use_glove:
 						tf.logging.info('glove')
 						embedding = tf.get_variable('embedding', dtype=tf.float32,
 													initializer=tf.cast(self._vocab.glove_emb, tf.float32),
-													trainable=hps.emb_trainable, regularizer=self._regularizer)
-						tf.logging.info(embedding)
-
+													trainable=hps.emb_trainable.value, regularizer=self._regularizer)
+						
 					else:
-						embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32,
-													initializer=self.trunc_norm_init, trainable=hps.emb_trainable,
+						embedding = tf.get_variable('embedding', [vsize, hps.emb_dim.value], dtype=tf.float32,
+													initializer=self.trunc_norm_init, trainable=hps.emb_trainable.value,
 													regularizer=self._regularizer)
 
 				else:
-					embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32)
+					embedding = tf.get_variable('embedding', [vsize, hps.emb_dim.value], dtype=tf.float32)
 
-				if hps.mode == "train": self._add_emb_vis(embedding)  # add to tensorboard
+				if hps.mode.value == "train": self._add_emb_vis(embedding)  # add to tensorboard
 				emb_enc_inputs = tf.nn.embedding_lookup(embedding, self._enc_batch)  # tensor with shape (batch_size, max_enc_steps, emb_size)
-				if hps.query_encoder:
+				if hps.query_encoder.value:
 					emb_query_inputs = tf.nn.embedding_lookup(embedding, self._query_batch)  # tensor with shape (batch_size, max_query_steps, emb_size)
 
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch, axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 			
 
 
-			if self._hps.use_gcn_before_lstm:
+			if self._hps.use_gcn_before_lstm.value:
 				
 ################################################## G-LSTM ###############################################
 
 				################ GCN LAYER #######################	
 				gcn_in = emb_enc_inputs
-				in_dim = hps.emb_dim
+				in_dim = hps.emb_dim.value
 
-				gcn_dim = hps.word_gcn_dim
+				gcn_dim = hps.word_gcn_dim.value
 
-				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
-												  batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
-												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
+				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim.value,
+												  batch_size=hps.batch_size.value, max_nodes=self._max_word_seq_len,
+												  max_labels=hps.num_word_dependency_labels.value, adj_in=self._word_adj_in,
 												  adj_out=self._word_adj_out, 
-												  num_layers=hps.word_gcn_layers,
-												  use_gating=hps.word_gcn_gating, use_skip=hps.word_gcn_skip,
+												  num_layers=hps.word_gcn_layers.value,
+												  use_gating=hps.word_gcn_gating.value, use_skip=hps.word_gcn_skip.value,
 												  dropout=self._word_gcn_dropout,
 												  name="gcn_word",
-												  loop_dropout= hps.word_loop_dropout)
-				
+												  loop_dropout= hps.word_loop_dropout.value)
 
 				######## INTERM CONCAT ##########
-				if hps.concat_with_word_embedding:  #interm concat
+				if hps.concat_with_word_embedding.value:  #interm concat
 					b_interm_word = tf.get_variable('b_interm_word', [1], initializer=tf.constant_initializer(0.0))
 					
-					if hps.word_gcn_dim!= hps.emb_dim:
-						w_interm_word = tf.get_variable('w_interm_word', [hps.emb_dim, hps.word_gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+					if hps.word_gcn_dim.value!= hps.emb_dim.value:
+						w_interm_word = tf.get_variable('w_interm_word', [hps.emb_dim.value, hps.word_gcn_dim.value], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 						emb_enc_inputs = tf.tensordot(emb_enc_inputs, w_interm_word, axes=[[2], [0]])
 
 					gcn_outputs = ( 1.0 - b_interm_word) * gcn_outputs + b_interm_word * emb_enc_inputs
@@ -646,11 +644,11 @@ class SummarizationModel(object):
 
 				########### UPPER CONCAT ##########
 
-				if self._hps.concat_gcn_lstm:
+				if self._hps.concat_gcn_lstm.value:
 					b_upper_word = tf.get_variable('b_upper_word', [1], initializer=tf.constant_initializer(0.0))
 					
-					if hps.word_gcn_dim!= hps.hidden_dim * 2:
-						w_interm_word = tf.get_variable('w_upper_word', [hps.word_gcn_dim, hps.hidden_dim*2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+					if hps.word_gcn_dim.value!= hps.hidden_dim.value * 2:
+						w_interm_word = tf.get_variable('w_upper_word', [hps.word_gcn_dim.value, hps.hidden_dim.value*2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 						gcn_outputs = tf.tensordot(gcn_outputs, w_interm_word, axes=[[2], [0]])
 
 					self._enc_states = ( 1 - b_upper_word) * enc_outputs + b_upper_word * gcn_outputs
@@ -659,31 +657,31 @@ class SummarizationModel(object):
 					self._enc_states = enc_outputs
 
 				################QUERY ENCODER###########################
-				if self._hps.query_encoder:
+				if self._hps.query_encoder.value:
 					q_gcn_in = emb_query_inputs
-					q_in_dim = hps.emb_dim
+					q_in_dim = hps.emb_dim.value
 					q_gcn_outputs = emb_query_inputs #if not used
 					
 					######### GCN LAYER #############
 
-					if self._hps.query_gcn:  
-						q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
-															batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
-															max_labels=hps.num_word_dependency_labels,
+					if self._hps.query_gcn.value:  
+						q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim.value,
+															batch_size=hps.batch_size.value, max_nodes=self._max_query_seq_len,
+															max_labels=hps.num_word_dependency_labels.value,
 															adj_in=self._query_adj_in,
 															adj_out=self._query_adj_out,
-															num_layers=hps.query_gcn_layers,
-															use_gating=hps.query_gcn_gating, use_skip=hps.query_gcn_skip,
+															num_layers=hps.query_gcn_layers.value,
+															use_gating=hps.query_gcn_gating.value, use_skip=hps.query_gcn_skip.value,
 															dropout=self._query_gcn_dropout,
 															name="gcn_query",
 															loop_dropout=hps.query_loop_dropout)
 
 						########## INTERM CONCAT ##############
-						if hps.concat_with_word_embedding:
+						if hps.concat_with_word_embedding.value:
 							b_interm_query = tf.get_variable('b_interm_query', [1], initializer=tf.constant_initializer(0.0))
 					
-							if hps.emb_dim!= hps.query_gcn_dim:
-								w_interm_query = tf.get_variable('w_interm_query', [hps.emb_dim, hps.query_gcn_dim], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+							if hps.emb_dim.value!= hps.query_gcn_dim.value:
+								w_interm_query = tf.get_variable('w_interm_query', [hps.emb_dim.value, hps.query_gcn_dim.value], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 								emb_query_inputs = tf.tensordot(emb_query_inputs, w_interm_query, axes=[[2], [0]])
 
 							q_gcn_outputs = ( 1 - b_interm_query) * q_gcn_outputs + b_upper_query * emb_query_inputs
@@ -695,11 +693,11 @@ class SummarizationModel(object):
 					self._query_states = query_outputs
 					
 					######### UPPER CONCAT ############
-					if self._hps.concat_gcn_lstm and self._hps.query_gcn:
+					if self._hps.concat_gcn_lstm.value and self._hps.query_gcn.value:
 						b_upper_query = tf.get_variable('b_upper_query', [1], initializer=tf.constant_initializer(0.0))
 					
-						if hps.query_gcn_dim!= hps.hidden_dim * 2:
-							w_interm_query = tf.get_variable('w_upper_query', [hps.query_gcn_dim, hps.hidden_dim*2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+						if hps.query_gcn_dim.value!= hps.hidden_dim.value * 2:
+							w_interm_query = tf.get_variable('w_upper_query', [hps.query_gcn_dim.value, hps.hidden_dim.value*2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 							q_gcn_outputs = tf.tensordot(q_gcn_outputs, w_interm_query, axes=[[2], [0]])
 
 						self._query_states = ( 1 - b_upper_query) * query_outputs + b_upper_query * q_gcn_outputs
@@ -710,33 +708,33 @@ class SummarizationModel(object):
 ######################################### TLSTM and PA-LSTM ###################################################
 
 			else:
-				if not self._hps.no_lstm_encoder:
+				if not self._hps.no_lstm_encoder.value:
 
 				#####LSTM LAYER ########
 					enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens)
 
-					if self._hps.stacked_lstm:  # lstm over lstm
+					if self._hps.stacked_lstm.value:  # lstm over lstm
 						enc_outputs, fw_st, bw_st = self._add_encoder(enc_outputs, self._enc_lens, name='stacked_encoder')
 					
 					# Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
 					self._dec_in_state = self._reduce_states(fw_st, bw_st)	
 					self._enc_states = enc_outputs	
 
-				if self._hps.word_gcn:
+				if self._hps.word_gcn.value:
 
-					if self._hps.use_gcn_lstm_parallel or self._hps.no_lstm_encoder:
+					if self._hps.use_gcn_lstm_parallel.value or self._hps.no_lstm_encoder.value:
 						gcn_in = emb_enc_inputs
-						in_dim = hps.emb_dim
+						in_dim = hps.emb_dim.value
 					
 					else:
 						######### INTERM CONCAT ########
 						in_dim = self._hps.hidden_dim.value * 2
 
-						if self._hps.concat_with_word_embedding:  # interm concat
+						if self._hps.concat_with_word_embedding.value:  # interm concat
 							b_interm_word = tf.get_variable('b_interm_word', [1], initializer=tf.constant_initializer(0.0))
 
-							if hps.emb_dim != hps.hidden_dim * 2:
-								w_interm_word = tf.get_variable('w_interm_word', [hps.emb_dim, hps.hidden_dim * 2], initializer=tf.contrib.layers.xavier_initializer(),  regularizer=self._regularizer)
+							if hps.emb_dim.value != hps.hidden_dim.value * 2:
+								w_interm_word = tf.get_variable('w_interm_word', [hps.emb_dim.value, hps.hidden_dim.value * 2], initializer=tf.contrib.layers.xavier_initializer(),  regularizer=self._regularizer)
 								emb_enc_inputs = tf.tensordot(emb_enc_inputs, w_interm_word, axes=[[2], [0]])
 								
 							gcn_in = b_interm_word * emb_enc_inputs + (1.0 - b_interm_word) * self._enc_states
@@ -746,24 +744,24 @@ class SummarizationModel(object):
 							gcn_in = self._enc_states
 							
 					############# GCN LAYER ############	
-					gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim,
-												  batch_size=hps.batch_size, max_nodes=self._max_word_seq_len,
-												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
+					gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim.value,
+												  batch_size=hps.batch_size.value, max_nodes=self._max_word_seq_len,
+												  max_labels=hps.num_word_dependency_labels.value, adj_in=self._word_adj_in,
 												  adj_out=self._word_adj_out,
-												  num_layers=hps.word_gcn_layers,
-												  use_gating=hps.word_gcn_gating, use_skip=hps.word_gcn_skip,
+												  num_layers=hps.word_gcn_layers.value,
+												  use_gating=hps.word_gcn_gating.value, use_skip=hps.word_gcn_skip.value,
 												  dropout=self._word_gcn_dropout,
 												  name="gcn_word",
-												  loop_dropout=hps.word_loop_dropout)
+												  loop_dropout=hps.word_loop_dropout.value)
 
 					
 					############## UPPPER CONCAT ###############
 						
-					if self._hps.concat_gcn_lstm:  # upper concatenate
+					if self._hps.concat_gcn_lstm.value:  # upper concatenate
 						b_upper_word = tf.get_variable('b_upper_word', [1], initializer=tf.constant_initializer(0.0))
 
-						if hps.word_gcn_dim != hps.hidden_dim * 2:
-							w_upper_word = tf.get_variable('w_upper_word',[hps.word_gcn_dim, hps.hidden_dim * 2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+						if hps.word_gcn_dim.value != hps.hidden_dim.value * 2:
+							w_upper_word = tf.get_variable('w_upper_word',[hps.word_gcn_dim.value, hps.hidden_dim.value * 2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 							gcn_outputs = tf.tensordot(gcn_outputs, w_upper_word, axes=[[2], [0]])
 
 						self._enc_states = b_upper_word * enc_outputs + (1.0 - b_upper_word) * gcn_outputs
@@ -773,26 +771,26 @@ class SummarizationModel(object):
 
 				
 				##################### QUERY ENCODER	###################	
-				if self._hps.query_encoder:
+				if self._hps.query_encoder.value:
 					
 					if not self._hps.no_lstm_query_encoder:
 						query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens, name='query_encoder')
 						self._query_states = query_outputs
 						q_in_dim = self._hps.hidden_dim.value * 2
 						
-					if self._hps.query_gcn:
+					if self._hps.query_gcn.value:
 						if self._hps.use_gcn_lstm_parallel or self._hps.no_lstm_query_encoder:
 							q_gcn_in = emb_query_inputs
-							q_in_dim = hps.emb_dim
+							q_in_dim = hps.emb_dim.value
 						else:
 							q_in_dim = self._hps.hidden_dim.value * 2
 
 							######### INTERM CONCAT ############
-							if self._hps.concat_with_word_embedding:  # interm concat
+							if self._hps.concat_with_word_embedding.value:  # interm concat
 								b_interm_query = tf.get_variable('b_interm_query', [1], initializer=tf.constant_initializer(0.0))
 
-								if hps.emb_dim != hps.hidden_dim * 2:
-									w_interm_query = tf.get_variable('w_interm_query', [hps.emb_dim, hps.hidden_dim * 2], initializer=tf.contrib.layers.xavier_initializer(),  regularizer=self._regularizer)
+								if hps.emb_dim.value != hps.hidden_dim.value * 2:
+									w_interm_query = tf.get_variable('w_interm_query', [hps.emb_dim.value, hps.hidden_dim.value * 2], initializer=tf.contrib.layers.xavier_initializer(),  regularizer=self._regularizer)
 									emb_query_inputs = tf.tensordot(emb_query_inputs, w_interm_query, axes=[[2], [0]])
 								
 								q_gcn_in = b_interm_query * emb_query_inputs + (1.0 - b_interm_query) * self._query_states
@@ -802,13 +800,13 @@ class SummarizationModel(object):
 
 
 
-						q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim,
-															batch_size=hps.batch_size, max_nodes=self._max_query_seq_len,
-															max_labels=hps.num_word_dependency_labels,
+						q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim.value,
+															batch_size=hps.batch_size.value, max_nodes=self._max_query_seq_len,
+															max_labels=hps.num_word_dependency_labels.value,
 															adj_in=self._query_adj_in,
 															adj_out=self._query_adj_out,
-															num_layers=hps.query_gcn_layers,
-															use_gating=hps.query_gcn_gating, use_skip=hps.query_gcn_skip,
+															num_layers=hps.query_gcn_layers.value,
+															use_gating=hps.query_gcn_gating.value, use_skip=hps.query_gcn_skip.value,
 															dropout=self._query_gcn_dropout,
 															name="gcn_query",
 															loop_dropout=hps.query_loop_dropout)
@@ -816,11 +814,11 @@ class SummarizationModel(object):
 
 						############ UPPER CONCAT ############
 
-						if self._hps.concat_gcn_lstm: 
+						if self._hps.concat_gcn_lstm.value: 
 							b_upper_query = tf.get_variable('b_upper_query', [1], initializer=tf.constant_initializer(0.0))
 
-							if hps.query_gcn_dim != hps.hidden_dim * 2:
-								w_upper_query = tf.get_variable('w_upper_query',[hps.query_gcn_dim, hps.hidden_dim * 2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
+							if hps.query_gcn_dim.value != hps.hidden_dim.value * 2:
+								w_upper_query = tf.get_variable('w_upper_query',[hps.query_gcn_dim.value, hps.hidden_dim.value * 2], initializer=tf.contrib.layers.xavier_initializer(), regularizer=self._regularizer)
 								q_gcn_outputs = tf.tensordot(q_gcn_outputs, w_upper_query, axes=[[2], [0]])
 
 							self._query_states = b_upper_query * query_outputs + (1.0 - b_upper_query) * q_gcn_outputs
@@ -837,7 +835,7 @@ class SummarizationModel(object):
 
 			# Add the output projection to obtain the vocabulary distribution
 			with tf.variable_scope('output_projection'):
-				w = tf.get_variable('w', [hps.hidden_dim, vsize], dtype=tf.float32, initializer=self.trunc_norm_init,
+				w = tf.get_variable('w', [hps.hidden_dim.value, vsize], dtype=tf.float32, initializer=self.trunc_norm_init,
 									regularizer=self._regularizer)
 				w_t = tf.transpose(w)
 				v = tf.get_variable('v', [vsize], dtype=tf.float32, initializer=self.trunc_norm_init,
@@ -864,7 +862,7 @@ class SummarizationModel(object):
 						# Calculate the loss per step
 						# This is fiddly; we use tf.gather_nd to pick out the probabilities of the gold target words
 						loss_per_step = []  # will be list length max_dec_steps containing shape (batch_size)
-						batch_nums = tf.range(0, limit=hps.batch_size)  # shape (batch_size)
+						batch_nums = tf.range(0, limit=hps.batch_size.value)  # shape (batch_size)
 						for dec_step, dist in enumerate(final_dists):
 							targets = self._target_batch[:,
 									  dec_step]  # The indices of the target words. shape (batch_size)
@@ -901,7 +899,7 @@ class SummarizationModel(object):
 				final_dists) == 1  # final_dists is a singleton list containing shape (batch_size, extended_vsize)
 			final_dists = final_dists[0]
 			topk_probs, self._topk_ids = tf.nn.top_k(final_dists,
-													 hps.batch_size * 2)  # take the k largest probs. note batch_size=beam_size in decode mode
+													 hps.batch_size.value * 2)  # take the k largest probs. note batch_size=beam_size in decode mode
 			self._topk_log_probs = tf.log(topk_probs)
 
 	
@@ -992,7 +990,7 @@ class SummarizationModel(object):
 
 		# dec_in_state is LSTMStateTuple shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
 		# Given that the batch is a single example repeated, dec_in_state is identical across the batch so we just take the top row.
-		if self._hps.use_lstm:
+		if self._hps.use_lstm.value:
 			dec_in_state = tf.contrib.rnn.LSTMStateTuple(dec_in_state.c[0], dec_in_state.h[0])
 		else:
 			dec_in_state = dec_in_state[0]  # verify ?

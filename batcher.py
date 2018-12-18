@@ -307,7 +307,7 @@ class Batcher(object):
 
 	def __init__(self, data_, vocab, hps, single_pass,data_format):
 		"""Initialize the batcher. Start threads that process the data into batches.
-
+	
 		Args:
 			data_path: tf.Example filepattern.
 			vocab: Vocabulary objects
