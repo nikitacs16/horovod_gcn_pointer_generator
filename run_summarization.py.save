@@ -40,9 +40,7 @@ import copy
 flags = tf.app.flags 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
-tf.app.flags.DEFINE_boolean('use_val_as_test',False,'For automation only')
-tf.app.flags.DEFINE_string('config_file', 'config.yaml', 'pass the config_file through command line if new expt')
+#tf.app.flags.DEFINE_string('config_file', 'config.yaml', 'pass the config_file through command line if new expt')
 #tf.logging.info(FLAGS.config_file)
 config = yaml.load(open('/home/riseadmin/holle_gpu_3/config_140.yaml','r'))
 
@@ -55,12 +53,12 @@ tf.app.flags.DEFINE_boolean('tf_example_format',config['tf_example_format'],'Is 
 tf.app.flags.DEFINE_boolean('test_by_epoch',False, 'should you test per epoch')
 tf.app.flags.DEFINE_integer('epoch_num',0,'which epoch to test')
 
-# sync; echo 3 > /proc/sys/vm/drop_caches # Where to find data
+# Where to find data
 tf.app.flags.DEFINE_string('data_path',config['train_path'], 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
 tf.app.flags.DEFINE_string('vocab_path', config['vocab_path'], 'Path expression to text vocabulary file.')
 tf.app.flags.DEFINE_string('glove_path',config['glove_path'], 'glpb')
 tf.app.flags.DEFINE_boolean('emb_trainable',config['emb_trainable'],'')
-#tf.app.flags.DEFINE_boolean('use_val_as_test',False,'For automation only')
+tf.app.flags.DEFINE_string('use_val_as_test',False,'For automation only')
 tf.app.flags.DEFINE_boolean('use_lstm',config['use_lstm'],'For conceptual experiments')
 tf.app.flags.DEFINE_boolean('stacked_lstm',config['stacked_lstm'],'lstm over lstm baseline')
 
@@ -68,7 +66,7 @@ tf.app.flags.DEFINE_boolean('stacked_lstm',config['stacked_lstm'],'lstm over lst
 tf.app.flags.DEFINE_integer('max_to_keep',config['max_to_keep'],'how many models to keep')
 tf.app.flags.DEFINE_integer('save_model_secs',config['save_model_secs'], 'after how many seconds should you keep a checkpoint')
 # Important settings
-#tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
+tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
 tf.app.flags.DEFINE_string('optimizer',config['optimizer'],'must be adam/adagrad')
 tf.app.flags.DEFINE_boolean('single_pass', False, 'For decode mode only. If True, run eval on the full dataset using a fixed checkpoint, i.e. take the current checkpoint, and use it to produce one summary for each example in the dataset, write the summaries to file and then get ROUGE scores for the whole dataset. If False (default), run concurrent decoding, i.e. repeatedly load latest checkpoint, use it to produce summaries for randomly-chosen examples and log the results to screen, indefinitely.')
 
@@ -80,7 +78,7 @@ tf.app.flags.DEFINE_integer('stop_steps', config['stop_steps'], 'iterations afte
 tf.app.flags.DEFINE_boolean('use_save_at', config['use_save_at'], 'should you save at every epoch?')
 tf.app.flags.DEFINE_integer('save_steps', config['save_steps'], 'iterations after which you should stop trainig')
 
-tf.app.flags.DEFINE_boolean('use_glove',config['use_glove'],'use glove or not')
+tf.app.flags.DEFINE_string('use_glove',config['use_glove'],'use glove or not')
 
 # Where to save output
 tf.app.flags.DEFINE_string('log_root', config['log_root'], 'Root directory for all logging.')

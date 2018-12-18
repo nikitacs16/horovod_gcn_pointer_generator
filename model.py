@@ -25,7 +25,7 @@ from tensorflow.contrib.tensorboard.plugins import projector
 from tensorflow.python.util import nest
 from tensorflow.python.ops import rnn_cell_impl as rnc
 
-_state_size_with_prefix = rnc._state_size_with_prefix  # will need a workaround with higher versions
+#_state_size_with_prefix = rnc._state_size_with_prefix  # will need a workaround with higher versions
 
 FLAGS = tf.app.flags.FLAGS
 

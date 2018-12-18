@@ -1,44 +1,56 @@
-import glob
 import sys
-import os
+import glob
+import rouge
+import bleu
 import re
-input_path = sys.argv[1]
+import os
+
 def get_number_(s):
         m = re.search("\d+(.)\d+",s)
         return m.group(0)
 
-def get_txt_from(f):
+def get_metrics(f1,f2):
+        ref = []
+        decoded = []
+        count = 0
+        for i, j in zip(sorted(glob.glob(f1)),sorted(glob.glob(f2))):
+                ref_tex = ''
+                dec_tex = ''
+                for k in open(i).readlines():
+                        dec_tex = dec_tex + k.strip()
+                for l in open(j).readlines():
+                        ref_tex = ref_tex + l.strip()
+                ref.append(ref_tex)
+                decoded.append(dec_tex)
+                count = count + 1
 
-        s = ''
-        for i in f.readlines():
-                s = s+ i
-        w = s.split('\n')
-        r1 = float(get_number_(w[2])) * 100
-        r2 = float(get_number_(w[7])) * 100
-        rl = float(get_number_(w[12])) * 100
-
-        m = "\t%.2f\t%.2f\t%.2f"%(r1,r2,rl) 
-        return m
-
-x = glob.glob(os.path.join(input_path,'decode_*'))
-x.sort(reverse=True)
-s = str(x[0][-5:]) 
-print(x)
-for i in x:
-        f = open(os.path.join(i,'ROUGE_results.txt'),'r')
-        s = s + get_txt_from(f)
-
-print(s)
+        bl = bleu.moses_multi_bleu(decoded,ref)
+        x = rouge.rouge(decoded,ref)
+        s = "\t%.2f\t%.2f\t%.2f\t%.2f"%(bl,x['rouge_1/f_score']*100,x['rouge_2/f_score']*100,x['rouge_l/f_score']*100)
+        print(count)
+        return s
 
 
+input_path = sys.argv[1]
 
+for k in sorted(glob.glob(input_path+'/*run_2')):
+	try:
+		x = glob.glob(os.path.join(k,'decode_*'))
+	except IndexError:
+		print(k)
+		continue
+	x.sort()
+	try:
+		s = str(x[0][-5:])
+	except IndexError:
+		print(x)
+		continue
+	print(x)
+	for i in x:
+        	f1 = os.path.join(i,'decoded','*.txt')
+        	f2 = os.path.join(i,'reference','*.txt')
+        	s = s + get_metrics(f1,f2)
 
-
-
-
-
-
-
-
+	print(s)
 
 
