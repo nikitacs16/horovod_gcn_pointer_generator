@@ -117,17 +117,17 @@ class SummarizationModel(object):
 		self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size.value], name='enc_lens')
 		self._enc_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='enc_padding_mask')
 
-		if FLAGS.query_encoder.value:
+		if FLAGS.query_encoder:
 			self._query_batch = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='query_batch')
 			self._query_lens = tf.placeholder(tf.int32, [hps.batch_size.value], name='query_lens')
 			self._query_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='query_padding_mask')
 
-		if FLAGS.pointer_gen.value:
+		if FLAGS.pointer_gen:
 			self._enc_batch_extend_vocab = tf.placeholder(tf.int32, [hps.batch_size.value, None],
 														  name='enc_batch_extend_vocab')
 			self._max_art_oovs = tf.placeholder(tf.int32, [], name='max_art_oovs')
 
-		if FLAGS.word_gcn.value:
+		if FLAGS.word_gcn:
 			# tf.logging.info(hps.num_word_dependency_labels.value)
 			self._word_adj_in = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_in_{}'.format(lbl)) for lbl
@@ -142,7 +142,7 @@ class SummarizationModel(object):
 
 			self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
 	
-		if FLAGS.query_gcn.value:
+		if FLAGS.query_gcn:
 			self._query_adj_in = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_in_{}'.format(lbl)) for lbl
 				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
@@ -179,16 +179,16 @@ class SummarizationModel(object):
 		feed_dict[self._enc_lens] = batch.enc_lens
 		feed_dict[self._enc_padding_mask] = batch.enc_padding_mask
 
-		if FLAGS.query_encoder.value:
+		if FLAGS.query_encoder:
 			feed_dict[self._query_batch] = batch.query_batch
 			feed_dict[self._query_lens] = batch.query_lens
 			feed_dict[self._query_padding_mask] = batch.query_padding_mask
 
-		if FLAGS.pointer_gen.value:
+		if FLAGS.pointer_gen:
 			feed_dict[self._enc_batch_extend_vocab] = batch.enc_batch_extend_vocab
 			feed_dict[self._max_art_oovs] = batch.max_art_oovs
 
-		if FLAGS.word_gcn.value:
+		if FLAGS.word_gcn:
 			feed_dict[self._max_word_seq_len] = batch.max_word_len
 			word_adj_in = batch.word_adj_in
 			word_adj_out = batch.word_adj_out
@@ -204,7 +204,7 @@ class SummarizationModel(object):
 						values=word_adj_out[i][lbl].data,
 						dense_shape=word_adj_out[i][lbl].shape)
 
-		if FLAGS.query_gcn.value:
+		if FLAGS.query_gcn:
 			feed_dict[self._max_query_seq_len] = batch.max_query_len
 			query_adj_in = batch.query_adj_in
 			query_adj_out = batch.query_adj_out
@@ -264,7 +264,7 @@ class SummarizationModel(object):
 						  use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN",
 						  use_label_information=False, loop_dropout=1.0):
 
-		if not self._hps.use_label_information.value:
+		if not self._hps.use_label_information:
 			max_labels = 1
 
 		tf.logging.info(max_nodes)
@@ -558,7 +558,7 @@ class SummarizationModel(object):
 		"""Do setup so that we can view word embedding visualization in Tensorboard, as described here:
 	https://www.tensorflow.org/get_started/embedding_viz
 	Make the vocab metadata file, then make the projector config file pointing to it."""
-		train_dir = os.path.join(FLAGS.log_root.value, "train")
+		train_dir = os.path.join(FLAGS.log_root, "train")
 		vocab_metadata_path = os.path.join(train_dir, "vocab_metadata.tsv")
 		self._vocab.write_metadata(vocab_metadata_path)  # write metadata file
 		summary_writer = tf.summary.FileWriter(train_dir)
@@ -850,7 +850,7 @@ class SummarizationModel(object):
 							   vocab_scores]  # The vocabulary distributions. List length max_dec_steps of (batch_size, vsize) arrays. The words are in the order they appear in the vocabulary file.
 
 			# For pointer-generator model, calc final distribution from copy distribution and vocabulary distribution
-			if FLAGS.pointer_gen.value:
+			if FLAGS.pointer_gen:
 				final_dists = self._calc_final_dist(vocab_dists, self.attn_dists)
 			else:  # final distribution is just vocabulary distribution
 				final_dists = vocab_dists
@@ -858,7 +858,7 @@ class SummarizationModel(object):
 			if hps.mode.value in ['train', 'eval']:
 				# Calculate the loss
 				with tf.variable_scope('loss'):
-					if FLAGS.pointer_gen.value:
+					if FLAGS.pointer_gen:
 						# Calculate the loss per step
 						# This is fiddly; we use tf.gather_nd to pick out the probabilities of the gold target words
 						loss_per_step = []  # will be list length max_dec_steps containing shape (batch_size)
@@ -1041,19 +1041,19 @@ class SummarizationModel(object):
 			"attn_dists": self.attn_dists
 		}
 
-		if FLAGS.pointer_gen.value:
+		if FLAGS.pointer_gen:
 			feed[self._enc_batch_extend_vocab] = batch.enc_batch_extend_vocab
 			feed[self._max_art_oovs] = batch.max_art_oovs
 			to_return['p_gens'] = self.p_gens
 
-		if FLAGS.word_gcn.value:
+		if FLAGS.word_gcn:
 			feed[self._max_word_seq_len] = batch.max_word_len
 
-		if FLAGS.query_encoder.value:
+		if FLAGS.query_encoder:
 			feed[self._query_states] = query_states
 			feed[self._query_padding_mask] = batch.query_padding_mask
 
-		if FLAGS.query_gcn.value:
+		if FLAGS.query_gcn:
 			feed[self._max_query_seq_len] = batch.max_query_len
 
 		if self._hps.coverage.value:
@@ -1070,7 +1070,7 @@ class SummarizationModel(object):
 		assert len(results['attn_dists']) == 1
 		attn_dists = results['attn_dists'][0].tolist()
 
-		if FLAGS.pointer_gen.value:
+		if FLAGS.pointer_gen:
 			# Convert singleton list containing a tensor to a list of k arrays
 			assert len(results['p_gens']) == 1
 			p_gens = results['p_gens'][0].tolist()
