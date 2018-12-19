@@ -1078,7 +1078,7 @@ class SummarizationModel(object):
 			p_gens = [None for _ in xrange(beam_size)]
 
 		# Convert the coverage tensor to a list length k containing the coverage vector for each hypothesis
-		if FLAGS.coverage.value:
+		if FLAGS.coverage:
 			new_coverage = results['coverage'].tolist()
 			assert len(new_coverage) == beam_size
 		else:

@@ -213,7 +213,7 @@ def restore_best_model():
 
   # Save this model to train dir and quit
   new_model_name = curr_ckpt.split("/")[-1].replace("bestmodel", "model")
-  new_fname = os.path.join(FLAGS.log_root.value, "train", new_model_name)
+  new_fname = os.path.join(FLAGS.log_root, "train", new_model_name)
   print ("Saving model to %s..." % (new_fname))
   new_saver = tf.train.Saver() # this saver saves all variables that now exist, including Adagrad variables
   new_saver.save(sess, new_fname)
@@ -247,7 +247,7 @@ def convert_to_coverage_model():
 
 def setup_training(model, batcher):
   """Does setup before starting training (run_training)"""
-  train_dir = os.path.join(FLAGS.log_root.value, "train")
+  train_dir = os.path.join(FLAGS.log_root, "train")
   if not os.path.exists(train_dir): os.makedirs(train_dir)
 
   model.build_graph() # build the graph
@@ -285,13 +285,13 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
   #new_saver = tf.train.Saver()
   best_loss = 0.0
   if FLAGS.use_save_at.value:
-    epoch_dir = os.path.join(FLAGS.log_root.value, "epoch")
+    epoch_dir = os.path.join(FLAGS.log_root, "epoch")
     if not os.path.exists(epoch_dir): os.makedirs(epoch_dir)
   
-  if os.path.exists(os.path.join(FLAGS.log_root.value,'epoch.txt')):
-    f = open(os.path.join(FLAGS.log_root.value,'epoch.txt'),'a')
+  if os.path.exists(os.path.join(FLAGS.log_root,'epoch.txt')):
+    f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'a')
   else:
-    f = open(os.path.join(FLAGS.log_root.value,'epoch.txt'),'w')
+    f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'w')
   t_epoch = time.time()
 
   
@@ -304,7 +304,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
     while True: # repeats until interrupted
       batch = batcher.next_batch()
       
-      model_save_path = os.path.join(FLAGS.log_root.value, "train","checkpoint-")
+      model_save_path = os.path.join(FLAGS.log_root, "train","checkpoint-")
 
       
       t0=time.time()
@@ -416,15 +416,15 @@ def run_eval(model, batcher, vocab, hps):
   saver = tf.train.Saver(max_to_keep=3) # we will keep 3 best checkpoints at a time
   sess = tf.Session(config=util.get_config())
 
-  eval_dir = os.path.join(FLAGS.log_root.value, "eval") # make a subdir of the root dir for eval data
+  eval_dir = os.path.join(FLAGS.log_root, "eval") # make a subdir of the root dir for eval data
   bestmodel_save_path = os.path.join(eval_dir, 'bestmodel') # this is where checkpoints of best models are saved
-  if os.path.exists(os.path.join(FLAGS.log_root.value,'best_loss.txt')):
-    f_loss = open(os.path.join(FLAGS.log_root.value,'best_loss.txt'),'r')
+  if os.path.exists(os.path.join(FLAGS.log_root,'best_loss.txt')):
+    f_loss = open(os.path.join(FLAGS.log_root,'best_loss.txt'),'r')
     for i in f.readlines():
       best_loss = float(i)
   else:
     best_loss = None    
-  f_loss = open(os.path.join(FLAGS.log_root.value,'loss.txt'),'w')
+  f_loss = open(os.path.join(FLAGS.log_root,'loss.txt'),'w')
   summary_writer = tf.summary.FileWriter(eval_dir)
   running_avg_loss = 0 # the eval job keeps a smoother, running average loss to tell it when to implement early stopping
   best_loss = None  # will hold the best loss achieved so far 
@@ -514,7 +514,7 @@ def main(unused_argv):
   if len(unused_argv) != 1: # prints a message if you've entered flags incorrectly
     raise Exception("Problem with flags: %s" % unused_argv)
 
-  if FLAGS.mode.value == 'eval':
+  if FLAGS.mode == 'eval':
     FLAGS.data_path = config['dev_path']
     FLAGS.single_pass = True
 
@@ -522,7 +522,7 @@ def main(unused_argv):
     FLAGS.query_gcn_edge_dropout = 1.0
 
   
-  if FLAGS.mode.value == 'decode':
+  if FLAGS.mode == 'decode':
     FLAGS.word_gcn_edge_dropout = 1.0
     FLAGS.query_gcn_edge_dropout = 1.0
     FLAGS.single_pass = True
@@ -531,15 +531,15 @@ def main(unused_argv):
       FLAGS.data_path = config['dev_path']
 
   
-  if FLAGS.mode.value == 'restore_best_model':
+  if FLAGS.mode == 'restore_best_model':
     FLAGS.restore_best_model = True
   
-  if FLAGS.mode.value == 'debug':
+  if FLAGS.mode == 'debug':
     FLAGS.debug = True 
 
   
   tf.logging.set_verbosity(tf.logging.INFO) # choose what level of logging you want
-  tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode.value))
+  tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))
   if FLAGS.no_lstm_encoder.value and FLAGS.word_gcn.value!=True:
     raise Exception("Set word_gcn to True to continue")
   if FLAGS.no_lstm_query_encoder.value and FLAGS.query_gcn.value!=True:
@@ -549,19 +549,19 @@ def main(unused_argv):
 
     
   # Change log_root to FLAGS.log_root/FLAGS.exp_name and create the dir if necessary
-  FLAGS.log_root = os.path.join(FLAGS.log_root.value, FLAGS.exp_name.value)
-  if not os.path.exists(FLAGS.log_root.value):
-    if FLAGS.mode.value=="train":
-      os.makedirs(FLAGS.log_root.value)
+  FLAGS.log_root = os.path.join(FLAGS.log_root, FLAGS.exp_name.value)
+  if not os.path.exists(FLAGS.log_root):
+    if FLAGS.mode=="train":
+      os.makedirs(FLAGS.log_root)
     else:
-      raise Exception("Logdir %s doesn't exist. Run in train mode to create it." % (FLAGS.log_root.value))
+      raise Exception("Logdir %s doesn't exist. Run in train mode to create it." % (FLAGS.log_root))
 
   vocab = Vocab(FLAGS.vocab_path.value, FLAGS.vocab_size.value) # create a vocabulary
       
   # If in decode mode, set batch_size = beam_size
   # Reason: in decode mode, we decode one example at a time.
   # On each step, we have beam_size-many hypotheses in the beam, so we need to make a batch of these hypotheses.
-  if FLAGS.mode.value == 'decode':
+  if FLAGS.mode == 'decode':
     FLAGS.batch_size = FLAGS.beam_size.value
 
   # If single_pass=True, check we're in decode mode
