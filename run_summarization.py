@@ -44,7 +44,7 @@ tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
 tf.app.flags.DEFINE_boolean('use_val_as_test',False,'For automation only')
 tf.app.flags.DEFINE_string('config_file', 'config.yaml', 'pass the config_file through command line if new expt')
 #tf.logging.info(FLAGS.config_file)
-config = yaml.load(open('/home/riseadmin/holle_gpu_3/config_140.yaml','r'))
+config = yaml.load(open(FLAGS.config_file,'r'))
 
 
 
@@ -256,7 +256,7 @@ def setup_training(model, batcher):
     convert_to_coverage_model()
   if FLAGS.restore_best_model:
     restore_best_model()
-  saver = tf.train.Saver(max_to_keep=FLAGS.max_to_keep.value)# keep 3 checkpoints at a time
+  saver = tf.train.Saver(max_to_keep=FLAGS.max_to_keep)# keep 3 checkpoints at a time
 
   sv = tf.train.Supervisor(logdir=train_dir,
                      is_chief=True,
