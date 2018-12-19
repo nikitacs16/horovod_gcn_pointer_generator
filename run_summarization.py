@@ -213,7 +213,7 @@ def restore_best_model():
 
   # Save this model to train dir and quit
   new_model_name = curr_ckpt.split("/")[-1].replace("bestmodel", "model")
-  new_fname = os.path.join(FLAGS.log_root, "train", new_model_name)
+  new_fname = os.path.join(FLAGS.log_root.value, "train", new_model_name)
   print ("Saving model to %s..." % (new_fname))
   new_saver = tf.train.Saver() # this saver saves all variables that now exist, including Adagrad variables
   new_saver.save(sess, new_fname)
@@ -247,16 +247,16 @@ def convert_to_coverage_model():
 
 def setup_training(model, batcher):
   """Does setup before starting training (run_training)"""
-  train_dir = os.path.join(FLAGS.log_root, "train")
+  train_dir = os.path.join(FLAGS.log_root.value, "train")
   if not os.path.exists(train_dir): os.makedirs(train_dir)
 
   model.build_graph() # build the graph
-  if FLAGS.convert_to_coverage_model:
-    assert FLAGS.coverage, "To convert your non-coverage model to a coverage model, run with convert_to_coverage_model=True and coverage=True"
+  if FLAGS.convert_to_coverage_model.value:
+    assert FLAGS.coverage.value, "To convert your non-coverage model to a coverage model, run with convert_to_coverage_model=True and coverage=True"
     convert_to_coverage_model()
-  if FLAGS.restore_best_model:
+  if FLAGS.restore_best_model.value:
     restore_best_model()
-  saver = tf.train.Saver(max_to_keep=FLAGS.max_to_keep)# keep 3 checkpoints at a time
+  saver = tf.train.Saver(max_to_keep=FLAGS.max_to_keep.value)# keep 3 checkpoints at a time
 
   sv = tf.train.Supervisor(logdir=train_dir,
                      is_chief=True,
@@ -284,27 +284,27 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
   batch_count = 0
   #new_saver = tf.train.Saver()
   best_loss = 0.0
-  if FLAGS.use_save_at:
-    epoch_dir = os.path.join(FLAGS.log_root, "epoch")
+  if FLAGS.use_save_at.value:
+    epoch_dir = os.path.join(FLAGS.log_root.value, "epoch")
     if not os.path.exists(epoch_dir): os.makedirs(epoch_dir)
   
-  if os.path.exists(os.path.join(FLAGS.log_root,'epoch.txt')):
-    f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'a')
+  if os.path.exists(os.path.join(FLAGS.log_root.value,'epoch.txt')):
+    f = open(os.path.join(FLAGS.log_root.value,'epoch.txt'),'a')
   else:
-    f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'w')
+    f = open(os.path.join(FLAGS.log_root.value,'epoch.txt'),'w')
   t_epoch = time.time()
 
   
 
 
   with sess_context_manager as sess:
-    if FLAGS.debug: # start the tensorflow debugger
+    if FLAGS.debug.value: # start the tensorflow debugger
       sess = tf_debug.LocalCLIDebugWrapperSession(sess)
       sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
     while True: # repeats until interrupted
       batch = batcher.next_batch()
       
-      model_save_path = os.path.join(FLAGS.log_root, "train","checkpoint-")
+      model_save_path = os.path.join(FLAGS.log_root.value, "train","checkpoint-")
 
       
       t0=time.time()
@@ -317,7 +317,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       if not np.isfinite(loss):
         raise Exception("Loss is not finite. Stopping.")
 
-      if FLAGS.coverage:
+      if FLAGS.coverage.value:
         coverage_loss = results['coverage_loss']
         tf.logging.info("coverage_loss: %f", coverage_loss) # print the coverage loss to screen
 
@@ -335,15 +335,15 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
         saver.save(sess, model_save_path, global_step=train_step)
               
 
-      if train_step%FLAGS.save_steps == 0:
+      if train_step%FLAGS.save_steps.value == 0:
         t_now = time.time()
-        f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
+        f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps.value,t_now-t_epoch))
         t_epoch = t_now
           
       
 
-      if FLAGS.use_stop_after:
-        if train_step >= FLAGS.stop_steps:
+      if FLAGS.use_stop_after.value:
+        if train_step >= FLAGS.stop_steps.value:
           tf.logging.info('Stopping as epoch limit completed')
           exit()
 
@@ -416,15 +416,15 @@ def run_eval(model, batcher, vocab, hps):
   saver = tf.train.Saver(max_to_keep=3) # we will keep 3 best checkpoints at a time
   sess = tf.Session(config=util.get_config())
 
-  eval_dir = os.path.join(FLAGS.log_root, "eval") # make a subdir of the root dir for eval data
+  eval_dir = os.path.join(FLAGS.log_root.value, "eval") # make a subdir of the root dir for eval data
   bestmodel_save_path = os.path.join(eval_dir, 'bestmodel') # this is where checkpoints of best models are saved
-  if os.path.exists(os.path.join(FLAGS.log_root,'best_loss.txt')):
-    f_loss = open(os.path.join(FLAGS.log_root,'best_loss.txt'),'r')
+  if os.path.exists(os.path.join(FLAGS.log_root.value,'best_loss.txt')):
+    f_loss = open(os.path.join(FLAGS.log_root.value,'best_loss.txt'),'r')
     for i in f.readlines():
       best_loss = float(i)
   else:
     best_loss = None    
-  f_loss = open(os.path.join(FLAGS.log_root,'loss.txt'),'w')
+  f_loss = open(os.path.join(FLAGS.log_root.value,'loss.txt'),'w')
   summary_writer = tf.summary.FileWriter(eval_dir)
   running_avg_loss = 0 # the eval job keeps a smoother, running average loss to tell it when to implement early stopping
   best_loss = None  # will hold the best loss achieved so far 
@@ -451,7 +451,7 @@ def run_eval(model, batcher, vocab, hps):
 
       if batch is None:
         tf.logging.info(running_avg_loss)
-        batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
+        batcher = Batcher(FLAGS.data_path.value, vocab, hps, single_pass=FLAGS.single_pass.value,data_format=FLAGS.tf_example_format.value)
         
         tf.logging.info(batcher._batch_queue)
         break
@@ -485,8 +485,8 @@ def run_eval(model, batcher, vocab, hps):
       f_loss.write("%f\n"%(best_loss))
 
 
-    if FLAGS.use_stop_after:
-      if train_step >= FLAGS.stop_steps:
+    if FLAGS.use_stop_after.value:
+      if train_step >= FLAGS.stop_steps.value:
         tf.logging.info('Stopping as epoch limit completed')
         exit()
 
@@ -497,8 +497,8 @@ def run_eval(model, batcher, vocab, hps):
     if train_step % 100 == 0:
       summary_writer.flush()
 
-    if FLAGS.use_stop_after:
-        if (train_step + 300)  - FLAGS.stop_steps > 0:
+    if FLAGS.use_stop_after.value:
+        if (train_step + 300)  - FLAGS.stop_steps.value > 0:
           tf.logging.info('Stopping as epoch limit completed')
           exit()
 
@@ -514,7 +514,7 @@ def main(unused_argv):
   if len(unused_argv) != 1: # prints a message if you've entered flags incorrectly
     raise Exception("Problem with flags: %s" % unused_argv)
 
-  if FLAGS.mode == 'eval':
+  if FLAGS.mode.value == 'eval':
     FLAGS.data_path = config['dev_path']
     FLAGS.single_pass = True
 
@@ -522,7 +522,7 @@ def main(unused_argv):
     FLAGS.query_gcn_edge_dropout = 1.0
 
   
-  if FLAGS.mode == 'decode':
+  if FLAGS.mode.value == 'decode':
     FLAGS.word_gcn_edge_dropout = 1.0
     FLAGS.query_gcn_edge_dropout = 1.0
     FLAGS.single_pass = True
@@ -531,38 +531,38 @@ def main(unused_argv):
       FLAGS.data_path = config['dev_path']
 
   
-  if FLAGS.mode == 'restore_best_model':
+  if FLAGS.mode.value == 'restore_best_model':
     FLAGS.restore_best_model = True
   
-  if FLAGS.mode == 'debug':
+  if FLAGS.mode.value == 'debug':
     FLAGS.debug = True 
 
   
   tf.logging.set_verbosity(tf.logging.INFO) # choose what level of logging you want
-  tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))
-  if FLAGS.no_lstm_encoder and FLAGS.word_gcn!=True:
+  tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode.value))
+  if FLAGS.no_lstm_encoder.value and FLAGS.word_gcn.value!=True:
     raise Exception("Set word_gcn to True to continue")
-  if FLAGS.no_lstm_query_encoder and FLAGS.query_gcn!=True:
+  if FLAGS.no_lstm_query_encoder.value and FLAGS.query_gcn.value!=True:
     raise Exception("Set query_gcn to True to continue")
-  if (FLAGS.no_lstm_query_encoder==True or FLAGS.query_gcn==True) and FLAGS.query_encoder==False:
+  if (FLAGS.no_lstm_query_encoder.value==True or FLAGS.query_gcn.value==True) and FLAGS.query_encoder.value==False:
     raise Exception("Set query_encoder to True to continue")
 
     
   # Change log_root to FLAGS.log_root/FLAGS.exp_name and create the dir if necessary
-  FLAGS.log_root = os.path.join(FLAGS.log_root, FLAGS.exp_name)
-  if not os.path.exists(FLAGS.log_root):
-    if FLAGS.mode=="train":
-      os.makedirs(FLAGS.log_root)
+  FLAGS.log_root = os.path.join(FLAGS.log_root.value, FLAGS.exp_name.value)
+  if not os.path.exists(FLAGS.log_root.value):
+    if FLAGS.mode.value=="train":
+      os.makedirs(FLAGS.log_root.value)
     else:
-      raise Exception("Logdir %s doesn't exist. Run in train mode to create it." % (FLAGS.log_root))
+      raise Exception("Logdir %s doesn't exist. Run in train mode to create it." % (FLAGS.log_root.value))
 
-  vocab = Vocab(FLAGS.vocab_path, FLAGS.vocab_size) # create a vocabulary
+  vocab = Vocab(FLAGS.vocab_path.value, FLAGS.vocab_size.value) # create a vocabulary
       
   # If in decode mode, set batch_size = beam_size
   # Reason: in decode mode, we decode one example at a time.
   # On each step, we have beam_size-many hypotheses in the beam, so we need to make a batch of these hypotheses.
-  if FLAGS.mode == 'decode':
-    FLAGS.batch_size = FLAGS.beam_size
+  if FLAGS.mode.value == 'decode':
+    FLAGS.batch_size = FLAGS.beam_size.value
 
   # If single_pass=True, check we're in decode mode
   '''
@@ -575,19 +575,18 @@ def main(unused_argv):
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list
       hps_dict[key] = val # add it to the dict
-  if FLAGS.use_label_information:
+  if FLAGS.use_label_information.value:
     hps_dict['num_word_dependency_labels'] = 45 #something from meta data here . Gives unique dependency labels.
   else:
     hps_dict['num_word_dependency_labels'] = 1
     
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
-  if FLAGS.tf_example_format:
-    batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
+  if FLAGS.tf_example_format.value:
+    batcher = Batcher(FLAGS.data_path.value, vocab, hps, single_pass=FLAGS.single_pass.value,data_format=FLAGS.tf_example_format.value)
   else:
-    data_ = get_data(FLAGS.data_path)
-    batcher = Batcher(data_, vocab, hps, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
+    data_ = get_data(FLAGS.data_path.value)
+    batcher = Batcher(data_, vocab, hps, single_pass=FLAGS.single_pass.value,data_format=FLAGS.tf_example_format.value)
 
-  tf.logging.info(tf.flags.FLAGS.__flags)  
      
   tf.set_random_seed(111) # a seed value for randomness
 
@@ -609,8 +608,8 @@ def main(unused_argv):
     decode_model_hps = hps  # This will be the hyperparameters for the decoder model
     decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
     model = SummarizationModel(decode_model_hps, vocab)
-    if FLAGS.test_by_epoch:
-      decoder = BeamSearchDecoder(model, batcher, vocab, use_epoch=True, epoch_num=FLAGS.epoch_num)
+    if FLAGS.test_by_epoch.value:
+      decoder = BeamSearchDecoder(model, batcher, vocab, use_epoch=True, epoch_num=FLAGS.epoch_num.value)
     else:
       decoder = BeamSearchDecoder(model, batcher, vocab)
     decoder.decode() # decode indefinitely (unless single_pass=True, in which case deocde the dataset exactly once)

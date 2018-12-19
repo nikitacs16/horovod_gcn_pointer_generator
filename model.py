@@ -96,7 +96,7 @@ class SummarizationModel(object):
 	def __init__(self, hps, vocab):
 		self._hps = hps
 		self._vocab = vocab
-		self.use_glove = hps.use_glove
+		self.use_glove = hps.use_glove.value
 		if hps.mode.value == 'train':
 			if hps.use_glove.value:
 				self._vocab.set_glove_embedding(hps.glove_path.value, hps.emb_dim.value)
@@ -135,7 +135,7 @@ class SummarizationModel(object):
 			self._word_adj_out = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_out_{}'.format(lbl)) for lbl
 				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
-			if hps.mode == 'train':
+			if hps.mode.value == 'train':
 				self._word_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout.value, shape=(), name='dropout')
 			else:
 				self._word_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='dropout')
@@ -149,7 +149,7 @@ class SummarizationModel(object):
 			self._query_adj_out = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_out_{}'.format(lbl)) for lbl
 				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
-			if hps.mode == 'train':
+			if hps.mode.value == 'train':
 				self._query_gcn_dropout = tf.placeholder_with_default(hps.query_gcn_dropout.value, shape=(),
 																	  name='query_dropout')
 			else:
@@ -179,16 +179,16 @@ class SummarizationModel(object):
 		feed_dict[self._enc_lens] = batch.enc_lens
 		feed_dict[self._enc_padding_mask] = batch.enc_padding_mask
 
-		if FLAGS.query_encoder:
+		if FLAGS.query_encoder.value:
 			feed_dict[self._query_batch] = batch.query_batch
 			feed_dict[self._query_lens] = batch.query_lens
 			feed_dict[self._query_padding_mask] = batch.query_padding_mask
 
-		if FLAGS.pointer_gen:
+		if FLAGS.pointer_gen.value:
 			feed_dict[self._enc_batch_extend_vocab] = batch.enc_batch_extend_vocab
 			feed_dict[self._max_art_oovs] = batch.max_art_oovs
 
-		if FLAGS.word_gcn:
+		if FLAGS.word_gcn.value:
 			feed_dict[self._max_word_seq_len] = batch.max_word_len
 			word_adj_in = batch.word_adj_in
 			word_adj_out = batch.word_adj_out
@@ -204,7 +204,7 @@ class SummarizationModel(object):
 						values=word_adj_out[i][lbl].data,
 						dense_shape=word_adj_out[i][lbl].shape)
 
-		if FLAGS.query_gcn:
+		if FLAGS.query_gcn.value:
 			feed_dict[self._max_query_seq_len] = batch.max_query_len
 			query_adj_in = batch.query_adj_in
 			query_adj_out = batch.query_adj_out
@@ -558,7 +558,7 @@ class SummarizationModel(object):
 		"""Do setup so that we can view word embedding visualization in Tensorboard, as described here:
 	https://www.tensorflow.org/get_started/embedding_viz
 	Make the vocab metadata file, then make the projector config file pointing to it."""
-		train_dir = os.path.join(FLAGS.log_root, "train")
+		train_dir = os.path.join(FLAGS.log_root.value, "train")
 		vocab_metadata_path = os.path.join(train_dir, "vocab_metadata.tsv")
 		self._vocab.write_metadata(vocab_metadata_path)  # write metadata file
 		summary_writer = tf.summary.FileWriter(train_dir)
@@ -773,13 +773,13 @@ class SummarizationModel(object):
 				##################### QUERY ENCODER	###################	
 				if self._hps.query_encoder.value:
 					
-					if not self._hps.no_lstm_query_encoder:
+					if not self._hps.no_lstm_query_encoder.value:
 						query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens, name='query_encoder')
 						self._query_states = query_outputs
 						q_in_dim = self._hps.hidden_dim.value * 2
 						
 					if self._hps.query_gcn.value:
-						if self._hps.use_gcn_lstm_parallel or self._hps.no_lstm_query_encoder:
+						if self._hps.use_gcn_lstm_parallel.value or self._hps.no_lstm_query_encoder.value:
 							q_gcn_in = emb_query_inputs
 							q_in_dim = hps.emb_dim.value
 						else:
@@ -809,7 +809,7 @@ class SummarizationModel(object):
 															use_gating=hps.query_gcn_gating.value, use_skip=hps.query_gcn_skip.value,
 															dropout=self._query_gcn_dropout,
 															name="gcn_query",
-															loop_dropout=hps.query_loop_dropout)
+															loop_dropout=hps.query_loop_dropout.value)
 						
 
 						############ UPPER CONCAT ############
@@ -850,15 +850,15 @@ class SummarizationModel(object):
 							   vocab_scores]  # The vocabulary distributions. List length max_dec_steps of (batch_size, vsize) arrays. The words are in the order they appear in the vocabulary file.
 
 			# For pointer-generator model, calc final distribution from copy distribution and vocabulary distribution
-			if FLAGS.pointer_gen:
+			if FLAGS.pointer_gen.value:
 				final_dists = self._calc_final_dist(vocab_dists, self.attn_dists)
 			else:  # final distribution is just vocabulary distribution
 				final_dists = vocab_dists
 
-			if hps.mode in ['train', 'eval']:
+			if hps.mode.value in ['train', 'eval']:
 				# Calculate the loss
 				with tf.variable_scope('loss'):
-					if FLAGS.pointer_gen:
+					if FLAGS.pointer_gen.value:
 						# Calculate the loss per step
 						# This is fiddly; we use tf.gather_nd to pick out the probabilities of the gold target words
 						loss_per_step = []  # will be list length max_dec_steps containing shape (batch_size)
@@ -873,27 +873,27 @@ class SummarizationModel(object):
 							loss_per_step.append(losses)
 
 						# Apply dec_padding_mask and get loss
-						self._loss = _mask_and_avg(loss_per_step, self._dec_padding_mask, hps.max_dec_steps)
+						self._loss = _mask_and_avg(loss_per_step, self._dec_padding_mask, hps.max_dec_steps.value)
 
 					else:  # baseline model
 						self._loss = tf.contrib.seq2seq.sequence_loss(tf.stack(vocab_scores, axis=1),
 																	  self._target_batch,
 																	  self._dec_padding_mask)  # this applies softmax internally
-					if hps.use_regularizer:
+					if hps.use_regularizer.value:
 						self._loss += tf.contrib.layers.apply_regularization(self._regularizer, tf.get_collection(
 							tf.GraphKeys.REGULARIZATION_LOSSES))
 
 					tf.summary.scalar('loss', self._loss)
 
 					# Calculate coverage loss from the attention distributions
-					if hps.coverage:
+					if hps.coverage.value:
 						with tf.variable_scope('coverage_loss'):
 							self._coverage_loss = _coverage_loss(self.attn_dists, self._dec_padding_mask)
 							tf.summary.scalar('coverage_loss', self._coverage_loss)
-						self._total_loss = self._loss + hps.cov_loss_wt * self._coverage_loss
+						self._total_loss = self._loss + hps.cov_loss_wt.value * self._coverage_loss
 						tf.summary.scalar('total_loss', self._total_loss)
 
-		if hps.mode == "decode":
+		if hps.mode.value == "decode":
 			# We run decode beam search mode one decoder step at a time
 			assert len(
 				final_dists) == 1  # final_dists is a singleton list containing shape (batch_size, extended_vsize)
@@ -906,7 +906,7 @@ class SummarizationModel(object):
 	def _add_train_op(self):
 		"""Sets self._train_op, the op to run for training."""
 		# Take gradients of the trainable variables w.r.t. the loss function to minimize
-		loss_to_minimize = self._total_loss if self._hps.coverage else self._loss
+		loss_to_minimize = self._total_loss if self._hps.coverage.value else self._loss
 		tvars = tf.trainable_variables()
 		gradients = tf.gradients(loss_to_minimize, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
 
@@ -918,9 +918,9 @@ class SummarizationModel(object):
 		tf.summary.scalar('global_norm', global_norm)
 
 		# Apply adagrad optimizer
-		if self._hps.optimizer == 'adagrad':
+		if self._hps.optimizer.value == 'adagrad':
 			optimizer = tf.train.AdagradOptimizer(self._hps.lr.value, initial_accumulator_value=self._hps.adagrad_init_acc.value)
-		if self._hps.optimizer == 'adam':
+		if self._hps.optimizer.value == 'adam':
 			optimizer = tf.train.AdamOptimizer(learning_rate=self._hps.adam_lr.value)
 		with tf.device("/gpu:0"):
 			self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step,
@@ -929,7 +929,6 @@ class SummarizationModel(object):
 	def build_graph(self):
 		"""Add the placeholders, model, global step, train_op and summaries to the graph"""
 		tf.logging.info('Building graph...')
-		tf.logging.info(self._hps.use_gcn_before_lstm)
 		t0 = time.time()
 		self._add_placeholders()
 		with tf.device("/gpu:0"):
@@ -951,7 +950,7 @@ class SummarizationModel(object):
 			'loss': self._loss,
 			'global_step': self.global_step,
 		}
-		if self._hps.coverage:
+		if self._hps.coverage.value:
 			to_return['coverage_loss'] = self._coverage_loss
 		return sess.run(to_return, feed_dict)
 
@@ -963,7 +962,7 @@ class SummarizationModel(object):
 			'loss': self._loss,
 			'global_step': self.global_step,
 		}
-		if self._hps.coverage:
+		if self._hps.coverage.value:
 			to_return['coverage_loss'] = self._coverage_loss
 		return sess.run(to_return, feed_dict)
 
@@ -1042,22 +1041,22 @@ class SummarizationModel(object):
 			"attn_dists": self.attn_dists
 		}
 
-		if FLAGS.pointer_gen:
+		if FLAGS.pointer_gen.value:
 			feed[self._enc_batch_extend_vocab] = batch.enc_batch_extend_vocab
 			feed[self._max_art_oovs] = batch.max_art_oovs
 			to_return['p_gens'] = self.p_gens
 
-		if FLAGS.word_gcn:
+		if FLAGS.word_gcn.value:
 			feed[self._max_word_seq_len] = batch.max_word_len
 
-		if FLAGS.query_encoder:
+		if FLAGS.query_encoder.value:
 			feed[self._query_states] = query_states
 			feed[self._query_padding_mask] = batch.query_padding_mask
 
-		if FLAGS.query_gcn:
+		if FLAGS.query_gcn.value:
 			feed[self._max_query_seq_len] = batch.max_query_len
 
-		if self._hps.coverage:
+		if self._hps.coverage.value:
 			feed[self.prev_coverage] = np.stack(prev_coverage, axis=0)
 			to_return['coverage'] = self.coverage
 
@@ -1071,7 +1070,7 @@ class SummarizationModel(object):
 		assert len(results['attn_dists']) == 1
 		attn_dists = results['attn_dists'][0].tolist()
 
-		if FLAGS.pointer_gen:
+		if FLAGS.pointer_gen.value:
 			# Convert singleton list containing a tensor to a list of k arrays
 			assert len(results['p_gens']) == 1
 			p_gens = results['p_gens'][0].tolist()
@@ -1079,7 +1078,7 @@ class SummarizationModel(object):
 			p_gens = [None for _ in xrange(beam_size)]
 
 		# Convert the coverage tensor to a list length k containing the coverage vector for each hypothesis
-		if FLAGS.coverage:
+		if FLAGS.coverage.value:
 			new_coverage = results['coverage'].tolist()
 			assert len(new_coverage) == beam_size
 		else:

@@ -47,8 +47,8 @@ class Example(object):
 
 		# Process the article
 		article_words = article.split()
-		if len(article_words) > hps.max_enc_steps:
-			article_words = article_words[:hps.max_enc_steps]
+		if len(article_words) > hps.max_enc_steps.value:
+			article_words = article_words[:hps.max_enc_steps.value]
 		self.enc_len = len(article_words)  # store the length after truncation but before padding
 		self.enc_input = [vocab.word2id(w) for w in
 						  article_words]  # list of word ids; OOVs are represented by the id for UNK token
@@ -61,24 +61,24 @@ class Example(object):
 				   abstract_words]  # list of word ids; OOVs are represented by the id for UNK token
 
 		# Process the query 
-		if hps.query_encoder:
+		if hps.query_encoder.value:
 			query_words = query.split()
 			#query_words = word_features.get_tokens(query)
-			if len(query_words) > hps.max_query_steps:
-				#tf.logging.info('Before_query: %d Hps: %d'%(len(query_words),hps.max_query_steps))
-				query_words = query_words[len(query_words)- hps.max_query_steps:]
+			if len(query_words) > hps.max_query_steps.value:
+				#tf.logging.info('Before_query: %d Hps: %d'%(len(query_words),hps.max_query_steps.value))
+				query_words = query_words[len(query_words)- hps.max_query_steps.value:]
 				#tf.logging.info('Big_query : %d'%(len(query_words)))
 				query = " ".join(q for q in query_words)
 			self.query_len = len(query_words) # store the length after truncation but before padding
 			self.query_input = [vocab.word2id(w) for w in query_words] # list of word ids; OOVs are represented by the id for UNK token
 
 		# Get the decoder input sequence and target sequence
-		self.dec_input, self.target = self.get_dec_inp_targ_seqs(abs_ids, hps.max_dec_steps, start_decoding,
+		self.dec_input, self.target = self.get_dec_inp_targ_seqs(abs_ids, hps.max_dec_steps.value, start_decoding,
 																 stop_decoding)
 		self.dec_len = len(self.dec_input)
 
 		# If using pointer-generator mode, we need to store some extra info
-		if hps.pointer_gen:
+		if hps.pointer_gen.value:
 			# Store a version of the enc_input where in-article OOVs are represented by their temporary OOV id; also store the in-article OOVs words themselves
 			self.enc_input_extend_vocab, self.article_oovs = data.article2ids(article_words, vocab)
 
@@ -86,13 +86,13 @@ class Example(object):
 			abs_ids_extend_vocab = data.abstract2ids(abstract_words, vocab, self.article_oovs)
 
 			# Overwrite decoder target sequence so it uses the temp article OOV ids
-			_, self.target = self.get_dec_inp_targ_seqs(abs_ids_extend_vocab, hps.max_dec_steps, start_decoding,
+			_, self.target = self.get_dec_inp_targ_seqs(abs_ids_extend_vocab, hps.max_dec_steps.value, start_decoding,
 														stop_decoding)
 
-		if hps.word_gcn:
+		if hps.word_gcn.value:
 			self.word_edge_list = word_edge_list
 
-		if hps.query_gcn:
+		if hps.query_gcn.value:
 			self.query_edge_list = query_edge_list
 
 		# Store the original strings
@@ -136,7 +136,7 @@ class Example(object):
 		"""Pad the encoder input sequence with pad_id up to max_len."""
 		while len(self.enc_input) < max_len:
 			self.enc_input.append(pad_id)
-		if self.hps.pointer_gen:
+		if self.hps.pointer_gen.value:
 			while len(self.enc_input_extend_vocab) < max_len:
 				self.enc_input_extend_vocab.append(pad_id)
 	def pad_query_input(self, max_len, pad_id):
@@ -177,7 +177,7 @@ class Batch(object):
 				self.enc_padding_mask:
 					numpy array of shape (batch_size, <=max_enc_steps), containing 1s and 0s. 1s correspond to real tokens in enc_batch and target_batch; 0s correspond to padding.
 
-			If hps.pointer_gen, additionally initializes the following:
+			If hps.pointer_gen.value, additionally initializes the following:
 				self.max_art_oovs:
 					maximum number of in-article OOVs in the batch
 				self.art_oovs:
@@ -194,9 +194,9 @@ class Batch(object):
 
 		# Initialize the numpy arrays
 		# Note: our enc_batch can have different length (second dimension) for each batch because we use dynamic_rnn for the encoder.
-		self.enc_batch = np.zeros((hps.batch_size, max_enc_seq_len), dtype=np.int32)
-		self.enc_lens = np.zeros((hps.batch_size), dtype=np.int32)
-		self.enc_padding_mask = np.zeros((hps.batch_size, max_enc_seq_len), dtype=np.float32)
+		self.enc_batch = np.zeros((hps.batch_size.value, max_enc_seq_len), dtype=np.int32)
+		self.enc_lens = np.zeros((hps.batch_size.value), dtype=np.int32)
+		self.enc_padding_mask = np.zeros((hps.batch_size.value, max_enc_seq_len), dtype=np.float32)
 
 		# Fill in the numpy arrays
 		for i, ex in enumerate(example_list):
@@ -206,22 +206,22 @@ class Batch(object):
 				self.enc_padding_mask[i][j] = 1
 
 		# For pointer-generator mode, need to store some extra info
-		if hps.pointer_gen:
+		if hps.pointer_gen.value:
 			# Determine the max number of in-article OOVs in this batch
 			self.max_art_oovs = max([len(ex.article_oovs) for ex in example_list])
 			# Store the in-article OOVs themselves
 			self.art_oovs = [ex.article_oovs for ex in example_list]
 			# Store the version of the enc_batch that uses the article OOV ids
-			self.enc_batch_extend_vocab = np.zeros((hps.batch_size, max_enc_seq_len), dtype=np.int32)
+			self.enc_batch_extend_vocab = np.zeros((hps.batch_size.value, max_enc_seq_len), dtype=np.int32)
 			for i, ex in enumerate(example_list):
 				self.enc_batch_extend_vocab[i, :] = ex.enc_input_extend_vocab[:]
-		if hps.word_gcn:
+		if hps.word_gcn.value:
 			edge_list = []
 			for ex in example_list:
 				edge_list.append(ex.word_edge_list)
 
-			self.word_adj_in, self.word_adj_out = data.get_adj(edge_list, hps.batch_size, max_enc_seq_len, use_label_information=hps.use_label_information, 
-																				max_labels=hps.num_word_dependency_labels,flow_alone=hps.flow_alone, flow_combined=hps.flow_combined, keep_prob=hps.word_gcn_edge_dropout)
+			self.word_adj_in, self.word_adj_out = data.get_adj(edge_list, hps.batch_size.value, max_enc_seq_len, use_label_information=hps.use_label_information.value, 
+																				max_labels=hps.num_word_dependency_labels.value,flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.word_gcn_edge_dropout.value)
 
 	def init_query_seq(self, example_list, hps):
 		
@@ -245,9 +245,9 @@ class Batch(object):
 
 			# Initialize the numpy arrays
 			# Note: our enc_batch can have different length (second dimension) for each batch because we use dynamic_rnn for the encoder.
-			self.query_batch = np.zeros((hps.batch_size, max_query_seq_len), dtype=np.int32)
-			self.query_lens = np.zeros((hps.batch_size), dtype=np.int32)
-			self.query_padding_mask = np.zeros((hps.batch_size, max_query_seq_len), dtype=np.float32)
+			self.query_batch = np.zeros((hps.batch_size.value, max_query_seq_len), dtype=np.int32)
+			self.query_lens = np.zeros((hps.batch_size.value), dtype=np.int32)
+			self.query_padding_mask = np.zeros((hps.batch_size.value, max_query_seq_len), dtype=np.float32)
 
 			# Fill in the numpy arrays
 			for i, ex in enumerate(example_list):
@@ -256,13 +256,13 @@ class Batch(object):
 				for j in xrange(ex.query_len):
 					self.query_padding_mask[i][j] = 1
 
-			if hps.query_gcn:
+			if hps.query_gcn.value:
 				query_edge_list = []
 				for ex in example_list:
 					query_edge_list.append(ex.query_edge_list)
 				#note query_edge_list is list of query edge lists. The length is equal to the batch size
-				self.query_adj_in, self.query_adj_out = data.get_adj(query_edge_list, hps.batch_size, max_query_seq_len,use_label_information=hps.use_label_information,
-																   max_labels=hps.num_word_dependency_labels,flow_alone=hps.flow_alone, flow_combined=hps.flow_combined, keep_prob=hps.query_gcn_edge_dropout)
+				self.query_adj_in, self.query_adj_out = data.get_adj(query_edge_list, hps.batch_size.value, max_query_seq_len,use_label_information=hps.use_label_information.value,
+																   max_labels=hps.num_word_dependency_labels.value,flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.query_gcn_edge_dropout.value)
 
 
 	def init_decoder_seq(self, example_list, hps):
@@ -276,13 +276,13 @@ class Batch(object):
 				"""
 		# Pad the inputs and targets
 		for ex in example_list:
-			ex.pad_decoder_inp_targ(hps.max_dec_steps, self.pad_id)
+			ex.pad_decoder_inp_targ(hps.max_dec_steps.value, self.pad_id)
 
 		# Initialize the numpy arrays.
 		# Note: our decoder inputs and targets must be the same length for each batch (second dimension = max_dec_steps) because we do not use a dynamic_rnn for decoding. However I believe this is possible, or will soon be possible, with Tensorflow 1.0, in which case it may be best to upgrade to that.
-		self.dec_batch = np.zeros((hps.batch_size, hps.max_dec_steps), dtype=np.int32)
-		self.target_batch = np.zeros((hps.batch_size, hps.max_dec_steps), dtype=np.int32)
-		self.dec_padding_mask = np.zeros((hps.batch_size, hps.max_dec_steps), dtype=np.float32)
+		self.dec_batch = np.zeros((hps.batch_size.value, hps.max_dec_steps.value), dtype=np.int32)
+		self.target_batch = np.zeros((hps.batch_size.value, hps.max_dec_steps.value), dtype=np.int32)
+		self.dec_padding_mask = np.zeros((hps.batch_size.value, hps.max_dec_steps.value), dtype=np.float32)
 
 		# Fill in the numpy arrays
 		for i, ex in enumerate(example_list):
@@ -406,11 +406,11 @@ class Batcher(object):
 					count = count + 1
 					article = curr_data['article']
 					abstract = curr_data['abstract'].strip()
-					if self._hps.word_gcn:
+					if self._hps.word_gcn.value:
 						word_edge_list = curr_data['word_edge_list']
-					if self._hps.query_encoder:
+					if self._hps.query_encoder.value:
 						query = curr_data['query']
-					if self._hps.query_gcn:
+					if self._hps.query_gcn.value:
 						query_edge_list = curr_data['query_edge_list']
 				except Exception as e:  # if there are no more examples:
 					tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
@@ -433,7 +433,7 @@ class Batcher(object):
 		In decode mode, makes batches that each contain a single example repeated.
 		"""
 		while True:
-			if self._hps.mode != 'decode':
+			if self._hps.mode.value != 'decode':
 				# Get bucketing_cache_size-many batches of Examples into a list, then sort
 				inputs = []
 				for _ in xrange(self._hps.batch_size.value * self._bucketing_cache_size):
@@ -486,12 +486,12 @@ class Batcher(object):
 				try:
 					article_text = e.features.feature['article'].bytes_list.value[0] # document text
 					abstract_text = e.features.feature['abstract'].bytes_list.value[0] # response text
-					if self._hps.query_encoder:
+					if self._hps.query_encoder.value:
 						query_text = e.features.feature['query'].bytes_list.value[0] # context text
-					if self._hps.word_gcn:
+					if self._hps.word_gcn.value:
 						word_edge_list =ast.literal_eval(e.features.feature['word_edge_list'].bytes_list.value[0])
 						#tf.logging.info((word_edge_list[0]))
-					if self._hps.query_gcn:
+					if self._hps.query_gcn.value:
 						query_edge_list = ast.literal_eval(e.features.feature['query_edge_list'].bytes_list.value[0])
 
 				except ValueError:
