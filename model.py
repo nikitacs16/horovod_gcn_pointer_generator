@@ -128,13 +128,13 @@ class SummarizationModel(object):
 			self._max_art_oovs = tf.placeholder(tf.int32, [], name='max_art_oovs')
 
 		if FLAGS.word_gcn:
-			# tf.logging.info(hps.num_word_dependency_labels.value)
+			# tf.logging.info(hps.num_word_dependency_labels)
 			self._word_adj_in = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_in_{}'.format(lbl)) for lbl
-				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
+				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size.value)]
 			self._word_adj_out = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_out_{}'.format(lbl)) for lbl
-				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
+				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size.value)]
 			if hps.mode.value == 'train':
 				self._word_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout.value, shape=(), name='dropout')
 			else:
@@ -145,10 +145,10 @@ class SummarizationModel(object):
 		if FLAGS.query_gcn:
 			self._query_adj_in = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_in_{}'.format(lbl)) for lbl
-				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
+				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size.value)]
 			self._query_adj_out = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='query_adj_out_{}'.format(lbl)) for lbl
-				 in range(hps.num_word_dependency_labels.value)} for _ in range(hps.batch_size.value)]
+				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size.value)]
 			if hps.mode.value == 'train':
 				self._query_gcn_dropout = tf.placeholder_with_default(hps.query_gcn_dropout.value, shape=(),
 																	  name='query_dropout')
@@ -193,7 +193,7 @@ class SummarizationModel(object):
 			word_adj_in = batch.word_adj_in
 			word_adj_out = batch.word_adj_out
 			for i in range(hps.batch_size.value):
-				for lbl in range(hps.num_word_dependency_labels.value):
+				for lbl in range(hps.num_word_dependency_labels):
 					feed_dict[self._word_adj_in[i][lbl]] = tf.SparseTensorValue(
 						indices=np.array([word_adj_in[i][lbl].row, word_adj_in[i][lbl].col]).T,
 						values=word_adj_in[i][lbl].data,
@@ -209,7 +209,7 @@ class SummarizationModel(object):
 			query_adj_in = batch.query_adj_in
 			query_adj_out = batch.query_adj_out
 			for i in range(hps.batch_size.value):
-				for lbl in range(hps.num_word_dependency_labels.value):
+				for lbl in range(hps.num_word_dependency_labels):
 					feed_dict[self._query_adj_in[i][lbl]] = tf.SparseTensorValue(
 						indices=np.array([query_adj_in[i][lbl].row, query_adj_in[i][lbl].col]).T,
 						values=query_adj_in[i][lbl].data,
@@ -618,7 +618,7 @@ class SummarizationModel(object):
 
 				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim.value,
 												  batch_size=hps.batch_size.value, max_nodes=self._max_word_seq_len,
-												  max_labels=hps.num_word_dependency_labels.value, adj_in=self._word_adj_in,
+												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
 												  adj_out=self._word_adj_out, 
 												  num_layers=hps.word_gcn_layers.value,
 												  use_gating=hps.word_gcn_gating.value, use_skip=hps.word_gcn_skip.value,
@@ -667,7 +667,7 @@ class SummarizationModel(object):
 					if self._hps.query_gcn.value:  
 						q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim.value,
 															batch_size=hps.batch_size.value, max_nodes=self._max_query_seq_len,
-															max_labels=hps.num_word_dependency_labels.value,
+															max_labels=hps.num_word_dependency_labels,
 															adj_in=self._query_adj_in,
 															adj_out=self._query_adj_out,
 															num_layers=hps.query_gcn_layers.value,
@@ -746,7 +746,7 @@ class SummarizationModel(object):
 					############# GCN LAYER ############	
 					gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim.value,
 												  batch_size=hps.batch_size.value, max_nodes=self._max_word_seq_len,
-												  max_labels=hps.num_word_dependency_labels.value, adj_in=self._word_adj_in,
+												  max_labels=hps.num_word_dependency_labels, adj_in=self._word_adj_in,
 												  adj_out=self._word_adj_out,
 												  num_layers=hps.word_gcn_layers.value,
 												  use_gating=hps.word_gcn_gating.value, use_skip=hps.word_gcn_skip.value,
@@ -802,7 +802,7 @@ class SummarizationModel(object):
 
 						q_gcn_outputs = self._add_gcn_layer(gcn_in=q_gcn_in, in_dim=q_in_dim, gcn_dim=hps.query_gcn_dim.value,
 															batch_size=hps.batch_size.value, max_nodes=self._max_query_seq_len,
-															max_labels=hps.num_word_dependency_labels.value,
+															max_labels=hps.num_word_dependency_labels,
 															adj_in=self._query_adj_in,
 															adj_out=self._query_adj_out,
 															num_layers=hps.query_gcn_layers.value,
