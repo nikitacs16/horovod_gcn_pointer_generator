@@ -337,7 +337,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
 
       if train_step%FLAGS.save_steps == 0:
         t_now = time.time()
-        f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps.value,t_now-t_epoch))
+        f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
         t_epoch = t_now
           
       
@@ -451,7 +451,7 @@ def run_eval(model, batcher, vocab, hps):
 
       if batch is None:
         tf.logging.info(running_avg_loss)
-        batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass.value,data_format=FLAGS.tf_example_format.value)
+        batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass, data_format=FLAGS.tf_example_format)
         
         tf.logging.info(batcher._batch_queue)
         break
@@ -498,7 +498,7 @@ def run_eval(model, batcher, vocab, hps):
       summary_writer.flush()
 
     if FLAGS.use_stop_after:
-        if (train_step + 300)  - FLAGS.stop_steps.value > 0:
+        if (train_step + 300)  - FLAGS.stop_steps > 0:
           tf.logging.info('Stopping as epoch limit completed')
           exit()
 
