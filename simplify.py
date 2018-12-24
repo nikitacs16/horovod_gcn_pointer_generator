@@ -33,7 +33,7 @@ def get_metrics(f1,f2):
 
 input_path = sys.argv[1]
 
-for k in sorted(glob.glob(input_path+'/*run_2')):
+for k in sorted(glob.glob(input_path+'/*baseline*')):
 	try:
 		x = glob.glob(os.path.join(k,'decode_*'))
 	except IndexError:

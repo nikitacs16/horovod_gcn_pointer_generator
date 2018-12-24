@@ -158,10 +158,15 @@ class SummarizationModel(object):
 			self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
 	
 		# decoder part
-		self._dec_batch = tf.placeholder(tf.int32, [hps.batch_size.value, hps.max_dec_steps.value], name='dec_batch')
-		self._target_batch = tf.placeholder(tf.int32, [hps.batch_size.value, hps.max_dec_steps.value], name='target_batch')
-		self._dec_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, hps.max_dec_steps.value],
+		if hps.mode.value == "decode":
+			self._dec_batch = tf.placeholder(tf.int32, [hps.batch_size.value, hps.max_dec_steps], name='dec_batch')
+			self._target_batch = tf.placeholder(tf.int32, [hps.batch_size.value, hps.max_dec_steps], name='target_batch')
+			self._dec_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, hps.max_dec_steps],
 												name='dec_padding_mask')
+		else:
+			self._dec_batch = tf.placeholder(tf.int32, [hps.batch_size.value, hps.max_dec_steps.value], name = 'dec_batch')
+			self._target_batch = tf.placeholder(tf.int32, [hps.batch_size.value, hps.max_dec_steps.value], name = 'target_batch')
+			self._dec_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, hps.max_dec_steps.value], name='dec_padding_mask')
 
 		if hps.mode.value == "decode" and hps.coverage.value:
 			self.prev_coverage = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='prev_coverage')
