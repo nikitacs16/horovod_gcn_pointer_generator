@@ -140,7 +140,7 @@ class SummarizationModel(object):
 			else:
 				self._word_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='dropout')
 
-		self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
+			self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
 	
 		if FLAGS.query_gcn:
 			self._query_adj_in = [
@@ -155,7 +155,7 @@ class SummarizationModel(object):
 			else:
 				self._query_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='query_dropout')
 
-		self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
+			self._max_query_seq_len = tf.placeholder(tf.int32, shape=(), name='max_query_seq_len')
 	
 		# decoder part
 		if hps.mode.value == "decode":
@@ -724,7 +724,6 @@ class SummarizationModel(object):
 					# Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
 					self._dec_in_state = self._reduce_states(fw_st, bw_st)	
 					self._enc_states = enc_outputs	
-					tf.logging.info('Reached here')
 
 				if self._hps.word_gcn.value:
 

@@ -174,7 +174,8 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
 				while True:
 					len_bytes = reader.read(8)
 					if not len_bytes: 
-                        			random.shuffle(all_examples)
+						if not single_pass:
+                        				random.shuffle(all_examples)
                         			for k in all_examples:
                             				yield example_pb2.Example.FromString(k)
                        				break # finished reading this file

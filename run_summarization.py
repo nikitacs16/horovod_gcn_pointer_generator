@@ -256,7 +256,7 @@ def setup_training(model, batcher):
     convert_to_coverage_model()
   if FLAGS.restore_best_model:
     restore_best_model()
-  saver = tf.train.Saver(max_to_keep=0)# keep 3 checkpoints at a time
+  saver = tf.train.Saver(max_to_keep=7)# keep 3 checkpoints at a time
 
   sv = tf.train.Supervisor(logdir=train_dir,
                      is_chief=True,
@@ -331,15 +331,15 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
         summary_writer.flush()
 
             
-      if train_step %  172 == 0: #evaluate half an epoch
-        saver.save(sess, model_save_path, global_step=train_step)
+      #if train_step %  100 == 0: #evaluate half an epoch
+       # saver.save(sess, model_save_path, global_step=train_step)
               
 
       if train_step%FLAGS.save_steps == 0:
         t_now = time.time()
         f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
         t_epoch = t_now
-          
+        saver.save(sess, model_save_path, global_step = train_step)  
       
 
       if FLAGS.use_stop_after:
