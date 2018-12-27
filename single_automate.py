@@ -45,6 +45,7 @@ pool.join()
 
 restore_best_model_command = 'python run_summarization.py --mode=restore_best_model --config_file ' + str(file_name)
 os.system(restore_best_model_command)
+
 pool = Pool(processes=2)
 res1 = pool.apply_async(run_test,[file_name,doc['exp_name']])
 res2 = pool.apply_async(run_eval_test,[file_name,doc['exp_name']])

@@ -486,10 +486,10 @@ class SummarizationModel(object):
 			cell = tf.contrib.rnn.BasicRNNCell(hps.hidden_dim.value)
 
 		if hps.no_lstm_encoder.value:
-			self._dec_in_state = get_initial_cell_state(cell, make_variable_state_initializer(), hps.batch_size.value,
-														tf.float32)
+			#self._dec_in_state = get_initial_cell_state(cell, make_variable_state_initializer(), hps.batch_size.value,
+			#self._dec_in_state = rnc._zero_state_tensors(cell.size, hps.batch_size.value, float32)
 		# TODO Feed the averaged gcn word vectors
-
+			self._dec_in_state = cell.zero_state(hps.batch_size.value, tf.float32)
 		prev_coverage = self.prev_coverage if hps.mode.value == "decode" and hps.coverage.value else None  # In decode mode, we run attention_decoder one step at a time and so need to pass in the previous step's coverage vector each time
 
 		if hps.query_encoder.value:
@@ -585,6 +585,7 @@ class SummarizationModel(object):
 			self.trunc_norm_init = tf.truncated_normal_initializer(stddev=hps.trunc_norm_init_std.value, seed=123)
 			self.gcn_weight_init = tf.random_normal_initializer(stddev=0.01, seed=123)
 			self.gcn_bias_init = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=123)
+			tf.logging.info(type(self._hps.no_lstm_encoder.value))
 			# Add embedding matrix (shared by the encoder and decoder inputs)
 			with tf.variable_scope('embedding'):
 				if hps.mode.value == "train":
@@ -713,6 +714,7 @@ class SummarizationModel(object):
 ######################################### TLSTM and PA-LSTM ###################################################
 
 			else:
+				tf.logging.info(self._hps.no_lstm_encoder.value)
 				if not self._hps.no_lstm_encoder.value:
 
 				#####LSTM LAYER ########

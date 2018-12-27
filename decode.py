@@ -28,6 +28,11 @@ import util
 import logging
 import numpy as np
 import glob
+import pickle
+
+all_pgens = []
+all_attn_dists = []
+dec_words = []
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -96,6 +101,10 @@ class BeamSearchDecoder(object):
     while True:
       batch = self._batcher.next_batch()  # 1 example repeated across batch
       if batch is None: # finished decoding dataset in single_pass mode
+	d = [all_attn_dists,all_pgens,dec_words]
+        output_fname = os.path.join(self._decode_dir, 'attn_dist_p_gens_data.pkl')
+
+        pickle.dump(d,open(output_fname,'wb'))
         assert FLAGS.single_pass, "Dataset exhausted, but we are not in single_pass mode"
         tf.logging.info("Decoder has finished reading dataset for single_pass.")
         tf.logging.info("Output has been saved in %s and %s. Now starting ROUGE eval...", self._rouge_ref_dir, self._rouge_dec_dir)
@@ -127,6 +136,9 @@ class BeamSearchDecoder(object):
       decoded_output = ' '.join(decoded_words) # single string
 
       if FLAGS.single_pass:
+	all_attn_dists.append(best_hyp.attn_dists)
+	all_pgens.append(best_hyp.p_gens)
+	dec_words.append(decoded_words)
         self.write_for_rouge(original_abstract_sents, decoded_words, counter) # write ref summary and decoded summary to file, to eval with pyrouge later
         counter += 1 # this is how many examples we've decoded
       else:
