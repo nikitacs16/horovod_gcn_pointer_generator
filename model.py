@@ -253,6 +253,14 @@ class SummarizationModel(object):
 				cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim.value,
 												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
 												  state_is_tuple=True)
+			elif self._hps.use_gru.value:
+				cell_fw = tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value,
+												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
+												  state_is_tuple=True)
+				cell_bw = tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value,
+												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
+												  state_is_tuple=True)
+
 			else:
 				cell_fw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value)
 				cell_bw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value)
@@ -482,6 +490,9 @@ class SummarizationModel(object):
 		hps = self._hps
 		if hps.use_lstm.value:
 			cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim.value, state_is_tuple=True, initializer=self.rand_unif_init)
+		elif hps.use_gru.value:
+			cell = tf.contrib.rnn.GRUCell(hps.hidden_dim.value, state_is_tuple=True, initializer=self.rand_unif_init)
+
 		else:
 			cell = tf.contrib.rnn.BasicRNNCell(hps.hidden_dim.value)
 
@@ -510,8 +521,7 @@ class SummarizationModel(object):
 																				 self._enc_states,
 																				 self._enc_padding_mask,
 																				 cell, initial_state_attention=(
-							hps.mode.value == "decode"), use_lstm=hps.use_lstm.value,
-																				 pointer_gen=hps.pointer_gen.value,
+							hps.mode.value == "decode"), use_lstm=hps.use_lstm.value,  pointer_gen=hps.pointer_gen.value,
 																				 use_coverage=hps.coverage.value,
 																				 prev_coverage=prev_coverage)
 
