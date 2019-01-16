@@ -254,12 +254,8 @@ class SummarizationModel(object):
 												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
 												  state_is_tuple=True)
 			elif self._hps.use_gru.value:
-				cell_fw = tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value,
-												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
-												  state_is_tuple=True)
-				cell_bw = tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value,
-												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
-												  state_is_tuple=True)
+				cell_fw = tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value)
+				cell_bw = tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value)
 
 			else:
 				cell_fw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value)
@@ -472,6 +468,7 @@ class SummarizationModel(object):
 			if self._hps.use_lstm.value:
 				return tf.contrib.rnn.LSTMStateTuple(new_c, new_h)  # Return new cell and state
 			else:
+				tf.logging.info('Reached here')
 				return new_h
 
 	def _add_decoder(self, inputs):
@@ -491,7 +488,7 @@ class SummarizationModel(object):
 		if hps.use_lstm.value:
 			cell = tf.contrib.rnn.LSTMCell(hps.hidden_dim.value, state_is_tuple=True, initializer=self.rand_unif_init)
 		elif hps.use_gru.value:
-			cell = tf.contrib.rnn.GRUCell(hps.hidden_dim.value, state_is_tuple=True, initializer=self.rand_unif_init)
+			cell = tf.contrib.rnn.GRUCell(hps.hidden_dim.value)
 
 		else:
 			cell = tf.contrib.rnn.BasicRNNCell(hps.hidden_dim.value)
@@ -1035,15 +1032,22 @@ class SummarizationModel(object):
 	  p_gens: Generation probabilities for this step. A list length beam_size. List of None if in baseline mode.
 	  new_coverage: Coverage vectors for this step. A list of arrays. List of None if coverage is not turned on.
 	"""
-
+		
 		beam_size = len(dec_init_states)
+		
+		if FLAGS.use_lstm:
 
 		# Turn dec_init_states (a list of LSTMStateTuples) into a single LSTMStateTuple for the batch
-		cells = [np.expand_dims(state.c, axis=0) for state in dec_init_states]
-		hiddens = [np.expand_dims(state.h, axis=0) for state in dec_init_states]
-		new_c = np.concatenate(cells, axis=0)  # shape [batch_size,hidden_dim]
-		new_h = np.concatenate(hiddens, axis=0)  # shape [batch_size,hidden_dim]
-		new_dec_in_state = tf.contrib.rnn.LSTMStateTuple(new_c, new_h)
+			cells = [np.expand_dims(state.c, axis=0) for state in dec_init_states]
+			hiddens = [np.expand_dims(state.h, axis=0) for state in dec_init_states]
+			new_c = np.concatenate(cells, axis=0)  # shape [batch_size,hidden_dim]
+			new_h = np.concatenate(hiddens, axis=0)  # shape [batch_size,hidden_dim]
+			new_dec_in_state = tf.contrib.rnn.LSTMStateTuple(new_c, new_h)
+		else:
+			cells = [np.expand_dims(state, axis=0)  for state in dec_init_states]
+			tf.logging.info(np.shape(cells[0]))
+			new_dec_in_state = np.concatenate(cells, axis=0)
+			tf.logging.info(new_dec_in_state.shape)
 
 		feed = {
 			self._enc_states: enc_states,
@@ -1079,10 +1083,14 @@ class SummarizationModel(object):
 			to_return['coverage'] = self.coverage
 
 		results = sess.run(to_return, feed_dict=feed)  # run the decoder step
+		
 
+		if FLAGS.use_lstm: 
 		# Convert results['states'] (a single LSTMStateTuple) into a list of LSTMStateTuple -- one for each hypothesis
-		new_states = [tf.contrib.rnn.LSTMStateTuple(results['states'].c[i, :], results['states'].h[i, :]) for i in
+			new_states = [tf.contrib.rnn.LSTMStateTuple(results['states'].c[i, :], results['states'].h[i, :]) for i in
 					  xrange(beam_size)]
+		else:
+			new_states = [results['states'] for i in  xrange(beam_size)]
 
 		# Convert singleton list containing a tensor to a list of k arrays
 		assert len(results['attn_dists']) == 1
