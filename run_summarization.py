@@ -132,6 +132,7 @@ tf.app.flags.DEFINE_integer('word_gcn_dim', config['word_gcn_dim'], 'output of g
 tf.app.flags.DEFINE_boolean('word_gcn_skip',config['word_gcn_skip'], 'add skkip ?')
 tf.app.flags.DEFINE_float('word_gcn_edge_dropout', config['word_gcn_edge_dropout'], 'dropout keep probability for the edges in word_gcn')
 tf.app.flags.DEFINE_float('word_loop_dropout', config['word_loop_dropout'], 'dropout keep probability for self loop in word_gcn')
+tf.app.flags.DEFINE_boolean('word_gcn_fusion', config['word_gcn_fusion'], 'should you use a final fusion layers for the hops?')
 
 
 
@@ -143,9 +144,9 @@ tf.app.flags.DEFINE_float('query_gcn_dropout', config['query_gcn_dropout'], 'dro
 tf.app.flags.DEFINE_integer('query_gcn_layers', config['query_gcn_layers'], 'Layers at gcn')
 tf.app.flags.DEFINE_integer('query_gcn_dim', config['query_gcn_dim'], 'output of gcn ')
 tf.app.flags.DEFINE_boolean('query_gcn_skip',config['query_gcn_skip'], 'add skip ?')
-
 tf.app.flags.DEFINE_float('query_gcn_edge_dropout', config['query_gcn_edge_dropout'], 'dropout keep probability for the gcn layer')
 tf.app.flags.DEFINE_float('query_loop_dropout', config['query_loop_dropout'], 'dropout keep probability for self loop in query_gcn')
+tf.app.flags.DEFINE_boolean('query_gcn_fusion', config['query_gcn_fusion'], 'should you use a final fusion layers for the hops?')
 
 #edge types
 tf.app.flags.DEFINE_boolean('flow_alone',config['flow_alone'], 'flow only')

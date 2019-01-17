@@ -268,18 +268,18 @@ class SummarizationModel(object):
 		return encoder_outputs, fw_st, bw_st
 
 	def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out,
-						  num_layers=1,
-						  use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN",
-						  use_label_information=False, loop_dropout=1.0):
+					   num_layers=1,
+					   use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN",
+					   use_label_information=False, loop_dropout=1.0, use_fusion=False):
 
 		if not self._hps.use_label_information:
 			max_labels = 1
 
-		
+
 		# construct single adjacency matrix
 		# max_words = tf.cast(tf.shape(adj_in[0][0].dense_shape[0]), dtype=tf.int64)
 		max_words = tf.cast(max_nodes, dtype=tf.int64)
-		indices = []	
+		indices = []
 		b_data = []
 		for b in range(batch_size):
 			for l in range(max_labels):
@@ -291,8 +291,9 @@ class SummarizationModel(object):
 		b_data = tf.concat(b_data, axis=0)
 		adj_in = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
 								 dense_shape=[batch_size * max_words, batch_size * max_words])
-		labels_in = tf.SparseTensor(indices=indices, values=b_data, dense_shape=[batch_size * max_words, batch_size * max_words])
-		
+		labels_in = tf.SparseTensor(indices=indices, values=b_data,
+									dense_shape=[batch_size * max_words, batch_size * max_words])
+
 		indices = []
 		b_data = []
 		for b in range(batch_size):
@@ -305,16 +306,24 @@ class SummarizationModel(object):
 		b_data = tf.concat(b_data, axis=0)
 		adj_out = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
 								  dense_shape=[batch_size * max_words, batch_size * max_words])
-		labels_out = tf.SparseTensor(indices=indices, values=b_data, dense_shape=[batch_size * max_words, batch_size * max_words])
+		labels_out = tf.SparseTensor(indices=indices, values=b_data,
+									 dense_shape=[batch_size * max_words, batch_size * max_words])
 
 		out = [gcn_in]
+		if use_fusion:
+			in_dims = [in_dim] + [gcn_dim]*num_layers
+			fusion_weights = []
+			for layer in range(num_layers+1):
+				fusion_weights.append(tf.get_variable("weights", [in_dims[layer], gcn_dim],
+										   initializer=tf.random_normal_initializer(stddev=0.01, seed=2)))
+
+		tf.logging.info('before layers')
 		for layer in range(num_layers):
 			gcn_in = out[-1]
 			if len(out) > 1:
 				in_dim = gcn_dim
 
 			gcn_in_2d = tf.reshape(gcn_in, [-1, in_dim])
-			
 
 			with tf.variable_scope('%s-%d' % (name, layer)):
 
@@ -330,7 +339,8 @@ class SummarizationModel(object):
 									   initializer=tf.random_normal_initializer(stddev=0.01, seed=5))
 				b_out = tf.get_variable("bias_labels_inv", [max_labels, gcn_dim],
 										initializer=tf.random_normal_initializer(stddev=0.01, seed=6))
-				b_loop = tf.get_variable("bias_loop", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=7))
+				b_loop = tf.get_variable("bias_loop", [gcn_dim],
+										 initializer=tf.random_normal_initializer(stddev=0.01, seed=7))
 
 				gates_loop = 1.
 
@@ -343,9 +353,11 @@ class SummarizationModel(object):
 												  initializer=tf.random_normal_initializer(stddev=0.01, seed=10))
 
 					b_gate_in = tf.get_variable("bias_gate", [max_labels],
-												initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=11))
+												initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01,
+																						 seed=11))
 					b_gate_out = tf.get_variable("bias_gate_inv", [max_labels],
-												 initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=12))
+												 initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01,
+																						  seed=12))
 					b_gate_loop = tf.get_variable("bias_gate_loop", [1], initializer=tf.constant_initializer(1.))
 
 					# TODO Add edge dropout
@@ -372,7 +384,6 @@ class SummarizationModel(object):
 
 					adj_out = adj_out.__mul__(tf.sparse_reduce_sum(adj_out, axis=1))
 
-				
 				# Do convolution for adj_in
 				h_in = tf.matmul(gcn_in_2d, w_in)
 				h_in = tf.sparse_tensor_dense_matmul(adj_in, h_in)
@@ -381,49 +392,56 @@ class SummarizationModel(object):
 				labels_in_embed = tf.nn.embedding_lookup_sparse(b_in, labels_pad, labels_weights, combiner='sum')
 
 				h_in = h_in + labels_in_embed
-				h_in = tf.reshape(h_in, [batch_size, max_nodes, gcn_dim])
-	
-				if dropout != 1.0: h_in = tf.nn.dropout(h_in, keep_prob=dropout) #this is normal dropout
-				
+				# h_in = tf.reshape(h_in, [batch_size, max_nodes, gcn_dim])
+
+				if dropout != 1.0: h_in = tf.nn.dropout(h_in, keep_prob=dropout)  # this is normal dropout
 
 				# Do convolution for adj_out
 				h_out = tf.matmul(gcn_in_2d, w_out)
 				h_out = tf.sparse_tensor_dense_matmul(adj_out, h_out)
 				labels_out_pad, _ = tf.sparse_fill_empty_rows(labels_out, 0)
 				labels_out_weights, _ = tf.sparse_fill_empty_rows(adj_out, 0.)
-				labels_out_embed = tf.nn.embedding_lookup_sparse(b_out, labels_out_pad, labels_out_weights, combiner='sum')
+				labels_out_embed = tf.nn.embedding_lookup_sparse(b_out, labels_out_pad, labels_out_weights,
+																 combiner='sum')
 				h_out = h_out + labels_out_embed
-				h_out = tf.reshape(h_out, [batch_size, max_nodes, gcn_dim])
+				# h_out = tf.reshape(h_out, [batch_size, max_nodes, gcn_dim])
 
-				if dropout != 1.0: h_out = tf.nn.dropout(h_out, keep_prob=dropout) #this is normal dropout
-
+				if dropout != 1.0: h_out = tf.nn.dropout(h_out, keep_prob=dropout)  # this is normal dropout
 
 				# graph convolution, loops
 				h_loop = tf.matmul(gcn_in_2d, w_loop) + b_loop
 				h_loop = h_loop * gates_loop
-				h_loop = tf.reshape(h_loop, [batch_size, max_nodes, gcn_dim])
+				# h_loop = tf.reshape(h_loop, [batch_size, max_nodes, gcn_dim])
 
-				#loop dropout. consider self as a neighbour loop_probability times only
+				# loop dropout. consider self as a neighbour loop_probability times only
 
+				if dropout != 1.0: h_loop = tf.nn.dropout(h_loop, keep_prob=dropout, seed=13)  # this is normal dropout
 
-			    
-				if dropout != 1.0: h_loop = tf.nn.dropout(h_loop, keep_prob=dropout, seed=13) #this is normal dropout
-
-			    # final result is the sum of those (with residual connection to inputs)
+				# final result is the sum of those (with residual connection to inputs)
 				h = tf.nn.relu(h_in + h_out + h_loop)
-				#h = tf.nn.relu(h_out+h_loop)
+				# h = tf.nn.relu(h_out+h_loop)
 
 				if use_skip:
 					b_skip = tf.get_variable('b_skip', [1], initializer=tf.constant_initializer(0.0))
-					if in_dim!=gcn_dim:
-						w_adjust = tf.get_variable('w_adjust', [in_dim, gcn_dim], initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=14), regularizer=self._regularizer)
-						gcn_in = tf.tensordot(gcn_in, w_adjust, axes=[[2], [0]])
+					if in_dim != gcn_dim:
+						w_adjust = tf.get_variable('w_adjust', [in_dim, gcn_dim],
+												   initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01,
+																							seed=14),
+												   regularizer=self._regularizer)
+						# gcn_in = tf.tensordot(gcn_in, w_adjust, axes=[[2], [0]])
+						gcn_in = tf.matmul(gcn_in, w_adjust)
 
-					h =  (1 - b_skip) *  h + b_skip * (gcn_in)
-								 
+					h = (1 - b_skip) * h + b_skip * (gcn_in)
+
+				h = tf.reshape(h, [batch_size, max_nodes, gcn_dim])
 				out.append(h)
 
-		return h #batch_size * max_enc_len * gcn_dim
+		if use_fusion:
+			h = tf.matmul(out[0], fusion_weights[0])
+			for layer in range(1, num_layers + 1):
+				h += tf.tensordot(out[layer], fusion_weights[layer], axes=[[2], [0]])
+
+		return h  # batch_size * max_enc_len * gcn_dim
 
 	
 	def _reduce_states(self, fw_st, bw_st):
@@ -631,7 +649,8 @@ class SummarizationModel(object):
 												  use_gating=hps.word_gcn_gating.value, use_skip=hps.word_gcn_skip.value,
 												  dropout=self._word_gcn_dropout,
 												  name="gcn_word",
-												  loop_dropout= hps.word_loop_dropout.value)
+												  loop_dropout= hps.word_loop_dropout.value,
+												  use_fusion=hps.word_gcn_fusion.value)
 
 				######## INTERM CONCAT ##########
 				if hps.concat_with_word_embedding.value:  #interm concat
@@ -681,7 +700,8 @@ class SummarizationModel(object):
 															use_gating=hps.query_gcn_gating.value, use_skip=hps.query_gcn_skip.value,
 															dropout=self._query_gcn_dropout,
 															name="gcn_query",
-															loop_dropout=hps.query_loop_dropout)
+															loop_dropout=hps.query_loop_dropout.value,
+															use_fusion=hps.query_gcn_fusion.value)
 
 						########## INTERM CONCAT ##############
 						if hps.concat_with_word_embedding.value:
@@ -759,7 +779,8 @@ class SummarizationModel(object):
 												  use_gating=hps.word_gcn_gating.value, use_skip=hps.word_gcn_skip.value,
 												  dropout=self._word_gcn_dropout,
 												  name="gcn_word",
-												  loop_dropout=hps.word_loop_dropout.value)
+												  loop_dropout=hps.word_loop_dropout.value,
+												  use_fusion=hps.word_gcn_fusion.value)
 
 					
 					############## UPPPER CONCAT ###############
@@ -816,7 +837,8 @@ class SummarizationModel(object):
 															use_gating=hps.query_gcn_gating.value, use_skip=hps.query_gcn_skip.value,
 															dropout=self._query_gcn_dropout,
 															name="gcn_query",
-															loop_dropout=hps.query_loop_dropout.value)
+															loop_dropout=hps.query_loop_dropout.value,
+															use_fusion=hps.query_gcn_fusion.value)
 						
 
 						############ UPPER CONCAT ############
@@ -1122,8 +1144,8 @@ def _mask_and_avg(values, padding_mask, max_dec_steps):
 	a scalar
   """
 
-  	#deterministic reduce_sum
-  	#batch_size = tf.shape(padding_mask)[0]
+	#deterministic reduce_sum
+	#batch_size = tf.shape(padding_mask)[0]
 	batch_s = tf.reshape(tf.shape(padding_mask)[0],[])
 	dec_lens = reduce_sum_lossop(padding_mask, max_dec_steps)  # shape batch_size. float32
 	
