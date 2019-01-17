@@ -58,19 +58,20 @@ class BeamSearchDecoder(object):
     self._sess = tf.Session(config=util.get_config())
 
     # Load an initial checkpoint to use for decoding
+    
     if use_epoch:
-      self._epoch_path = os.path.join(FLAGS.log_root,'epoch','epoch_'+str(epoch_num))
+      self._epoch_path = os.path.join(FLAGS.log_root,'train','checkpoint--'+str(epoch_num))
       self._saver.restore(self._sess, self._epoch_path)
 
     else:
-      ckpt_path = util.load_ckpt(self._saver, self._sess)
+    	ckpt_path = util.load_ckpt(self._saver, self._sess)
 
     if FLAGS.single_pass:
       # Make a descriptive decode directory name
       if not use_epoch:
         ckpt_name = "ckpt-" + ckpt_path.split('-')[-1] # this is something of the form "ckpt-123456"
       else:
-        ckpt_name = "epoch-" + str(epoch_num)
+        ckpt_name = "ckpt-" + str(epoch_num)
       self._decode_dir = os.path.join(FLAGS.log_root, get_decode_dir_name(ckpt_name))
       if os.path.exists(self._decode_dir):
         raise Exception("single_pass decode directory %s should not already exist" % self._decode_dir)

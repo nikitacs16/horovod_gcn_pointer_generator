@@ -1039,15 +1039,17 @@ class SummarizationModel(object):
 
 		# Turn dec_init_states (a list of LSTMStateTuples) into a single LSTMStateTuple for the batch
 			cells = [np.expand_dims(state.c, axis=0) for state in dec_init_states]
+			#tf.logging.info(np.shape(cells[0]))
 			hiddens = [np.expand_dims(state.h, axis=0) for state in dec_init_states]
 			new_c = np.concatenate(cells, axis=0)  # shape [batch_size,hidden_dim]
 			new_h = np.concatenate(hiddens, axis=0)  # shape [batch_size,hidden_dim]
 			new_dec_in_state = tf.contrib.rnn.LSTMStateTuple(new_c, new_h)
+			#tf.logging.info(np.shape(new_c))
 		else:
 			cells = [np.expand_dims(state, axis=0)  for state in dec_init_states]
-			tf.logging.info(np.shape(cells[0]))
+			#tf.logging.info(np.shape(cells[0]))
 			new_dec_in_state = np.concatenate(cells, axis=0)
-			tf.logging.info(new_dec_in_state.shape)
+			#tf.logging.info(new_dec_in_state.shape)
 
 		feed = {
 			self._enc_states: enc_states,
@@ -1090,7 +1092,7 @@ class SummarizationModel(object):
 			new_states = [tf.contrib.rnn.LSTMStateTuple(results['states'].c[i, :], results['states'].h[i, :]) for i in
 					  xrange(beam_size)]
 		else:
-			new_states = [results['states'] for i in  xrange(beam_size)]
+			new_states = [results['states'][i,:] for i in  xrange(beam_size)]
 
 		# Convert singleton list containing a tensor to a list of k arrays
 		assert len(results['attn_dists']) == 1

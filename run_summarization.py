@@ -43,6 +43,8 @@ FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
 tf.app.flags.DEFINE_boolean('use_val_as_test',False,'For automation only')
 tf.app.flags.DEFINE_string('config_file', 'config.yaml', 'pass the config_file through command line if new expt')
+tf.app.flags.DEFINE_boolean('test_by_epoch',False, 'should you test per epoch')
+tf.app.flags.DEFINE_integer('epoch_num',0,'which epoch to test')
 #tf.logging.info(FLAGS.config_file)
 config = yaml.load(open(FLAGS.config_file,'r'))
 
@@ -52,8 +54,6 @@ config = yaml.load(open(FLAGS.config_file,'r'))
 tf.app.flags.DEFINE_string('gpu_device_id',config['gpu_device_id'],'allocate gpu to which device')
 os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
 tf.app.flags.DEFINE_boolean('tf_example_format',config['tf_example_format'],'Is data in pickle or tf example format')
-tf.app.flags.DEFINE_boolean('test_by_epoch',False, 'should you test per epoch')
-tf.app.flags.DEFINE_integer('epoch_num',0,'which epoch to test')
 
 # sync; echo 3 > /proc/sys/vm/drop_caches # Where to find data
 tf.app.flags.DEFINE_string('data_path',config['train_path'], 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
@@ -258,7 +258,7 @@ def setup_training(model, batcher):
     convert_to_coverage_model()
   if FLAGS.restore_best_model:
     restore_best_model()
-  saver = tf.train.Saver(max_to_keep=7)# keep 3 checkpoints at a time
+  saver = tf.train.Saver(max_to_keep=FLAGS.max_to_keep)# keep 3 checkpoints at a time
 
   sv = tf.train.Supervisor(logdir=train_dir,
                      is_chief=True,
