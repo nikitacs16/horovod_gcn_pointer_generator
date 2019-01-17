@@ -128,7 +128,6 @@ class SummarizationModel(object):
 			self._max_art_oovs = tf.placeholder(tf.int32, [], name='max_art_oovs')
 
 		if FLAGS.word_gcn:
-			# tf.logging.info(hps.num_word_dependency_labels)
 			self._word_adj_in = [
 				{lbl: tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_in_{}'.format(lbl)) for lbl
 				 in range(hps.num_word_dependency_labels)} for _ in range(hps.batch_size.value)]
@@ -276,8 +275,7 @@ class SummarizationModel(object):
 		if not self._hps.use_label_information:
 			max_labels = 1
 
-		tf.logging.info(max_nodes)
-
+		
 		# construct single adjacency matrix
 		# max_words = tf.cast(tf.shape(adj_in[0][0].dense_shape[0]), dtype=tf.int64)
 		max_words = tf.cast(max_nodes, dtype=tf.int64)
@@ -310,7 +308,6 @@ class SummarizationModel(object):
 		labels_out = tf.SparseTensor(indices=indices, values=b_data, dense_shape=[batch_size * max_words, batch_size * max_words])
 
 		out = [gcn_in]
-		tf.logging.info('before layers')
 		for layer in range(num_layers):
 			gcn_in = out[-1]
 			if len(out) > 1:
@@ -468,7 +465,6 @@ class SummarizationModel(object):
 			if self._hps.use_lstm.value:
 				return tf.contrib.rnn.LSTMStateTuple(new_c, new_h)  # Return new cell and state
 			else:
-				tf.logging.info('Reached here')
 				return new_h
 
 	def _add_decoder(self, inputs):
@@ -592,12 +588,10 @@ class SummarizationModel(object):
 			self.trunc_norm_init = tf.truncated_normal_initializer(stddev=hps.trunc_norm_init_std.value, seed=123)
 			self.gcn_weight_init = tf.random_normal_initializer(stddev=0.01, seed=123)
 			self.gcn_bias_init = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=123)
-			tf.logging.info(type(self._hps.no_lstm_encoder.value))
 			# Add embedding matrix (shared by the encoder and decoder inputs)
 			with tf.variable_scope('embedding'):
 				if hps.mode.value == "train":
 					if self.use_glove:
-						tf.logging.info('glove')
 						embedding = tf.get_variable('embedding', dtype=tf.float32,
 													initializer=tf.cast(self._vocab.glove_emb, tf.float32),
 													trainable=hps.emb_trainable.value, regularizer=self._regularizer)
@@ -721,7 +715,6 @@ class SummarizationModel(object):
 ######################################### TLSTM and PA-LSTM ###################################################
 
 			else:
-				tf.logging.info(self._hps.no_lstm_encoder.value)
 				if not self._hps.no_lstm_encoder.value:
 
 				#####LSTM LAYER ########
@@ -733,8 +726,7 @@ class SummarizationModel(object):
 					# Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
 					self._dec_in_state = self._reduce_states(fw_st, bw_st)	
 					self._enc_states = enc_outputs	
-					tf.logging.info('Reached here')
-
+				
 				if self._hps.word_gcn.value:
 
 					if self._hps.use_gcn_lstm_parallel.value or self._hps.no_lstm_encoder.value:
@@ -1039,18 +1031,15 @@ class SummarizationModel(object):
 
 		# Turn dec_init_states (a list of LSTMStateTuples) into a single LSTMStateTuple for the batch
 			cells = [np.expand_dims(state.c, axis=0) for state in dec_init_states]
-			#tf.logging.info(np.shape(cells[0]))
 			hiddens = [np.expand_dims(state.h, axis=0) for state in dec_init_states]
 			new_c = np.concatenate(cells, axis=0)  # shape [batch_size,hidden_dim]
 			new_h = np.concatenate(hiddens, axis=0)  # shape [batch_size,hidden_dim]
 			new_dec_in_state = tf.contrib.rnn.LSTMStateTuple(new_c, new_h)
-			#tf.logging.info(np.shape(new_c))
+			
 		else:
 			cells = [np.expand_dims(state, axis=0)  for state in dec_init_states]
-			#tf.logging.info(np.shape(cells[0]))
 			new_dec_in_state = np.concatenate(cells, axis=0)
-			#tf.logging.info(new_dec_in_state.shape)
-
+			
 		feed = {
 			self._enc_states: enc_states,
 			self._enc_padding_mask: batch.enc_padding_mask,
@@ -1135,7 +1124,6 @@ def _mask_and_avg(values, padding_mask, max_dec_steps):
 
   	#deterministic reduce_sum
   	#batch_size = tf.shape(padding_mask)[0]
-	#tf.logging.info('padding mask')
 	batch_s = tf.reshape(tf.shape(padding_mask)[0],[])
 	dec_lens = reduce_sum_lossop(padding_mask, max_dec_steps)  # shape batch_size. float32
 	
