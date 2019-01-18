@@ -314,7 +314,7 @@ class SummarizationModel(object):
 			in_dims = [in_dim] + [gcn_dim]*num_layers
 			fusion_weights = []
 			for layer in range(num_layers+1):
-				fusion_weights.append(tf.get_variable("weights", [in_dims[layer], gcn_dim],
+				fusion_weights.append(tf.get_variable("weights_fusion_"+str(layer), [in_dims[layer], gcn_dim],
 										   initializer=tf.random_normal_initializer(stddev=0.01, seed=2)))
 
 		tf.logging.info('before layers')
@@ -428,8 +428,8 @@ class SummarizationModel(object):
 												   initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01,
 																							seed=14),
 												   regularizer=self._regularizer)
-						# gcn_in = tf.tensordot(gcn_in, w_adjust, axes=[[2], [0]])
-						gcn_in = tf.matmul(gcn_in, w_adjust)
+						gcn_in = tf.tensordot(gcn_in, w_adjust, axes=[[2], [0]])
+						#gcn_in = tf.matmul(gcn_in, w_adjust)
 
 					h = (1 - b_skip) * h + b_skip * (gcn_in)
 
@@ -437,7 +437,7 @@ class SummarizationModel(object):
 				out.append(h)
 
 		if use_fusion:
-			h = tf.matmul(out[0], fusion_weights[0])
+			h = tf.tensordot(out[0], fusion_weights[0],axes=[[2],[0]])
 			for layer in range(1, num_layers + 1):
 				h += tf.tensordot(out[layer], fusion_weights[layer], axes=[[2], [0]])
 
