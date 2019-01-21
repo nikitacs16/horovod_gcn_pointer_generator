@@ -314,10 +314,10 @@ class SummarizationModel(object):
 			in_dims = [in_dim] + [gcn_dim]*num_layers
 			fusion_weights = []
 			for layer in range(num_layers+1):
-				fusion_weights.append(tf.get_variable("weights_fusion_"+str(layer), [in_dims[layer], gcn_dim],
+				fusion_weights.append(tf.get_variable("weights_fusion_"+str(layer)+"_" + name, [in_dims[layer], gcn_dim],
 										   initializer=tf.random_normal_initializer(stddev=0.01, seed=2)))
 
-		tf.logging.info('before layers')
+
 		for layer in range(num_layers):
 			gcn_in = out[-1]
 			if len(out) > 1:
@@ -421,6 +421,8 @@ class SummarizationModel(object):
 				h = tf.nn.relu(h_in + h_out + h_loop)
 				# h = tf.nn.relu(h_out+h_loop)
 
+				h = tf.reshape(h, [batch_size, max_nodes, gcn_dim])
+
 				if use_skip:
 					b_skip = tf.get_variable('b_skip', [1], initializer=tf.constant_initializer(0.0))
 					if in_dim != gcn_dim:
@@ -433,7 +435,7 @@ class SummarizationModel(object):
 
 					h = (1 - b_skip) * h + b_skip * (gcn_in)
 
-				h = tf.reshape(h, [batch_size, max_nodes, gcn_dim])
+				
 				out.append(h)
 
 		if use_fusion:
