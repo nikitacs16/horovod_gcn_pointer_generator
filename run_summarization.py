@@ -108,6 +108,10 @@ tf.app.flags.DEFINE_float('adagrad_init_acc', config['adagrad_init_acc'], 'initi
 tf.app.flags.DEFINE_float('rand_unif_init_mag',config['rand_unif_init_mag'], 'magnitude for lstm cells random uniform inititalization')
 tf.app.flags.DEFINE_float('trunc_norm_init_std', config['trunc_norm_init_std'], 'std of trunc norm init, used for initializing everything else')
 tf.app.flags.DEFINE_float('max_grad_norm', config['max_grad_norm'], 'for gradient clipping')
+tf.app.flags.DEFINE_float('lstm_dropout', config['lstm_dropout'], 'dropout keep probability')
+tf.app.flags.DEFINE_boolean('use_learning_rate_halving', config['use_learning_rate_halving'], 'learning rate changes after certain epochs')
+tf.app.flags.DEFINE_integer('learning_rate_change_after', config['learning_rate_change_after'], 'start halving the learning rate after how many epochs?')
+tf.app.flags.DEFINE_integer('learning_rate_change_interval', config['learning_rate_change_interval'], 'learning rate halving epoch interval')
 
 # Pointer-generator or baseline model
 tf.app.flags.DEFINE_boolean('pointer_gen', config['pointer_gen'], 'If True, use pointer-generator model. If False, use baseline model.')

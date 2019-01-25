@@ -231,7 +231,7 @@ class SummarizationModel(object):
 
 		return feed_dict
 
-	def _add_encoder(self, encoder_inputs, seq_len, name='encoder'):
+	def _add_encoder(self, encoder_inputs, seq_len, num_layers=1, name='encoder', keep_prob=0.7):
 		"""Add a single-layer bidirectional LSTM encoder to the graph.
 
 		Args:
@@ -245,28 +245,43 @@ class SummarizationModel(object):
 			Each are LSTMStateTuples of shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
 		"""
 		with tf.variable_scope(name):
+
 			if self._hps.use_lstm.value:
-				cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim.value,
-												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
-												  state_is_tuple=True)
-				cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim.value,
-												  initializer=tf.contrib.layers.xavier_initializer(seed=1),
-												  state_is_tuple=True)
+				cell_fw = []
+				for _ in range(num_layers):
+					cell = tf.contrib.rnn.LayerNormBasicLSTMCell(hidden_size)
+					if num_layers > 1:
+						cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob, input_keep_prob=keep_prob) 
+					cell_fw.append(cell)
+
+				cell_bw = []
+				for _ in range(num_layers):
+					cell = tf.contrib.rnn.LayerNormBasicLSTMCell(hidden_size)
+					if num_layers > 1:
+						cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob, input_keep_prob=keep_prob) 
+					cell_bw.append(cell)
+
 			elif self._hps.use_gru.value:
-				cell_fw = tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value)
-				cell_bw = tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value)
+				cell_fw = [tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value) for _ in range(num_layers)]
+				cell_bw = [tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value) for _ in range(num_layers)]
 
+	
 			else:
-				cell_fw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value)
-				cell_bw = tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value)
+				cell_fw = [tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value) for _ in range(num_layers)]
+				cell_bw = [tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value) for _ in range(num_layers)]
 
-			(encoder_outputs, (fw_st, bw_st)) = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs,
-																				dtype=tf.float32,
-																				sequence_length=seq_len,
-																				swap_memory=True)
-			encoder_outputs = tf.concat(axis=2, values=encoder_outputs)  # concatenate the forwards and backwards states
+			
+			temp_outputs = tf.contrib.rnn.stack_bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs, sequence_length=seq_len, dtype=tf.float32, swap_memory=True)
+			
+			encoder_outputs, encoder_fw_state, encoder_bw_state = temp_outputs	
+
+			fw_st = encoder_fw_state[-1] #last states 
+			bw_st = encoder_bw_state[-1]	
+
 		return encoder_outputs, fw_st, bw_st
 
+	   
+	   
 	def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out,
 					   num_layers=1,
 					   use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN",
@@ -666,7 +681,7 @@ class SummarizationModel(object):
 				
 				
 				########### LSTM LAYER ############	
-				enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens)
+				enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens,keep_prob=hps.lstm_dropout.value)
 				self._dec_in_state = self._reduce_states(fw_st, bw_st)
 
 
@@ -718,7 +733,7 @@ class SummarizationModel(object):
 					
 					######## LSTM LAYER #############		
 					
-					query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens, name='query_encoder')
+					query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens, name='query_encoder',keep_prob=hps.lstm_dropout.value)
 					self._query_states = query_outputs
 					
 					######### UPPER CONCAT ############
@@ -740,10 +755,10 @@ class SummarizationModel(object):
 				if not self._hps.no_lstm_encoder.value:
 
 				#####LSTM LAYER ########
-					enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens)
+					enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens,keep_prob=hps.lstm_dropout.value)
 
 					if self._hps.stacked_lstm.value:  # lstm over lstm
-						enc_outputs, fw_st, bw_st = self._add_encoder(enc_outputs, self._enc_lens, name='stacked_encoder')
+						enc_outputs, fw_st, bw_st = self._add_encoder(enc_outputs, self._enc_lens, name='stacked_encoder',keep_prob=hps.lstm_dropout.value)
 					
 					# Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
 					self._dec_in_state = self._reduce_states(fw_st, bw_st)	
@@ -804,7 +819,7 @@ class SummarizationModel(object):
 				if self._hps.query_encoder.value:
 					
 					if not self._hps.no_lstm_query_encoder.value:
-						query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens, name='query_encoder')
+						query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens, name='query_encoder',,keep_prob=hps.lstm_dropout.value)
 						self._query_states = query_outputs
 						q_in_dim = self._hps.hidden_dim.value * 2
 						
@@ -953,6 +968,12 @@ class SummarizationModel(object):
 			optimizer = tf.train.AdagradOptimizer(self._hps.lr.value, initial_accumulator_value=self._hps.adagrad_init_acc.value)
 		if self._hps.optimizer.value == 'adam':
 			optimizer = tf.train.AdamOptimizer(learning_rate=self._hps.adam_lr.value)
+		if self._hps.optimizer.value == 'momentum'
+			if self.global_step < self._hps. * self._hps.save_steps:
+				optimizer = tf.train.GradientDescentOptimizer(learning_rate=self._hps.lr.value, momentum=, use_nestrov=True)
+			else:
+				learning_rate =  tf.train.exponential_decay(learning_rate=self._hps.lr.value, global_step= self.global_step, decay_steps=self._hps.learning_rate_change_interval*self._hps.save_steps, 0.5 , staircase=True)
+
 		with tf.device("/gpu:0"):
 			self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step,
 													   name='train_step')
