@@ -755,7 +755,7 @@ class SummarizationModel(object):
 				if not self._hps.no_lstm_encoder.value:
 
 				#####LSTM LAYER ########
-					enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens,keep_prob=hps.lstm_dropout.value)
+					enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens,num_layers=hps.encoder_lstm_layers, keep_prob=hps.lstm_dropout.value)
 
 					if self._hps.stacked_lstm.value:  # lstm over lstm
 						enc_outputs, fw_st, bw_st = self._add_encoder(enc_outputs, self._enc_lens, name='stacked_encoder',keep_prob=hps.lstm_dropout.value)
@@ -819,7 +819,7 @@ class SummarizationModel(object):
 				if self._hps.query_encoder.value:
 					
 					if not self._hps.no_lstm_query_encoder.value:
-						query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens, name='query_encoder',,keep_prob=hps.lstm_dropout.value)
+						query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens, name='query_encoder',keep_prob=hps.lstm_dropout.value)
 						self._query_states = query_outputs
 						q_in_dim = self._hps.hidden_dim.value * 2
 						
@@ -968,11 +968,11 @@ class SummarizationModel(object):
 			optimizer = tf.train.AdagradOptimizer(self._hps.lr.value, initial_accumulator_value=self._hps.adagrad_init_acc.value)
 		if self._hps.optimizer.value == 'adam':
 			optimizer = tf.train.AdamOptimizer(learning_rate=self._hps.adam_lr.value)
-		if self._hps.optimizer.value == 'momentum'
-			if self.global_step < self._hps. * self._hps.save_steps:
-				optimizer = tf.train.GradientDescentOptimizer(learning_rate=self._hps.lr.value, momentum=, use_nestrov=True)
+		if self._hps.optimizer.value == 'momentum':
+			if self.global_step < self._hps.learning_rate_change_after * self._hps.save_steps:
+				optimizer = tf.train.GradientDescentOptimizer(learning_rate=self._hps.lr.value, momentum=0.9, use_nestrov=True)
 			else:
-				learning_rate =  tf.train.exponential_decay(learning_rate=self._hps.lr.value, global_step= self.global_step, decay_steps=self._hps.learning_rate_change_interval*self._hps.save_steps, 0.5 , staircase=True)
+				learning_rate =  tf.train.exponential_decay(learning_rate=self._hps.lr.value, global_step= self.global_step, decay_steps=self._hps.learning_rate_change_interval*self._hps.save_steps, decay_rate=0.5 , staircase=True)
 
 		with tf.device("/gpu:0"):
 			self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step,

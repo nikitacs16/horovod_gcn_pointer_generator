@@ -95,6 +95,7 @@ tf.app.flags.DEFINE_float('beta_l2', config['beta_l2'], 'scale for l2')
 
 tf.app.flags.DEFINE_integer('hidden_dim', config['hidden_dim'], 'dimension of RNN hidden states')
 tf.app.flags.DEFINE_integer('emb_dim', config['emb_dim'], 'dimension of word embeddings')
+tf.app.flags.DEFINE_integer('encoder_lstm_layers', config
 tf.app.flags.DEFINE_integer('batch_size',config['batch_size'], 'minibatch size')
 tf.app.flags.DEFINE_integer('max_enc_steps', config['max_enc_steps'], 'max timesteps of encoder (max source text tokens)')
 tf.app.flags.DEFINE_integer('max_dec_steps', config['max_dec_steps'], 'max timesteps of decoder (max summary tokens)')
