@@ -969,11 +969,14 @@ class SummarizationModel(object):
 		if self._hps.optimizer.value == 'adam':
 			optimizer = tf.train.AdamOptimizer(learning_rate=self._hps.adam_lr.value)
 		if self._hps.optimizer.value == 'momentum':
-			if self.global_step < self._hps.learning_rate_change_after.value * self._hps.save_steps.value:
-				optimizer = tf.train.GradientDescentOptimizer(learning_rate=self._hps.lr.value, momentum=0.9, use_nestrov=True)
-			else:
-				learning_rate =  tf.train.exponential_decay(learning_rate=self._hps.lr.value, global_step= self.global_step, decay_steps=self._hps.learning_rate_change_interval*self._hps.save_steps, decay_rate=0.5 , staircase=True)
+			def f2():
+				return  tf.train.exponential_decay(learning_rate=self._hps.lr.value, global_step=self.global_step, decay_steps=self._hps.learning_rate_change_interval.value*self._hps.save_steps.value, decay_rate=0.5 , staircase=True)
+			def f1():
+				return self._hps.lr.value
+			learning_rate = tf.cond(self.global_step <= self._hps.learning_rate_change_after.value * self._hps.save_steps.value, lambda: f1(), lambda: f2())
 
+			optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9, use_nesterov=True)
+			
 		with tf.device("/gpu:0"):
 			self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step,
 													   name='train_step')
