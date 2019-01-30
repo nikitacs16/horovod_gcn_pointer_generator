@@ -154,7 +154,7 @@ tf.app.flags.DEFINE_boolean('query_gcn_skip',config['query_gcn_skip'], 'add skip
 tf.app.flags.DEFINE_float('query_gcn_edge_dropout', config['query_gcn_edge_dropout'], 'dropout keep probability for the gcn layer')
 tf.app.flags.DEFINE_float('query_loop_dropout', config['query_loop_dropout'], 'dropout keep probability for self loop in query_gcn')
 tf.app.flags.DEFINE_boolean('query_gcn_fusion', config['query_gcn_fusion'], 'should you use a final fusion layers for the hops?')
-
+tf.app.flags.DEFINE_boolean('use_query_aware_attention', config['use_query_aware_attention'], 'True if to include query in attention equation')
 #edge types
 tf.app.flags.DEFINE_boolean('flow_alone',config['flow_alone'], 'flow only')
 tf.app.flags.DEFINE_boolean('flow_combined',config['flow_combined'], 'flow and dependency parsing')
@@ -344,24 +344,28 @@ def run_eval_parallel(decode_model_hps, vocab, batcher):
 		  
   saver = tf.train.Saver()
   sess = tf.Session(config=util.get_config())
+  ckpt_dir = os.path.join(FLAGS.log_root, "train")
+  loaded_checkpoints = []
   while True:
     #tf.logging.info('Entered while')
-    checkpoint_name = util.load_ckpt(saver, sess) # load a new checkpoint
+    #checkpoint_name = util.load_ckpt(saver, sess) # load a new checkpoint
     #tf.logging.info(checkpoint_name)
-    if checkpoint_name in loaded_checkpoints:
-      time.sleep(1000)
-      #tf.logging.info(checkpoint_name)
-      not_seen = False
-    else:
-      #tf.logging.info(checkpoint_name)
+    checkpoint_names = glob.glob(ckpt_dir + '*.index')
+    for checkpoint_name in checkpoint_names :
+      if checkpoint_name in loaded_checkpoints:
+        continue
+    
+        #tf.logging.info(checkpoint_name)
       loaded_checkpoints.append(checkpoint_name)
       
-      check_point_step_num = checkpoint_name.split('-')[-1] #regex
+      check_point_step_num = int(checkpoint_name.split('--')[-1][:-6]) #regex
       not_seen = True
       test_batcher = copy.deepcopy(batcher)
       model = SummarizationModel(decode_model_hps, vocab)
       decoder = BeamSearchDecoder(model, test_batcher, vocab, use_epoch=True, epoch_num=check_point_step_num)
       decoder.decode()
+    
+    time.sleep(100)
 
     
 
