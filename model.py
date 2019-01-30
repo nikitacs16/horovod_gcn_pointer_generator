@@ -249,14 +249,14 @@ class SummarizationModel(object):
 			if self._hps.use_lstm.value:
 				cell_fw = []
 				for _ in range(num_layers):
-					cell = tf.contrib.rnn.LayerNormBasicLSTMCell(hidden_size)
+					cell = tf.contrib.rnn.LayerNormBasicLSTMCell(self._hps.hidden_dim.value)
 					if num_layers > 1:
 						cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob, input_keep_prob=keep_prob) 
 					cell_fw.append(cell)
 
 				cell_bw = []
 				for _ in range(num_layers):
-					cell = tf.contrib.rnn.LayerNormBasicLSTMCell(hidden_size)
+					cell = tf.contrib.rnn.LayerNormBasicLSTMCell(self._hps.hidden_dim.value)
 					if num_layers > 1:
 						cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob, input_keep_prob=keep_prob) 
 					cell_bw.append(cell)
@@ -271,7 +271,7 @@ class SummarizationModel(object):
 				cell_bw = [tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value) for _ in range(num_layers)]
 
 			
-			temp_outputs = tf.contrib.rnn.stack_bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs, sequence_length=seq_len, dtype=tf.float32, swap_memory=True)
+			temp_outputs = tf.contrib.rnn.stack_bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs, sequence_length=seq_len, dtype=tf.float32)
 			
 			encoder_outputs, encoder_fw_state, encoder_bw_state = temp_outputs	
 
@@ -969,7 +969,7 @@ class SummarizationModel(object):
 		if self._hps.optimizer.value == 'adam':
 			optimizer = tf.train.AdamOptimizer(learning_rate=self._hps.adam_lr.value)
 		if self._hps.optimizer.value == 'momentum':
-			if self.global_step < self._hps.learning_rate_change_after * self._hps.save_steps:
+			if self.global_step < self._hps.learning_rate_change_after.value * self._hps.save_steps.value:
 				optimizer = tf.train.GradientDescentOptimizer(learning_rate=self._hps.lr.value, momentum=0.9, use_nestrov=True)
 			else:
 				learning_rate =  tf.train.exponential_decay(learning_rate=self._hps.lr.value, global_step= self.global_step, decay_steps=self._hps.learning_rate_change_interval*self._hps.save_steps, decay_rate=0.5 , staircase=True)
