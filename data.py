@@ -188,8 +188,8 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
 			if single_pass:
 				print "example_generator completed reading all datafiles. No more data."
 				break
-            else:
-                epoch = epoch + 1
+			else:
+           			epoch = epoch + 1
     	
     else:
     	#pickle format

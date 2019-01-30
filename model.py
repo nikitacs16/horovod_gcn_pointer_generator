@@ -107,15 +107,17 @@ class SummarizationModel(object):
 			self.beta_l2 = 0.0
 
 		self._regularizer = tf.contrib.layers.l2_regularizer(scale=self.beta_l2)
+	
 
 	def _add_placeholders(self):
 		"""Add placeholders to the graph. These are entry points for any input data."""
 		hps = self._hps
-
+		self._epoch_num = tf.placeholder(tf.int32, shape=(), name='epoch_num')
 		# encoder part
 		self._enc_batch = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='enc_batch')
 		self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size.value], name='enc_lens')
 		self._enc_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='enc_padding_mask')
+		
 
 		if FLAGS.query_encoder:
 			self._query_batch = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='query_batch')
@@ -1005,7 +1007,7 @@ class SummarizationModel(object):
 			'summaries': self._summaries,
 			'loss': self._loss,
 			'global_step': self.global_step,
-			'epoch_num': self.epoch_num
+			'epoch_num': self._epoch_num
 		}
 		if self._hps.coverage.value:
 			to_return['coverage_loss'] = self._coverage_loss

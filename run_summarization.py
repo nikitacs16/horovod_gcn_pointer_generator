@@ -143,7 +143,7 @@ tf.app.flags.DEFINE_boolean('word_gcn_fusion', config['word_gcn_fusion'], 'shoul
 
 #Query model addition
 tf.app.flags.DEFINE_boolean('query_encoder',config['query_encoder'],'Keep true for the query based problems')
-tf.app.flags.DEFINE_integer('query_encoder_lstm_layers', config['encoder_lstm_layers'], 'how many layers at encoder')
+tf.app.flags.DEFINE_integer('query_encoder_lstm_layers', config['query_encoder_lstm_layers'], 'how many layers at encoder')
 tf.app.flags.DEFINE_boolean('no_lstm_query_encoder',config['no_lstm_query_encoder'], 'Removes LSTM layer for query from the seq2seq model. query_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('query_gcn', config['query_gcn'], 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('query_gcn_gating', config['query_gcn_gating'], 'If True, use gating at query level')
@@ -341,8 +341,9 @@ global loaded_checkpoints
 def run_eval_parallel(decode_model_hps, vocab, batcher):
 
   """Repeatedly runs eval iterations, logging to screen and decoding with beam size 1 """ 
-  
-  
+		  
+  saver = tf.train.Saver()
+  sess = tf.Session(config=util.get_config())
   while True:
     #tf.logging.info('Entered while')
     checkpoint_name = util.load_ckpt(saver, sess) # load a new checkpoint
@@ -582,7 +583,7 @@ def main(unused_argv):
   elif hps.mode.value == 'decode_by_val':
     decode_model_hps = hps  # This will be the hyperparameters for the decoder model
     decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
-    run_eval_parallel(decode_model_hps, vocab)
+    run_eval_parallel(decode_model_hps, vocab, batcher)
   else:
     raise ValueError("The 'mode' flag must be one of train/eval/decode")
    
