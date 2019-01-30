@@ -31,7 +31,7 @@ import ast
 class Example(object):
 	"""Class representing a train/val/test example for text summarization."""
 
-	def __init__(self, article, abstract_sentences, vocab, hps, word_edge_list=None, query=None, query_edge_list=None):
+	def __init__(self, article, abstract_sentences, vocab, hps, word_edge_list=None, query=None, query_edge_list=None, epoch_num=None):
 		"""Initializes the Example, performing tokenization and truncation to produce the encoder, decoder and target sequences, which are stored in self.
 
 		Args:
@@ -44,7 +44,7 @@ class Example(object):
 		# Get ids of special tokens
 		start_decoding = vocab.word2id(data.START_DECODING)
 		stop_decoding = vocab.word2id(data.STOP_DECODING)
-
+		self.epoch_num = epoch_num
 		# Process the article
 		article_words = article.split()
 		if len(article_words) > hps.max_enc_steps.value:
@@ -164,6 +164,8 @@ class Batch(object):
 			self.init_query_seq(example_list, hps) #initialize the input to query_encoder
 		self.init_decoder_seq(example_list, hps)  # initialize the input and targets for the decoder
 		self.store_orig_strings(example_list)  # store the original strings
+		self.epoch_num = example_list[0].epoch_num
+		
 #		self.query_encoder = hps.query_encoder
 
 	# self.max_word_len = 400
@@ -385,7 +387,7 @@ class Batcher(object):
 		if self._data_as_tf_example:
 			while True:
 				try:
-					 article, abstract, word_edge_list, query, query_edge_list= input_gen.next() # read the next example from file. article and abstract are both strings.
+					 article, abstract, word_edge_list, query, query_edge_list, epoch_num = input_gen.next() # read the next example from file. article and abstract are both strings.
 					 #tf.logging.info(random.randint(1,101))
 				except StopIteration: # if there are no more examples:
 					tf.logging.info("The example generator for this example queue filling thread has exhausted data.")
@@ -396,7 +398,7 @@ class Batcher(object):
 					else:
 						raise Exception("single_pass mode is off but the example generator is out of data; error.")
 				abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
-				example = Example(article, abstract_sentences, self._vocab, self._hps, word_edge_list=word_edge_list, query=query, query_edge_list=query_edge_list)
+				example = Example(article, abstract_sentences, self._vocab, self._hps, word_edge_list=word_edge_list, query=query, query_edge_list=query_edge_list, epoch_num=epoch_num)
 				self._example_queue.put(example)
 		else:
 
@@ -424,7 +426,7 @@ class Batcher(object):
 						raise Exception("single_pass mode is off but the example generator is out of data; error.")
 
 				abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)]  # Use the <s> and </s> tags in abstract to get a list of sentences.
-				example = Example(article, abstract_sentences, self._vocab, self._hps, word_edge_list=word_edge_list, query=query, query_edge_list=query_edge_list)
+				example = Example(article, abstract_sentences, self._vocab, self._hps, word_edge_list=word_edge_list, query=query, query_edge_list=query_edge_list, epoch_num=epoch_num)
 				self._example_queue.put(example)  # place the Example in the example queue.
 
 	def fill_batch_queue(self):
@@ -482,7 +484,7 @@ class Batcher(object):
 			query_edge_list = None
 			word_edge_list = None
 			while True:
-				e = example_generator.next() # e is a tf.Example
+				e, epoch_num = example_generator.next() # e is a tf.Example
 				try:
 					article_text = e.features.feature['article'].bytes_list.value[0] # document text
 					abstract_text = e.features.feature['abstract'].bytes_list.value[0] # response text
@@ -501,7 +503,7 @@ class Batcher(object):
 					tf.logging.warning('Found an example with empty article text. Skipping it.')
 				else:
 					#tf.logging.info(abstract_text)
-					yield (article_text, abstract_text, word_edge_list, query_text, query_edge_list)
+					yield (article_text, abstract_text, word_edge_list, query_text, query_edge_list, epoch_num)
 			
 		else:
 

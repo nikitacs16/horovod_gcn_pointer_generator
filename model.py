@@ -182,6 +182,7 @@ class SummarizationModel(object):
 		feed_dict[self._enc_batch] = batch.enc_batch
 		feed_dict[self._enc_lens] = batch.enc_lens
 		feed_dict[self._enc_padding_mask] = batch.enc_padding_mask
+		feed_dict[self._epoch_num] = batch.epoch_num
 
 		if FLAGS.query_encoder:
 			feed_dict[self._query_batch] = batch.query_batch
@@ -1004,6 +1005,7 @@ class SummarizationModel(object):
 			'summaries': self._summaries,
 			'loss': self._loss,
 			'global_step': self.global_step,
+			'epoch_num': self.epoch_num
 		}
 		if self._hps.coverage.value:
 			to_return['coverage_loss'] = self._coverage_loss

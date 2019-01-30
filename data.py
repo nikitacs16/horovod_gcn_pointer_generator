@@ -161,6 +161,7 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
   """
     # tf.logging.info(data_path)
     if data_as_tf_example:
+        epoch = 0
     	while True:
 			filelist = glob.glob(data_path) # get the list of datafiles
 			assert filelist, ('Error: Empty filelist at %s' % data_path) # check filelist isn't empty
@@ -177,7 +178,7 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
 						if not single_pass:
                         				random.shuffle(all_examples)
                         			for k in all_examples:
-                            				yield example_pb2.Example.FromString(k)
+                            				yield example_pb2.Example.FromString(k), epoch
                        				break # finished reading this file
 					
 					str_len = struct.unpack('q', len_bytes)[0]
@@ -187,6 +188,8 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
 			if single_pass:
 				print "example_generator completed reading all datafiles. No more data."
 				break
+            else:
+                epoch = epoch + 1
     	
     else:
     	#pickle format

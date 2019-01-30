@@ -36,6 +36,7 @@ import glob
 import yaml
 import copy
 
+
 #FLAGS = tf.app.flags.FLAGS
 flags = tf.app.flags 
 FLAGS = tf.app.flags.FLAGS
@@ -260,6 +261,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
   tf.logging.info("starting run_training")
   batch_count = 0
   #new_saver = tf.train.Saver()
+  prev_epoch_num = 0
   best_loss = 0.0
   if FLAGS.use_save_at:
     epoch_dir = os.path.join(FLAGS.log_root, "epoch")
@@ -301,11 +303,20 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       # get the summaries and iteration number so we can write summaries to tensorboard
       summaries = results['summaries'] # we will write these summaries to tensorboard using summary_writer
       train_step = results['global_step'] # we need this to update our running average loss
+      epoch_num = results['epoch_num']
+
       tf.logging.info('Batch count: %d',train_step)
       
       summary_writer.add_summary(summaries, train_step) # write the summaries
       if train_step % 100 == 0: # flush the summary writer every so often
         summary_writer.flush()
+
+      if epoch_num!=prev_epoch_num:
+        tf.logging.info('epoch completed')
+        prev_epoch_num = epoch_num
+        saver.save(sess, model_save_path, global_step = train_step)
+
+      #Add the save snippet here
 
             
       #if train_step %  100 == 0: #evaluate half an epoch
@@ -326,6 +337,35 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
 
 #epoch loss
 global loaded_checkpoints
+
+def run_eval_parallel(decode_model_hps, vocab, batcher):
+
+  """Repeatedly runs eval iterations, logging to screen and decoding with beam size 1 """ 
+  
+  
+  while True:
+    #tf.logging.info('Entered while')
+    checkpoint_name = util.load_ckpt(saver, sess) # load a new checkpoint
+    #tf.logging.info(checkpoint_name)
+    if checkpoint_name in loaded_checkpoints:
+      time.sleep(1000)
+      #tf.logging.info(checkpoint_name)
+      not_seen = False
+    else:
+      #tf.logging.info(checkpoint_name)
+      loaded_checkpoints.append(checkpoint_name)
+      
+      check_point_step_num = checkpoint_name.split('-')[-1] #regex
+      not_seen = True
+      test_batcher = copy.deepcopy(batcher)
+      model = SummarizationModel(decode_model_hps, vocab)
+      decoder = BeamSearchDecoder(model, test_batcher, vocab, use_epoch=True, epoch_num=check_point_step_num)
+      decoder.decode()
+
+    
+
+
+
 def run_eval(model, batcher, vocab, hps):
 
   """Repeatedly runs eval iterations, logging to screen and writing summaries. Saves the model with the best loss seen so far."""
@@ -447,6 +487,13 @@ def main(unused_argv):
     if FLAGS.use_val_as_test:
       FLAGS.data_path = config['dev_path']
 
+  if FLAGS.mode == 'decode_by_val':
+    FLAGS.word_gcn_edge_dropout = 1.0
+    FLAGS.query_gcn_edge_dropout = 1.0
+    FLAGS.single_pass = True
+    FLAGS.beam_size = 1
+    FLAGS.data_path = config['dev_path']
+
   
   if FLAGS.mode == 'restore_best_model':
     FLAGS.restore_best_model = True
@@ -532,6 +579,10 @@ def main(unused_argv):
   elif hps.mode.value == 'convert_to_coverage_model':
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
+  elif hps.mode.value == 'decode_by_val':
+    decode_model_hps = hps  # This will be the hyperparameters for the decoder model
+    decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
+    run_eval_parallel(decode_model_hps, vocab)
   else:
     raise ValueError("The 'mode' flag must be one of train/eval/decode")
    
