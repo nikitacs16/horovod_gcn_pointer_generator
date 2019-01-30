@@ -681,7 +681,7 @@ class SummarizationModel(object):
 				
 				
 				########### LSTM LAYER ############	
-				enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens,keep_prob=hps.lstm_dropout.value)
+				enc_outputs, fw_st, bw_st = self._add_encoder(gcn_outputs, self._enc_lens, num_layers=hps.encoder_lstm_layers.value, keep_prob=hps.lstm_dropout.value)
 				self._dec_in_state = self._reduce_states(fw_st, bw_st)
 
 
@@ -733,7 +733,7 @@ class SummarizationModel(object):
 					
 					######## LSTM LAYER #############		
 					
-					query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens, name='query_encoder',keep_prob=hps.lstm_dropout.value)
+					query_outputs, fw_st_q, bw_st_q = self._add_encoder(q_gcn_outputs, self._query_lens, num_layers=hps.query_encoder_lstm_layers.value, name='query_encoder',keep_prob=hps.lstm_dropout.value)
 					self._query_states = query_outputs
 					
 					######### UPPER CONCAT ############
@@ -755,7 +755,7 @@ class SummarizationModel(object):
 				if not self._hps.no_lstm_encoder.value:
 
 				#####LSTM LAYER ########
-					enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens,num_layers=hps.encoder_lstm_layers, keep_prob=hps.lstm_dropout.value)
+					enc_outputs, fw_st, bw_st = self._add_encoder(emb_enc_inputs, self._enc_lens, num_layers=hps.encoder_lstm_layers.value, keep_prob=hps.lstm_dropout.value)
 
 					if self._hps.stacked_lstm.value:  # lstm over lstm
 						enc_outputs, fw_st, bw_st = self._add_encoder(enc_outputs, self._enc_lens, name='stacked_encoder',keep_prob=hps.lstm_dropout.value)
@@ -819,7 +819,7 @@ class SummarizationModel(object):
 				if self._hps.query_encoder.value:
 					
 					if not self._hps.no_lstm_query_encoder.value:
-						query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens, name='query_encoder',keep_prob=hps.lstm_dropout.value)
+						query_outputs, fw_st_q, bw_st_q = self._add_encoder(emb_query_inputs, self._query_lens, num_layers= hps.query_encoder_lstm_layers.value, name='query_encoder',keep_prob=hps.lstm_dropout.value)
 						self._query_states = query_outputs
 						q_in_dim = self._hps.hidden_dim.value * 2
 						

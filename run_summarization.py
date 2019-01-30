@@ -95,7 +95,7 @@ tf.app.flags.DEFINE_float('beta_l2', config['beta_l2'], 'scale for l2')
 
 tf.app.flags.DEFINE_integer('hidden_dim', config['hidden_dim'], 'dimension of RNN hidden states')
 tf.app.flags.DEFINE_integer('emb_dim', config['emb_dim'], 'dimension of word embeddings')
-tf.app.flags.DEFINE_integer('encoder_lstm_layers', config
+tf.app.flags.DEFINE_integer('encoder_lstm_layers', config['encoder_lstm_layers'], 'how many layers at encoder')
 tf.app.flags.DEFINE_integer('batch_size',config['batch_size'], 'minibatch size')
 tf.app.flags.DEFINE_integer('max_enc_steps', config['max_enc_steps'], 'max timesteps of encoder (max source text tokens)')
 tf.app.flags.DEFINE_integer('max_dec_steps', config['max_dec_steps'], 'max timesteps of decoder (max summary tokens)')
@@ -120,7 +120,6 @@ tf.app.flags.DEFINE_boolean('pointer_gen', config['pointer_gen'], 'If True, use 
 #GCN model
 
 tf.app.flags.DEFINE_boolean('no_lstm_encoder', config['no_lstm_encoder'], 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
-tf.app.flags.DEFINE_boolean('query_encoder',config['query_encoder'],'Keep true for the query based problems')
 tf.app.flags.DEFINE_boolean('concat_gcn_lstm',config['concat_gcn_lstm'], 'Should you concat hidden states from lstm and gcn?')
 tf.app.flags.DEFINE_boolean('simple_concat',config['simple_concat'], 'Should you simple or weighed concat')
 tf.app.flags.DEFINE_boolean('use_gcn_lstm_parallel',config['use_gcn_lstm_parallel'], 'Should you concat hidden states from lstm and gcn?')
@@ -142,6 +141,8 @@ tf.app.flags.DEFINE_boolean('word_gcn_fusion', config['word_gcn_fusion'], 'shoul
 
 
 #Query model addition
+tf.app.flags.DEFINE_boolean('query_encoder',config['query_encoder'],'Keep true for the query based problems')
+tf.app.flags.DEFINE_integer('query_encoder_lstm_layers', config['encoder_lstm_layers'], 'how many layers at encoder')
 tf.app.flags.DEFINE_boolean('no_lstm_query_encoder',config['no_lstm_query_encoder'], 'Removes LSTM layer for query from the seq2seq model. query_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('query_gcn', config['query_gcn'], 'If True, use pointer-generator with gcn at word level. If False, use other options.')
 tf.app.flags.DEFINE_boolean('query_gcn_gating', config['query_gcn_gating'], 'If True, use gating at query level')
@@ -482,7 +483,7 @@ def main(unused_argv):
 
 
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
-  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm', 'use_gru','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','simple_concat','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','stacked_lstm', 'word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'word_loop_dropout', 'query_loop_dropout', 'use_gru', 'word_gcn_fusion', 'query_gcn_fusion']
+  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm', 'use_gru','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','simple_concat','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','stacked_lstm', 'word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'word_loop_dropout', 'query_loop_dropout', 'use_gru', 'word_gcn_fusion', 'query_gcn_fusion','encoder_lstm_layers','query_encoder_lstm_layers']
   hps_dict = {}
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list
