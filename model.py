@@ -942,7 +942,7 @@ class SummarizationModel(object):
 						self._total_loss = self._loss + hps.cov_loss_wt.value * self._coverage_loss
 						tf.summary.scalar('total_loss', self._total_loss)
 
-		if hps.mode.value == "decode" or hps.mode.value="decode_by_val":
+		if hps.mode.value == "decode" or hps.mode.value=="decode_by_val":
 			# We run decode beam search mode one decoder step at a time
 			assert len(
 				final_dists) == 1  # final_dists is a singleton list containing shape (batch_size, extended_vsize)
