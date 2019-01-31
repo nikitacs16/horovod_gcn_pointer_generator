@@ -489,6 +489,7 @@ def main(unused_argv):
     FLAGS.word_gcn_edge_dropout = 1.0
     FLAGS.query_gcn_edge_dropout = 1.0
     FLAGS.single_pass = True
+    FLAGS.beam_size = 1
     FLAGS.data_path = config['dev_path']
 
   

@@ -169,7 +169,7 @@ class SummarizationModel(object):
 			self._target_batch = tf.placeholder(tf.int32, [hps.batch_size.value, hps.max_dec_steps.value], name = 'target_batch')
 			self._dec_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, hps.max_dec_steps.value], name='dec_padding_mask')
 
-		if hps.mode.value == "decode" and hps.coverage.value:
+		if hps.mode.value == "decode" or hps.mode.value == "decode_by_val" and hps.coverage.value:
 			self.prev_coverage = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='prev_coverage')
 
 	def _make_feed_dict(self, batch, just_enc=False):
@@ -532,7 +532,7 @@ class SummarizationModel(object):
 			#self._dec_in_state = rnc._zero_state_tensors(cell.size, hps.batch_size.value, float32)
 		# TODO Feed the averaged gcn word vectors
 			self._dec_in_state = cell.zero_state(hps.batch_size.value, tf.float32)
-		prev_coverage = self.prev_coverage if hps.mode.value == "decode" and hps.coverage.value else None  # In decode mode, we run attention_decoder one step at a time and so need to pass in the previous step's coverage vector each time
+		prev_coverage = self.prev_coverage if hps.mode.value == "decode" or hps.mode.value == "decode_by_val" and hps.coverage.value else None  # In decode mode, we run attention_decoder one step at a time and so need to pass in the previous step's coverage vector each time
 
 		if hps.query_encoder.value:
 			outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
@@ -942,7 +942,7 @@ class SummarizationModel(object):
 						self._total_loss = self._loss + hps.cov_loss_wt.value * self._coverage_loss
 						tf.summary.scalar('total_loss', self._total_loss)
 
-		if hps.mode.value == "decode":
+		if hps.mode.value == "decode" or hps.mode.value="decode_by_val":
 			# We run decode beam search mode one decoder step at a time
 			assert len(
 				final_dists) == 1  # final_dists is a singleton list containing shape (batch_size, extended_vsize)
