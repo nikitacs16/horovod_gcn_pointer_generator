@@ -322,13 +322,13 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       #if train_step %  100 == 0: #evaluate half an epoch
        # saver.save(sess, model_save_path, global_step=train_step)
               
-
+      '''	
       if train_step%FLAGS.save_steps == 0:
         t_now = time.time()
         f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
         t_epoch = t_now
         saver.save(sess, model_save_path, global_step = train_step)  
-      
+      '''
 
       if FLAGS.use_stop_after:
         if train_step >= FLAGS.stop_steps:
