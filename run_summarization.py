@@ -315,20 +315,9 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
         tf.logging.info('epoch completed')
         prev_epoch_num = epoch_num
         saver.save(sess, model_save_path, global_step = train_step)
-
-      #Add the save snippet here
-
-            
-      #if train_step %  100 == 0: #evaluate half an epoch
-       # saver.save(sess, model_save_path, global_step=train_step)
-              
-      '''	
-      if train_step%FLAGS.save_steps == 0:
         t_now = time.time()
         f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
         t_epoch = t_now
-        saver.save(sess, model_save_path, global_step = train_step)  
-      '''
 
       if FLAGS.use_stop_after:
         if train_step >= FLAGS.stop_steps:
@@ -500,7 +489,6 @@ def main(unused_argv):
     FLAGS.word_gcn_edge_dropout = 1.0
     FLAGS.query_gcn_edge_dropout = 1.0
     FLAGS.single_pass = True
-    FLAGS.beam_size = 1
     FLAGS.data_path = config['dev_path']
 
   
@@ -589,8 +577,6 @@ def main(unused_argv):
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
   elif hps.mode.value == 'decode_by_val':
-    #decode_model_hps = hps  # This will be the hyperparameters for the decoder model
-    #decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
     run_eval_parallel(hps, vocab, batcher)
   else:
     raise ValueError("The 'mode' flag must be one of train/eval/decode")
