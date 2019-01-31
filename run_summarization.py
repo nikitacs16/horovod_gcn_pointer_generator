@@ -490,6 +490,7 @@ def main(unused_argv):
     FLAGS.query_gcn_edge_dropout = 1.0
     FLAGS.single_pass = True
     FLAGS.beam_size = 1
+    FLAGS.batch_size = 1
     FLAGS.data_path = config['dev_path']
 
   
@@ -578,6 +579,7 @@ def main(unused_argv):
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
   elif hps.mode.value == 'decode_by_val':
+    hps = hps.replace(mode='decode')
     run_eval_parallel(hps, vocab, batcher)
   else:
     raise ValueError("The 'mode' flag must be one of train/eval/decode")
