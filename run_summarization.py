@@ -338,19 +338,20 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
 #epoch loss
 global loaded_checkpoints
 
-def run_eval_parallel(decode_model_hps, vocab, batcher):
+def run_eval_parallel(hps, vocab, batcher):
 
   """Repeatedly runs eval iterations, logging to screen and decoding with beam size 1 """ 
 		  
-  saver = tf.train.Saver()
-  sess = tf.Session(config=util.get_config())
+  #saver = tf.train.Saver()
+  #sess = tf.Session(config=util.get_config())
   ckpt_dir = os.path.join(FLAGS.log_root, "train")
   loaded_checkpoints = []
   while True:
     #tf.logging.info('Entered while')
     #checkpoint_name = util.load_ckpt(saver, sess) # load a new checkpoint
     #tf.logging.info(checkpoint_name)
-    checkpoint_names = glob.glob(ckpt_dir + '*.index')
+    checkpoint_names = sorted(glob.glob(ckpt_dir + '/*.index'))
+    tf.logging.info(checkpoint_names)	
     for checkpoint_name in checkpoint_names :
       if checkpoint_name in loaded_checkpoints:
         continue
@@ -360,9 +361,12 @@ def run_eval_parallel(decode_model_hps, vocab, batcher):
       
       check_point_step_num = int(checkpoint_name.split('--')[-1][:-6]) #regex
       not_seen = True
-      test_batcher = copy.deepcopy(batcher)
+      batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass, data_format=FLAGS.tf_example_format)
+      decode_model_hps = hps  # This will be the hyperparameters for the decoder model
+      decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher $
+	
       model = SummarizationModel(decode_model_hps, vocab)
-      decoder = BeamSearchDecoder(model, test_batcher, vocab, use_epoch=True, epoch_num=check_point_step_num)
+      decoder = BeamSearchDecoder(model, batcher, vocab, use_epoch=True, epoch_num=check_point_step_num)
       decoder.decode()
     
     time.sleep(100)
@@ -585,9 +589,9 @@ def main(unused_argv):
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
   elif hps.mode.value == 'decode_by_val':
-    decode_model_hps = hps  # This will be the hyperparameters for the decoder model
-    decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
-    run_eval_parallel(decode_model_hps, vocab, batcher)
+    #decode_model_hps = hps  # This will be the hyperparameters for the decoder model
+    #decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
+    run_eval_parallel(hps, vocab, batcher)
   else:
     raise ValueError("The 'mode' flag must be one of train/eval/decode")
    
