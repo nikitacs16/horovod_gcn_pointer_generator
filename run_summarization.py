@@ -579,7 +579,6 @@ def main(unused_argv):
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
   elif hps.mode.value == 'decode_by_val':
-    hps = hps.replace(mode='decode')
     run_eval_parallel(hps, vocab, batcher)
   else:
     raise ValueError("The 'mode' flag must be one of train/eval/decode")
