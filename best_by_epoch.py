@@ -8,6 +8,7 @@ import pandas as pd
 import subprocess
 import pickle
 import rouge 
+import bleu
 config_file = sys.argv[1]
 global config
 
@@ -52,7 +53,9 @@ def get_metrics(f1,f2):
                 decoded.append(dec_tex)
                 count = count + 1
         x = rouge.rouge(decoded,ref)
-        return x['rouge_1/f_score']*100,x['rouge_2/f_score']*100,x['rouge_l/f_score']*100
+	bl = bleu.moses_multi_bleu(decoded,ref)
+
+        return x['rouge_1/f_score']*100,x['rouge_2/f_score']*100,x['rouge_l/f_score']*100, bl
 
 
 with open(config_file) as f:
@@ -79,10 +82,11 @@ for i in sorted(file_list):
         s = m.group(0)
         m = re.search('\d+',s)
 	count.append(int(m.group(0)))
-best_rouge_2 = 0.0
+best_bleu = 0.0
 rouge_1 = []
 rouge_2 = []
 rouge_l = []
+bleu_4 = []
 best_rouge_epoch = 1000
 print(file_list)
 print(count)
@@ -91,12 +95,13 @@ for k,c in enumerate(count):
 	print(c)
 	p = os.system('python run_summarization.py --mode=decode --use_val_as_test=True --test_by_epoch=True --epoch_num ' + str(c) + ' --config_file ' + str(config_file))
         w =  get_result_dir_name('val',c)
-	r1,r2,rl = get_metrics(os.path.join(w,'decoded','*.txt'), os.path.join(w,'reference','*.txt'))
+	r1,r2,rl,bl = get_metrics(os.path.join(w,'decoded','*.txt'), os.path.join(w,'reference','*.txt'))
 	rouge_1.append(r1)
 	rouge_2.append(r2)
 	rouge_l.append(rl)
-	if r2 > best_rouge_2:
-		best_rouge_2 = r2 
+	bleu_4.append(bl)
+	if bl > best_bleu:
+		best_bleu = bl 
 		best_rouge_epoch = c
 
 	d = {'epoch':count[:k+1],'rouge_1':rouge_1, 'rouge_2':rouge_2, 'rouge_l': rouge_l}

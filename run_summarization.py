@@ -314,7 +314,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       if epoch_num!=prev_epoch_num:
         tf.logging.info('epoch completed')
         prev_epoch_num = epoch_num
-        saver.save(sess, model_save_path, global_step = train_step)
+        saver.save(prev_sess, model_save_path, global_step = train_step - 1)
         t_now = time.time()
         f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
         t_epoch = t_now
@@ -323,6 +323,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
         if train_step >= FLAGS.stop_steps:
           tf.logging.info('Stopping as epoch limit completed')
           exit()
+      prev_sess = sess	
 
 #epoch loss
 global loaded_checkpoints
@@ -353,12 +354,15 @@ def run_eval_parallel(hps, vocab, batcher):
       batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass, data_format=FLAGS.tf_example_format)
       decode_model_hps = hps  # This will be the hyperparameters for the decoder model
       decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher $
-	
+      #try:		
       model = SummarizationModel(decode_model_hps, vocab)
       decoder = BeamSearchDecoder(model, batcher, vocab, use_epoch=True, epoch_num=check_point_step_num)
       decoder.decode()
+      tf.reset_default_graph()
+      
+
     
-    time.sleep(100)
+    time.sleep(10)
 
     
 
