@@ -311,10 +311,11 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       if train_step % 100 == 0: # flush the summary writer every so often
         summary_writer.flush()
 
-      if epoch_num!=prev_epoch_num:
+      #if epoch_num!=prev_epoch_num:
+      if train_step% FLAGS.save_steps == 0:
         tf.logging.info('epoch completed')
         prev_epoch_num = epoch_num
-        saver.save(prev_sess, model_save_path, global_step = train_step - 1)
+        saver.save(sess, model_save_path, global_step = train_step - 1)
         t_now = time.time()
         f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
         t_epoch = t_now
@@ -323,7 +324,6 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
         if train_step >= FLAGS.stop_steps:
           tf.logging.info('Stopping as epoch limit completed')
           exit()
-      prev_sess = sess	
 
 #epoch loss
 global loaded_checkpoints
@@ -488,6 +488,8 @@ def main(unused_argv):
     FLAGS.data_path = config['test_path']
     if FLAGS.use_val_as_test:
       FLAGS.data_path = config['dev_path']
+      FLAGS.beam_size = 1
+
 
   if FLAGS.mode == 'decode_by_val':
     FLAGS.word_gcn_edge_dropout = 1.0
@@ -582,7 +584,7 @@ def main(unused_argv):
   elif hps.mode.value == 'convert_to_coverage_model':
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
-  elif hps.mode.value == 'decode_by_val':
+  elif hps.mode.value == 'decode_by_val': #deprecated
     run_eval_parallel(hps, vocab, batcher)
   else:
     raise ValueError("The 'mode' flag must be one of train/eval/decode")

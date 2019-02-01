@@ -251,18 +251,31 @@ class SummarizationModel(object):
 
 			if self._hps.use_lstm.value:
 				cell_fw = []
-				for _ in range(num_layers):
-					cell = tf.contrib.rnn.LayerNormBasicLSTMCell(self._hps.hidden_dim.value)
-					if num_layers > 1:
-						cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob, input_keep_prob=keep_prob) 
-					cell_fw.append(cell)
-
 				cell_bw = []
-				for _ in range(num_layers):
-					cell = tf.contrib.rnn.LayerNormBasicLSTMCell(self._hps.hidden_dim.value)
-					if num_layers > 1:
-						cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob, input_keep_prob=keep_prob) 
-					cell_bw.append(cell)
+				if self._hps.lstm_type.value == 'layer_norm':
+					for _ in range(num_layers):
+						cell = tf.contrib.rnn.LayerNormBasicLSTMCell(self._hps.hidden_dim.value)
+						if num_layers > 1:
+							cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob, input_keep_prob=keep_prob) 
+						cell_fw.append(cell)
+
+					for _ in range(num_layers):
+						cell = tf.contrib.rnn.LayerNormBasicLSTMCell(self._hps.hidden_dim.value)
+						if num_layers > 1:
+							cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob, input_keep_prob=keep_prob) 
+						cell_bw.append(cell)
+				else:
+					for _ in range(num_layers):
+						cell= tf.contrib.rnn.LSTMCell(self._hps.hidden_dim.value, initializer=tf.contrib.layers.xavier_initializer(seed=1), state_is_tuple=True)
+						if num_layers > 1:
+							cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob, input_keep_prob=keep_prob) 
+						cell_fw.append(cell)
+
+					for _ in range(num_layers):
+						cell= tf.contrib.rnn.LSTMCell(self._hps.hidden_dim.value, initializer=tf.contrib.layers.xavier_initializer(seed=1), state_is_tuple=True)
+						if num_layers > 1:
+							cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob, input_keep_prob=keep_prob) 
+						cell_fw.append(cell)
 
 			elif self._hps.use_gru.value:
 				cell_fw = [tf.contrib.rnn.GRUCell(self._hps.hidden_dim.value) for _ in range(num_layers)]
