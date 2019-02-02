@@ -71,17 +71,18 @@ train_path = os.path.join(config['log_root'], config['exp_name'], "train")
 
 
 file_list = glob.glob(train_path+'/*.index')
+print(file_list)
 count = []
 for i in sorted(file_list):
 	m = re.search('\d+(.)index',i)
-		s = m.group(0)
-		m = re.search('\d+',s)
+	s = m.group(0)
+	m = re.search('\d+',s)
 	count.append(int(m.group(0)))
 
 k = len(file_list)
 p = 0
-
-for i in range(0,k,5):
+#print(count)
+for i in range(5,k,5):
 	multi_test(count[p:i])
 	p = i
 
@@ -91,8 +92,8 @@ rouge_2 = []
 rouge_l = []
 bleu_4 = []
 best_rouge_epoch = 1000
-print(file_list)
-print(count)
+#print(file_list)
+#print(count)
 
 for k,c in enumerate(count): 
 	w =  get_result_dir_name('val',c)

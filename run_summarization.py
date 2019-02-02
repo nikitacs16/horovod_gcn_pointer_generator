@@ -93,7 +93,7 @@ tf.app.flags.DEFINE_float('beta_l2', config['beta_l2'], 'scale for l2')
 
 
 # Hyperparameters
-
+tf.app.flags.DEFINE_string('lstm_type',config['lstm_type'],'what type of lstm')
 tf.app.flags.DEFINE_integer('hidden_dim', config['hidden_dim'], 'dimension of RNN hidden states')
 tf.app.flags.DEFINE_integer('emb_dim', config['emb_dim'], 'dimension of word embeddings')
 tf.app.flags.DEFINE_integer('encoder_lstm_layers', config['encoder_lstm_layers'], 'how many layers at encoder')
@@ -154,7 +154,7 @@ tf.app.flags.DEFINE_boolean('query_gcn_skip',config['query_gcn_skip'], 'add skip
 tf.app.flags.DEFINE_float('query_gcn_edge_dropout', config['query_gcn_edge_dropout'], 'dropout keep probability for the gcn layer')
 tf.app.flags.DEFINE_float('query_loop_dropout', config['query_loop_dropout'], 'dropout keep probability for self loop in query_gcn')
 tf.app.flags.DEFINE_boolean('query_gcn_fusion', config['query_gcn_fusion'], 'should you use a final fusion layers for the hops?')
-tf.app.flags.DEFINE_boolean('use_query_aware_attention', config['use_query_aware_attention'], 'True if to include query in attention equation')
+#tf.app.flags.DEFINE_boolean('use_query_aware_attention', config['use_query_aware_attention'], 'True if to include query in attention equation')
 #edge types
 tf.app.flags.DEFINE_boolean('flow_alone',config['flow_alone'], 'flow only')
 tf.app.flags.DEFINE_boolean('flow_combined',config['flow_combined'], 'flow and dependency parsing')
@@ -535,7 +535,7 @@ def main(unused_argv):
 
 
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
-  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm', 'use_gru','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','simple_concat','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','stacked_lstm', 'word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'word_loop_dropout', 'query_loop_dropout', 'use_gru', 'word_gcn_fusion', 'query_gcn_fusion','encoder_lstm_layers','query_encoder_lstm_layers', 'lstm_dropout', 'use_learning_rate_halving', 'learning_rate_change_after', 'learning_rate_change_interval', 'save_steps']
+  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm', 'use_gru','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','simple_concat','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','stacked_lstm', 'word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'word_loop_dropout', 'query_loop_dropout', 'use_gru', 'word_gcn_fusion', 'query_gcn_fusion','encoder_lstm_layers','query_encoder_lstm_layers', 'lstm_dropout', 'use_learning_rate_halving', 'learning_rate_change_after', 'learning_rate_change_interval', 'save_steps', 'lstm_type']
   hps_dict = {}
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list
