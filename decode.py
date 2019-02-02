@@ -112,6 +112,7 @@ class BeamSearchDecoder(object):
         #results_dict = rouge_eval(self._rouge_ref_dir, self._rouge_dec_dir)
         #results_dict['bleu'] = bleu_eval(self._rouge_ref_dir, self._rouge_dec_dir)
         #rouge_log(results_dict, self._decode_dir)
+        exit()
         return
 
       original_article = batch.original_articles[0]  # string
