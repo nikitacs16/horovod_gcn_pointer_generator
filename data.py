@@ -164,9 +164,7 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
 		epoch = 0
 		while True:
 			filelist = glob.glob(data_path) # get the list of datafiles
-			len_file_list = len(filelist)
 			assert filelist, ('Error: Empty filelist at %s' % data_path) # check filelist isn't empty
-			tf.logging.info(filelist)
 			if single_pass:
 				filelist = sorted(filelist)
 			else:
@@ -178,11 +176,10 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
 					len_bytes = reader.read(8)
 					if not len_bytes: 
 						if not single_pass:
-									random.shuffle(all_examples)
-									for k in all_examples:
-#											if 
-											yield example_pb2.Example.FromString(k), epoch
-									break # finished reading this file
+							random.shuffle(all_examples)
+						for k in all_examples:
+							yield example_pb2.Example.FromString(k), epoch
+						break # finished reading this file
 					
 					str_len = struct.unpack('q', len_bytes)[0]
 					example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
