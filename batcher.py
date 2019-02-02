@@ -489,7 +489,10 @@ class Batcher(object):
 					article_text = e.features.feature['article'].bytes_list.value[0] # document text
 					abstract_text = e.features.feature['abstract'].bytes_list.value[0] # response text
 					if self._hps.query_encoder.value:
-						query_text = e.features.feature['query'].bytes_list.value[0] # context text
+						try:
+							query_text = e.features.feature['query'].bytes_list.value[0] # context text
+						except:
+							query_text = ''
 					if self._hps.word_gcn.value:
 						word_edge_list =ast.literal_eval(e.features.feature['word_edge_list'].bytes_list.value[0])
 						#tf.logging.info((word_edge_list[0]))
