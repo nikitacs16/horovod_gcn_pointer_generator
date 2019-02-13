@@ -286,13 +286,18 @@ class SummarizationModel(object):
 				cell_fw = [tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value) for _ in range(num_layers)]
 				cell_bw = [tf.contrib.rnn.BasicRNNCell(self._hps.hidden_dim.value) for _ in range(num_layers)]
 
+			if self._hps.lstm_type.value == 'basic':
+				(encoder_outputs, (fw_st, bw_st)) = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs, dtype=tf.float32, sequence_length=seq_len,  swap_memory=True)
+				encoder_outputs = tf.concat(axis=2, values=encoder_outputs)
 			
-			temp_outputs = tf.contrib.rnn.stack_bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs, sequence_length=seq_len, dtype=tf.float32)
-			
-			encoder_outputs, encoder_fw_state, encoder_bw_state = temp_outputs	
 
-			fw_st = encoder_fw_state[-1] #last states 
-			bw_st = encoder_bw_state[-1]	
+			else:
+				temp_outputs = tf.contrib.rnn.stack_bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs, sequence_length=seq_len, dtype=tf.float32)
+				
+				encoder_outputs, encoder_fw_state, encoder_bw_state = temp_outputs	
+
+				fw_st = encoder_fw_state[-1] #last states 
+				bw_st = encoder_bw_state[-1]	
 
 		return encoder_outputs, fw_st, bw_st
 

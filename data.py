@@ -350,7 +350,7 @@ def show_abs_oovs(abstract, vocab, article_oovs):
 dep_list = ['cc', 'agent', 'ccomp', 'prt', 'meta', 'nsubjpass', 'csubj', 'conj', 'amod', 'poss', 'neg', 'csubjpass',
 			'mark', 'auxpass', 'advcl', 'aux', 'ROOT', 'prep', 'parataxis', 'xcomp', 'nsubj', 'nummod', 'advmod',
 			'punct', 'quantmod', 'acomp', 'compound', 'pcomp', 'intj', 'relcl', 'npadvmod', 'case', 'attr', 'dep',
-			'appos', 'det', 'nmod', 'dobj', 'dative', 'pobj', 'expl', 'predet', 'preconj', 'oprd', 'acl']
+			'appos', 'det', 'nmod', 'dobj', 'dative', 'pobj', 'expl', 'predet', 'preconj', 'oprd', 'acl', 'entity','coref','flow']
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 

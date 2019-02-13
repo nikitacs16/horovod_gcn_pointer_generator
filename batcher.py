@@ -483,6 +483,12 @@ class Batcher(object):
 			query_text = None
 			query_edge_list = None
 			word_edge_list = None
+			
+			word_coref_edge_list = None
+			word_entity_edge_list = None 
+			query_entity_edge_list = None
+			query_coref_edge_list = None
+
 			while True:
 				e, epoch_num = example_generator.next() # e is a tf.Example
 				try:
@@ -496,8 +502,20 @@ class Batcher(object):
 					if self._hps.word_gcn.value:
 						word_edge_list =ast.literal_eval(e.features.feature['word_edge_list'].bytes_list.value[0])
 						#tf.logging.info((word_edge_list[0]))
+						if self._hps.use_coref_graph.value:
+							word_edge_list = word_edge_list + ast.literal_eval(e.features.feature['word_coref_edge_list'].bytes_list.value[0])
+						if self._hps.use_entity_graph.value:
+							word_edge_list = word_edge_list + ast.literal_eval(e.features.feature['word_entity_edge_list'].bytes_list.value[0])
+
+					
+
 					if self._hps.query_gcn.value:
 						query_edge_list = ast.literal_eval(e.features.feature['query_edge_list'].bytes_list.value[0])
+						if self._hps.use_coref_graph.value:
+							query_edge_list = query_edge_list + ast.literal_eval(e.features.feature['query_coref_edge_list'].bytes_list.value[0])
+						if self._hps.use_entity_graph.value:
+							query_edge_list = query_edge_list + ast.literal_eval(e.features.feature['query_entity_edge_list'].bytes_list.value[0])
+
 
 				except ValueError:
 					tf.logging.error('Failed to get article or abstract from example')
