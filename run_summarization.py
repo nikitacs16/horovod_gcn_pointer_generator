@@ -319,7 +319,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
       if train_step% FLAGS.save_steps == 0:
         tf.logging.info('epoch completed')
         prev_epoch_num = epoch_num
-        saver.save(sess, model_save_path, global_step = train_step - 1)
+        saver.save(sess, model_save_path, global_step = train_step)
         t_now = time.time()
         f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
         t_epoch = t_now
