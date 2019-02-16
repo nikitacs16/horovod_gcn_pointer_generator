@@ -127,6 +127,7 @@ tf.app.flags.DEFINE_boolean('use_gcn_lstm_parallel',config['use_gcn_lstm_paralle
 tf.app.flags.DEFINE_boolean('use_label_information',config['use_label_information'], 'Should you use names of labels from the respective parses ?')
 tf.app.flags.DEFINE_boolean('use_coref_graph',config['use_coref_graph'], 'Should you add coreference graph with dependency graph')
 tf.app.flags.DEFINE_boolean('use_entity_graph',config['use_entity_graph'], 'Should you add entity graph with dependency graph')
+tf.app.flags.DEFINE_boolean('use_default_graph',config['use_default_graph'], 'Should you use dependency graph')
 
 
 #GCN hyper-params
@@ -538,7 +539,7 @@ def main(unused_argv):
 
 
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
-  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm', 'use_gru','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','simple_concat','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','stacked_lstm', 'word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'word_loop_dropout', 'query_loop_dropout', 'use_gru', 'word_gcn_fusion', 'query_gcn_fusion','encoder_lstm_layers','query_encoder_lstm_layers', 'lstm_dropout', 'use_learning_rate_halving', 'learning_rate_change_after', 'learning_rate_change_interval', 'save_steps', 'lstm_type', 'use_coref_graph','use_entity_graph']
+  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm', 'use_gru','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','simple_concat','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','stacked_lstm', 'word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'word_loop_dropout', 'query_loop_dropout', 'use_gru', 'word_gcn_fusion', 'query_gcn_fusion','encoder_lstm_layers','query_encoder_lstm_layers', 'lstm_dropout', 'use_learning_rate_halving', 'learning_rate_change_after', 'learning_rate_change_interval', 'save_steps', 'lstm_type', 'use_coref_graph','use_entity_graph', 'use_default_graph']
   hps_dict = {}
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list

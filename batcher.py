@@ -500,7 +500,9 @@ class Batcher(object):
 						except:
 							query_text = ''
 					if self._hps.word_gcn.value:
-						word_edge_list =ast.literal_eval(e.features.feature['word_edge_list'].bytes_list.value[0])
+						word_edge_list = []
+						if self._hps.use_default_graph.value:
+							word_edge_list = word_edge_list + ast.literal_eval(e.features.feature['word_edge_list'].bytes_list.value[0])
 						#tf.logging.info((word_edge_list[0]))
 						if self._hps.use_coref_graph.value:
 							word_edge_list = word_edge_list + ast.literal_eval(e.features.feature['word_coref_edge_list'].bytes_list.value[0])
@@ -510,11 +512,14 @@ class Batcher(object):
 					
 
 					if self._hps.query_gcn.value:
-						query_edge_list = ast.literal_eval(e.features.feature['query_edge_list'].bytes_list.value[0])
+						query_edge_list = []
+						if self._hps.use_default_graph.value:
+							query_edge_list = query_edge_list + ast.literal_eval(e.features.feature['query_edge_list'].bytes_list.value[0])
 						if self._hps.use_coref_graph.value:
 							query_edge_list = query_edge_list + ast.literal_eval(e.features.feature['query_coref_edge_list'].bytes_list.value[0])
 						if self._hps.use_entity_graph.value:
 							query_edge_list = query_edge_list + ast.literal_eval(e.features.feature['query_entity_edge_list'].bytes_list.value[0])
+						
 
 
 				except ValueError:
