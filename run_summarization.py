@@ -546,7 +546,8 @@ def main(unused_argv):
     if key in hparam_list: # if it's in the list
       hps_dict[key] = val # add it to the dict
   if FLAGS.use_label_information:
-    hps_dict['num_word_dependency_labels'] = 45 #something from meta data here . Gives unique dependency labels.
+    hps_dict['num_word_dependency_labels'] = 49
+
   else:
     hps_dict['num_word_dependency_labels'] = 1
     

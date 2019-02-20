@@ -350,13 +350,13 @@ def show_abs_oovs(abstract, vocab, article_oovs):
 dep_list = ['cc', 'agent', 'ccomp', 'prt', 'meta', 'nsubjpass', 'csubj', 'conj', 'amod', 'poss', 'neg', 'csubjpass',
 			'mark', 'auxpass', 'advcl', 'aux', 'ROOT', 'prep', 'parataxis', 'xcomp', 'nsubj', 'nummod', 'advmod',
 			'punct', 'quantmod', 'acomp', 'compound', 'pcomp', 'intj', 'relcl', 'npadvmod', 'case', 'attr', 'dep',
-			'appos', 'det', 'nmod', 'dobj', 'dative', 'pobj', 'expl', 'predet', 'preconj', 'oprd', 'acl', 'entity','coref','flow']
+			'appos', 'det', 'nmod', 'dobj', 'dative', 'pobj', 'expl', 'predet', 'preconj', 'oprd', 'acl', 'entity','coref','flow','lexical']
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 
-def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_labels=45, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0):
+def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0):
 	adj_main_in, adj_main_out = [], []
-	
+	max_labels = len(dep_dict)
 	for edge_list in batch_list:
 		adj_in, adj_out = {}, {}
 
@@ -407,7 +407,7 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, max_l
 					if not use_label_information: #all assigned the same label information
 						lbl = 0
 					else:
-						lbl = 'flow'
+						lbl = label_dict['flow']
 					out_ind[lbl].append((src, src+1))
 					out_data[lbl].append(1.0)
 

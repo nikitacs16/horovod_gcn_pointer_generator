@@ -24,8 +24,8 @@ FLAGS = tf.app.flags.FLAGS
 def get_config():
   """Returns config for tf.session"""
   config = tf.ConfigProto(allow_soft_placement=True)
-  config.inter_op_parallelism_threads = 44
-  config.intra_op_parallelism_threads = 44
+  config.inter_op_parallelism_threads = 1
+  config.intra_op_parallelism_threads = 1
 
   config.gpu_options.allow_growth=True
   return config
