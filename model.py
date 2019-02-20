@@ -140,6 +140,14 @@ class SummarizationModel(object):
 				self._word_gcn_dropout = tf.placeholder_with_default(hps.word_gcn_dropout.value, shape=(), name='dropout')
 			else:
 				self._word_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='dropout')
+			if FLAGS.use_coref_graph:
+				self._word_adj_in_coref = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_in_coref')
+				self._word_adj_out_coref = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_out_coref')
+			if FLAGS.use_entity_graph:
+				self._word_adj_entity = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_entity')
+			if FLAGS.use_lexical_graph:
+				self._word_adj_lexical = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_entity')
+
 
 		self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
 	
@@ -210,6 +218,7 @@ class SummarizationModel(object):
 						indices=np.array([word_adj_out[i][lbl].row, word_adj_out[i][lbl].col]).T,
 						values=word_adj_out[i][lbl].data,
 						dense_shape=word_adj_out[i][lbl].shape)
+				
 
 		if FLAGS.query_gcn:
 			feed_dict[self._max_query_seq_len] = batch.max_query_len
@@ -309,7 +318,7 @@ class SummarizationModel(object):
 
 	   
 	   
-	def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out,
+	def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, word_only=True
 					   num_layers=1,
 					   use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN",
 					   use_label_information=False, loop_dropout=1.0, use_fusion=False):
@@ -329,6 +338,7 @@ class SummarizationModel(object):
 				t_indices += max_words * b
 				indices.append(t_indices)
 				b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
+		
 		indices = tf.concat(indices, axis=0)
 		b_data = tf.concat(b_data, axis=0)
 		adj_in = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]),
@@ -350,6 +360,9 @@ class SummarizationModel(object):
 								  dense_shape=[batch_size * max_words, batch_size * max_words])
 		labels_out = tf.SparseTensor(indices=indices, values=b_data,
 									 dense_shape=[batch_size * max_words, batch_size * max_words])
+
+		
+
 
 		out = [gcn_in]
 		if use_fusion:
@@ -384,6 +397,25 @@ class SummarizationModel(object):
 				b_loop = tf.get_variable("bias_loop", [gcn_dim],
 										 initializer=tf.random_normal_initializer(stddev=0.01, seed=7))
 
+				if self._hps.use_coref_graph.value and word_only:
+					w_in_coref = tf.get_variable("weights_coref", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
+					w_out_coref = tf.get_variable("weights_inv_coref", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
+					b_coref_in = tf.get_variable("bias_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
+					b_coref_out = tf.get_variable("bias_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
+					gates_coref_in = 1.
+					gates_coref_out = 1.
+
+				if self._hps.use_lexical_graph.value and word_only:
+					w_lexical = tf.get_variable("weights_lexical", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
+					b_lexical = tf.get_variable("bias_lexical", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
+					gates_lexical = 1.
+
+				if self._hps.use_entity_graph.value and word_only:
+					w_entity = tf.get_variable("weights_entity", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
+					b_entity = tf.get_variable("bias_entity", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
+					gates_entity = 1.
+
+
 				gates_loop = 1.
 
 				if use_gating:
@@ -402,7 +434,6 @@ class SummarizationModel(object):
 																						  seed=12))
 					b_gate_loop = tf.get_variable("bias_gate_loop", [1], initializer=tf.constant_initializer(1.))
 
-					# TODO Add edge dropout
 
 					# compute gates_in
 					gates_in = tf.matmul(gcn_in_2d, w_gate_in)
@@ -420,6 +451,57 @@ class SummarizationModel(object):
 
 					# compute gates_loop
 					gates_loop = tf.nn.sigmoid(tf.matmul(gcn_in_2d, w_gate_loop) + b_gate_loop)
+					
+					if self._hps.use_coref_graph.value and word_only:
+						w_gate_in_coref = tf.get_variable("weights_gate_coref", [in_dim, 1],
+													initializer=tf.random_normal_initializer(stddev=0.01, seed=8))
+						w_gate_out_coref = tf.get_variable("weights_gate_inv_coref", [in_dim, 1],
+													 initializer=tf.random_normal_initializer(stddev=0.01, seed=9))
+
+						b_gate_in_coref = tf.get_variable("bias_gate_coref", [1],
+													initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01,
+																							 seed=11))
+						b_gate_out_coref = tf.get_variable("bias_gate_inv_coref", [1],
+													 initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01,
+																							  seed=12))
+	
+						# compute gates_in
+						gates_in_coref = tf.matmul(gcn_in_2d, w_gate_in_coref)
+						adj_in_coref *= tf.transpose(gates_in_coref)
+						values = tf.nn.sigmoid(adj_in_coref.values + b_gate_in_coref)
+						adj_in_coref = tf.SparseTensor(indices=adj_in_coref.indices, values=values, dense_shape=adj_in_coref.dense_shape)
+
+						gates_out_coref = tf.matmul(gcn_out_2d, w_gate_out_coref)
+						adj_out_coref *= tf.transpose(gates_out_coref)
+						values = tf.nn.sigmoid(adj_out_coref.values + b_gate_out_coref)
+						adj_out_coref = tf.SparseTensor(outdices=adj_out_coref.indices, values=values, dense_shape=adj_out_coref.dense_shape)
+
+					if self._hps.use_entity_graph.value and word_only:
+						w_gate_entity = tf.get_variable("weights_gate_entity", [in_dim, 1],
+													 initializer=tf.random_normal_initializer(stddev=0.01, seed=9))
+
+						b_gate_entity = tf.get_variable("bias_entity", [1],
+													initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01,
+																							 seed=11))
+						gates_entity = tf.matmul(gcn_out_2d, w_gate_entity)
+						adj_entity *= tf.transpose(gates_entity)
+						values = tf.nn.sigmoid(adj_entity.values + b_gate_entity)
+						adj_entity = tf.SparseTensor(outdices=adj_entity.indices, values=values, dense_shape=adj_entity.dense_shape)
+
+					if self._hps.use_lexical_graph.value and word_only:	
+						w_gate_lexical = tf.get_variable("weights_gate_lexical", [in_dim, 1],
+													 initializer=tf.random_normal_initializer(stddev=0.01, seed=9))
+
+						b_gate_lexical = tf.get_variable("bias_lexical", [1],
+													initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01,
+																							 seed=11))
+						gates_lexical = tf.matmul(gcn_out_2d, w_gate_lexical)
+						adj_lexical *= tf.transpose(gates_lexical)
+						values = tf.nn.sigmoid(adj_lexical.values + b_gate_lexical)
+						adj_lexical = tf.SparseTensor(outdices=adj_lexical.indices, values=values, dense_shape=adj_lexical.dense_shape)
+
+
+
 				else:
 					# Ideally have to normalize (sum or softmax) for gating too !
 					adj_in = adj_in.__mul__(tf.sparse_reduce_sum(adj_in, axis=1))
@@ -460,9 +542,32 @@ class SummarizationModel(object):
 				if dropout != 1.0: h_loop = tf.nn.dropout(h_loop, keep_prob=dropout, seed=13)  # this is normal dropout
 
 				# final result is the sum of those (with residual connection to inputs)
-				h = tf.nn.relu(h_in + h_out + h_loop)
-				# h = tf.nn.relu(h_out+h_loop)
+				
+				if self._hps.use_default_graph:
+					h_final = h_in + h_out + h_loop
+				
+				if self._hps.use_coref_graph.value and word_only:
+					h_coref_in = tf.matmul(gcn_in_2d, w_in_coref)
+					h_coref_in = tf.sparse_tensor_dense_matmul(adj_in_coref, h_coref_in) + b_coref_in
+					h_coref_out = tf.matmul(gcn_in_2d, w_out_coref)
+					h_coref_out = tf.sparse_tensor_dense_matmul(adj_out_coref, h_coref_out) + b_coref_out
+					h_coref = h_coref_in + h_coref_out
+					h_final = h_final + h_coref
 
+				if self._hps.use_entity_graph.value and word_only:
+					h_entity = tf.matmul(gcn_in_2d, w_entity)
+					h_entity = tf.sparse_tensor_dense_matmul(adj_entity, h_entity) + b_entity
+					#h_entity = h_entity * gates_loop
+					h_final = h_final + h_entity
+
+				if self._hps.use_lexical_graph.value and word_only:
+					h_lexical = tf.matmul(gcn_in_2d, w_lexical)
+					h_lexical = tf.sparse_tensor_dense_matmul(adj_lexical, h_lexical) + b_lexical
+					#h_lexical = h_lexical * gates_loop
+					h_final = h_final + h_lexical
+
+				h = tf.nn.relu(h_final)
+				
 				h = tf.reshape(h, [batch_size, max_nodes, gcn_dim])
 
 				if use_skip:

@@ -356,7 +356,7 @@ dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0):
 	adj_main_in, adj_main_out = [], []
-	max_labels = len(dep_dict)
+	max_labels = 45
 	for edge_list in batch_list:
 		adj_in, adj_out = {}, {}
 
@@ -417,6 +417,8 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label
 
 		count = count + 1
 
+		if flow_combined:
+			max_labels = max_labels + 1
 		if not use_label_information:
 			max_labels = 1
 
