@@ -279,15 +279,9 @@ def outputids2words(id_list, vocab, article_oovs):
 			w = vocab.id2word(i)  # might be [UNK]
 		except ValueError as e:  # w is OOV
 			assert article_oovs is not None, "Error: model produced a word ID that isn't in the vocabulary. This should not happen in baseline (no pointer-generator) mode"
-			article_oov_idx = i - vocab.size()
-			try:
-				w = article_oovs[article_oov_idx]
-			except ValueError as e:  # i doesn't correspond to an article oov
-				raise ValueError(
-					'Error: model produced word ID %i which corresponds to article OOV %i but this example only has %i article OOVs' % (
-					i, article_oov_idx, len(article_oovs)))
-		words.append(w)
-	return words
+		|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+        }||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 
 def abstract2sents(abstract):
@@ -350,9 +344,33 @@ def show_abs_oovs(abstract, vocab, article_oovs):
 dep_list = ['cc', 'agent', 'ccomp', 'prt', 'meta', 'nsubjpass', 'csubj', 'conj', 'amod', 'poss', 'neg', 'csubjpass',
 			'mark', 'auxpass', 'advcl', 'aux', 'ROOT', 'prep', 'parataxis', 'xcomp', 'nsubj', 'nummod', 'advmod',
 			'punct', 'quantmod', 'acomp', 'compound', 'pcomp', 'intj', 'relcl', 'npadvmod', 'case', 'attr', 'dep',
-			'appos', 'det', 'nmod', 'dobj', 'dative', 'pobj', 'expl', 'predet', 'preconj', 'oprd', 'acl', 'entity','coref','flow','lexical']
+			'appos', 'det', 'nmod', 'dobj', 'dative', 'pobj', 'expl', 'predet', 'preconj', 'oprd', 'acl', 'flow']
+
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
+
+def get_specific_adj(batch_list, batch_size, max_nodes, label, use_both=True, keep_prob=1.0):
+    adj_main_in = []
+    adj_main_out = []
+    
+    for edge_list in batch_size:
+        curr_adj_in = []
+        curr_adj_out = []
+        for src, dest, lbl in edge_list:
+            if lbl!=label:
+                continue
+            if src >= max_nodes or dest >= max_nodes:
+                continue
+            x = np.random.uniform()
+            if x<=keep_prob:
+                curr_adj_out.append((src, dest))
+                if use_both:
+                    curr_adj_in.append((dest, src))
+                else:
+                    curr_adj_out.append((dest, src))    
+                    
+        
+    return adj_main_in, adj_main_out                
 
 def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0):
 	adj_main_in, adj_main_out = [], []
@@ -364,8 +382,6 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label
 		in_ind, in_data = ddict(list), ddict(list)
 		out_ind, out_data = ddict(list), ddict(list)
 		count = 0
-		
-		
 	  
 		for src, dest, lbl_ in edge_list:
 			if src >= max_nodes or dest >= max_nodes:
@@ -388,9 +404,12 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label
 					
 			   
 			else:    
-				
+				if lbl_ not in label_dict:
+                    continue
+
 				lbl = label_dict[lbl_]
-				if not use_label_information: #all assigned the same label information
+				
+                if not use_label_information: #all assigned the same label information
 					lbl = 0 
 				
 				x = np.random.uniform()
