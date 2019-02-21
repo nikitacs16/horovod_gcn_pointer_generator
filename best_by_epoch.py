@@ -80,9 +80,9 @@ for i in sorted(file_list):
 	count.append(int(m.group(0)))
 
 k = len(file_list)
-p = 15
+p = 0
 #print(count)
-for i in range(20,k+5,5):
+for i in range(5,k+5,5):
 	multi_test(count[p:i])
 	p = i
 

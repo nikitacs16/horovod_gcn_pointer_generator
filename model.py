@@ -471,10 +471,10 @@ class SummarizationModel(object):
 				if self._hps.use_coref_graph.value and word_only:
 					w_in_coref = tf.get_variable("weights_coref", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
 					w_out_coref = tf.get_variable("weights_inv_coref", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
-					b_coref_in = tf.get_variable("bias_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
-					b_coref_out = tf.get_variable("bias_inv_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
-					gates_coref_in = 1.
-					gates_coref_out = 1.
+					b_in_coref = tf.get_variable("bias_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
+					b_out_coref = tf.get_variable("bias_inv_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
+					gates_in_coref = 1.
+					gates_out_coref = 1.
 
 				if self._hps.use_lexical_graph.value and word_only:
 					w_lexical = tf.get_variable("weights_lexical", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
@@ -628,11 +628,11 @@ class SummarizationModel(object):
 					h_final = h_in + h_out + h_loop
 				
 				if self._hps.use_coref_graph.value and word_only:
-					h_coref_in = tf.matmul(gcn_in_2d, w_entity)
-					h_coref_in = tf.sparse_tensor_dense_matmul(adj_entity, h_coref_in) + b_coref_in
-					h_coref_out = tf.matmul(gcn_in_2d, w_out_coref)
-					h_coref_out = tf.sparse_tensor_dense_matmul(adj_out_coref, h_coref_out) + b_coref_out
-					h_coref = h_coref_in + h_coref_out
+					h_in_coref = tf.matmul(gcn_in_2d, w_in_coref)
+					h_in_coref = tf.sparse_tensor_dense_matmul(adj_in_coref, h_in_coref) + b_in_coref
+					h_out_coref = tf.matmul(gcn_in_2d, w_out_coref)
+					h_out_coref = tf.sparse_tensor_dense_matmul(adj_out_coref, h_out_coref) + b_out_coref
+					h_coref = h_in_coref + h_out_coref
 					h_final = h_final + h_coref
 
 				if self._hps.use_entity_graph.value and word_only:
