@@ -142,12 +142,12 @@ class SummarizationModel(object):
 				self._word_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='dropout')
 			
 			if FLAGS.use_coref_graph:
-				self._word_adj_in_coref = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_in_coref')
-				self._word_adj_out_coref = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_out_coref')
+				self._word_adj_in_coref = [tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_in_coref') for _ in range(hps.batch_size.value)]
+				self._word_adj_out_coref = [tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_out_coref') for _ in range(hps.batch_size.value)]
 			if FLAGS.use_entity_graph:
-				self._word_adj_entity = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_entity')
+				self._word_adj_entity = [tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_entity') for _ in range(hps.batch_size.value)]
 			if FLAGS.use_lexical_graph:
-				self._word_adj_lexical = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_lexical')
+				self._word_adj_lexical = [tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_lexical') for _ in range(hps.batch_size.value)]
 
 
 		self._max_word_seq_len = tf.placeholder(tf.int32, shape=(), name='max_word_seq_len')
