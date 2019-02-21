@@ -142,7 +142,7 @@ class SummarizationModel(object):
 				self._word_gcn_dropout = tf.placeholder_with_default(1.0, shape=(), name='dropout')
 			
 			if FLAGS.use_coref_graph:
-				self._word_adj_entity = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_entity')
+				self._word_adj_in_coref = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_in_coref')
 				self._word_adj_out_coref = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_out_coref')
 			if FLAGS.use_entity_graph:
 				self._word_adj_entity = tf.sparse_placeholder(tf.float32, shape=[None, None], name='word_adj_entity')
@@ -221,16 +221,18 @@ class SummarizationModel(object):
 						dense_shape=word_adj_out[i][lbl].shape)
 			
 			if FLAGS.use_coref_graph:
+			
 				for i in range(hps.batch_size.value):
 					feed_dict[self._word_adj_out_coref[i]] = tf.SparseTensorValue(
 						indices=np.array([word_adj_out_coref[i].row, word_adj_out_coref[i].col]).T,
 						values=word_adj_out_coref[i].data,
 						dense_shape=word_adj_out_coref[i].shape)
+			
 				for i in range(hps.batch_size.value):
-					feed_dict[self._word_adj_entity[i]] = tf.SparseTensorValue(
-						indices=np.array([word_adj_entity[i].row, word_adj_entity[i].col]).T,
-						values=word_adj_entity[i].data,
-						dense_shape=word_adj_entity[i].shape)
+					feed_dict[self._word_adj_in_coref[i]] = tf.SparseTensorValue(
+						indices=np.array([word_adj_in_coref[i].row, word_adj_in_coref[i].col]).T,
+						values=word_adj_in_coref[i].data,
+						dense_shape=word_adj_in_coref[i].shape)
 			
 			if FLAGS.use_entity_graph:
 				for i in range(hps.batch_size.value):
@@ -463,7 +465,7 @@ class SummarizationModel(object):
 										 initializer=tf.random_normal_initializer(stddev=0.01, seed=7))
 
 				if self._hps.use_coref_graph.value and word_only:
-					w_entity = tf.get_variable("weights_coref", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
+					w_in_coref = tf.get_variable("weights_coref", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
 					w_out_coref = tf.get_variable("weights_inv_coref", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
 					b_coref_in = tf.get_variable("bias_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
 					b_coref_out = tf.get_variable("bias_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
