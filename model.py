@@ -347,7 +347,7 @@ class SummarizationModel(object):
 
 	   
 	   
-	def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, word_only=True
+	def _add_gcn_layer(self, gcn_in, in_dim, gcn_dim, batch_size, max_nodes, max_labels, adj_in, adj_out, word_only=True,
 					   num_layers=1,
 					   use_gating=False, use_skip=True, use_normalization=True, dropout=1.0, name="GCN",
 					   use_label_information=False, loop_dropout=1.0, use_fusion=False):
@@ -927,7 +927,7 @@ class SummarizationModel(object):
 															dropout=self._query_gcn_dropout,
 															name="gcn_query",
 															loop_dropout=hps.query_loop_dropout.value,
-															use_fusion=hps.query_gcn_fusion.value)
+															use_fusion=hps.query_gcn_fusion.value, word_only=False)
 
 						########## INTERM CONCAT ##############
 						if hps.concat_with_word_embedding.value:
@@ -1064,7 +1064,7 @@ class SummarizationModel(object):
 															dropout=self._query_gcn_dropout,
 															name="gcn_query",
 															loop_dropout=hps.query_loop_dropout.value,
-															use_fusion=hps.query_gcn_fusion.value)
+															use_fusion=hps.query_gcn_fusion.value, word_only=False)
 						
 
 						############ UPPER CONCAT ############

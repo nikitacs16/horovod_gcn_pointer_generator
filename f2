@@ -1,0 +1,69 @@
+/home/riseadmin/.local/lib/python2.7/site-packages/h5py/__init__.py:36: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
+  from ._conv import register_converters as _register_converters
+/home/riseadmin/.local/lib/python2.7/site-packages/h5py/__init__.py:45: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
+  from . import h5a, h5d, h5ds, h5f, h5fd, h5g, h5r, h5s, h5t, h5p, h5z
+/home/riseadmin/.local/lib/python2.7/site-packages/h5py/_hl/group.py:22: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
+  from .. import h5g, h5i, h5o, h5r, h5t, h5l, h5p
+/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/sklearn/utils/__init__.py:12: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
+  from .murmurhash import murmurhash3_32
+/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/sklearn/utils/extmath.py:23: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
+  from ._logistic_sigmoid import _log_logistic_sigmoid
+/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/sklearn/utils/extmath.py:25: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
+  from .sparsefuncs_fast import csr_row_norms
+/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/sklearn/metrics/cluster/supervised.py:25: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
+  from .expected_mutual_info_fast import expected_mutual_information
+/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/sklearn/metrics/pairwise.py:31: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
+  from .pairwise_fast import _chi2_kernel_fast, _sparse_manhattan
+INFO:tensorflow:Starting seq2seq_attention in train mode...
+max_size of vocab was specified as 25000; we now have 25000 words. Stopping reading.
+Finished constructing vocabulary of 25000 total words. Last word added: uncovering
+creating model...
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/home/riseadmin/anaconda/envs/latest/lib/python2.7/threading.py", line 801, in __bootstrap_inner
+    self.run()
+  File "/home/riseadmin/anaconda/envs/latest/lib/python2.7/threading.py", line 754, in run
+    self.__target(*self.__args, **self.__kwargs)
+  File "/home/riseadmin/gcn_pointer_generator/batcher.py", line 459, in fill_batch_queue
+    self._batch_queue.put(Batch(b, self._hps, self._vocab))
+  File "/home/riseadmin/gcn_pointer_generator/batcher.py", line 162, in __init__
+    self.init_encoder_seq(example_list, hps)  # initialize the input to the encoder
+  File "/home/riseadmin/gcn_pointer_generator/batcher.py", line 228, in init_encoder_seq
+    self.word_adj_in_coref, self.word_adj_out_coref = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'coref', keep_prob=hps.word_gcn_edge_dropout.value)
+  File "/home/riseadmin/gcn_pointer_generator/data.py", line 375, in get_specific_adj
+    adj_in = sp.coo_matrix((curr_data_in, zip(*curr_adj_in)), shape=(max_nodes, max_nodes))
+  File "/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/scipy/sparse/coo.py", line 142, in __init__
+    raise TypeError('invalid input format')
+TypeError: invalid input format
+
+INFO:tensorflow:Scale of 0 disables regularizer.
+INFO:tensorflow:Building graph...
+Writing word embedding metadata file to /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_entity_hops_1_run_2/train/vocab_metadata.tsv...
+Traceback (most recent call last):
+  File "run_summarization.py", line 600, in <module>
+    tf.app.run()
+  File "/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/tensorflow/python/platform/app.py", line 125, in run
+    _sys.exit(main(argv))
+  File "run_summarization.py", line 568, in main
+    setup_training(model, batcher)
+  File "run_summarization.py", line 236, in setup_training
+    model.build_graph() # build the graph
+  File "/home/riseadmin/gcn_pointer_generator/model.py", line 1199, in build_graph
+    self._add_seq2seq()
+  File "/home/riseadmin/gcn_pointer_generator/model.py", line 879, in _add_seq2seq
+    use_fusion=hps.word_gcn_fusion.value)
+  File "/home/riseadmin/gcn_pointer_generator/model.py", line 369, in _add_gcn_layer
+    b_data.append(tf.ones([tf.shape(t_indices)[0]], dtype=tf.int32) * l)
+  File "/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/tensorflow/python/ops/array_ops.py", line 221, in shape
+    return shape_internal(input, name, optimize=True, out_type=out_type)
+  File "/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/tensorflow/python/ops/array_ops.py", line 249, in shape_internal
+    return gen_array_ops.shape(input, name=name, out_type=out_type)
+  File "/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/tensorflow/python/ops/gen_array_ops.py", line 7248, in shape
+    "Shape", input=input, out_type=out_type, name=name)
+  File "/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/tensorflow/python/framework/op_def_library.py", line 394, in _apply_op_helper
+    with g.as_default(), ops.name_scope(name) as scope:
+  File "/home/riseadmin/anaconda/envs/latest/lib/python2.7/site-packages/tensorflow/python/framework/ops.py", line 6025, in __enter__
+    self._g_manager.__enter__()
+  File "/home/riseadmin/anaconda/envs/latest/lib/python2.7/contextlib.py", line 17, in __enter__
+    return self.gen.next()
+KeyboardInterrupt

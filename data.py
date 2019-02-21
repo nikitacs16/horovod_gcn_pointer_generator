@@ -351,7 +351,7 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, use_both=True, ke
 	adj_main_in = []
 	adj_main_out = []
 	
-	for edge_list in batch_size:
+	for edge_list in batch_list:
 		curr_adj_in = []
 		curr_adj_out = []
 		curr_data_in = []
