@@ -350,8 +350,9 @@ dep_dict = {label: i for i, label in enumerate(dep_list)}
 def get_specific_adj(batch_list, batch_size, max_nodes, label, use_both=True, keep_prob=1.0):
 	adj_main_in = []
 	adj_main_out = []
-	
+	#print(edge_list)	
 	for edge_list in batch_list:
+		#print(edge_list)
 		curr_adj_in = []
 		curr_adj_out = []
 		curr_data_in = []
@@ -371,12 +372,17 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, use_both=True, ke
 		  		else:
 					curr_adj_out.append((dest, src))    
 					curr_data_out.append(1.0)
-		
-		adj_in = sp.coo_matrix((curr_data_in, zip(*curr_adj_in)), shape=(max_nodes, max_nodes))
-		adj_out = sp.coo_matrix((curr_data_out, zip(*curr_adj_out)), shape=(max_nodes, max_nodes))
+		if len(curr_adj_in) == 0:
+			adj_in = sp.coo_matrix((max_nodes, max_nodes))
+		else:
+			adj_in = sp.coo_matrix((curr_data_in, zip(*curr_adj_in)), shape=(max_nodes, max_nodes))
+		if len(curr_adj_out) == 0:
+			adj_out = sp.coo_matrix((max_nodes, max_nodes))
+		else:
+			adj_out = sp.coo_matrix((curr_data_out, zip(*curr_adj_out)), shape=(max_nodes, max_nodes))
 
 		adj_main_in.append(adj_in)
-		adj_main_out.append(adj_out)            
+		adj_main_out.append(adj_out)
 		
 	return adj_main_in, adj_main_out                
 

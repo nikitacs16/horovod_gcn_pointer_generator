@@ -513,7 +513,7 @@ class Batcher(object):
 							word_edge_list = word_edge_list + ast.literal_eval(e.features.feature['word_entity_edge_list'].bytes_list.value[0])
 						if self._hps.use_lexical_graph.value:
 							word_edge_list = word_edge_list + ast.literal_eval(e.features.feature['word_lexical_edge_list'].bytes_list.value[0])
-
+					#	print(word_edge_list)
 					
 
 					if self._hps.query_gcn.value:
