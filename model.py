@@ -221,6 +221,8 @@ class SummarizationModel(object):
 						dense_shape=word_adj_out[i][lbl].shape)
 			
 			if FLAGS.use_coref_graph:
+				word_adj_out_coref = batch.word_adj_out_coref
+				word_adj_in_coref = batch.word_adj_in_coref
 			
 				for i in range(hps.batch_size.value):
 					feed_dict[self._word_adj_out_coref[i]] = tf.SparseTensorValue(
@@ -235,6 +237,7 @@ class SummarizationModel(object):
 						dense_shape=word_adj_in_coref[i].shape)
 			
 			if FLAGS.use_entity_graph:
+				word_adj_entity = batch.word_adj_entity
 				for i in range(hps.batch_size.value):
 					feed_dict[self._word_adj_entity[i]] = tf.SparseTensorValue(
 						indices=np.array([word_adj_entity[i].row, word_adj_entity[i].col]).T,
@@ -242,6 +245,7 @@ class SummarizationModel(object):
 						dense_shape=word_adj_entity[i].shape)
 
 			if FLAGS.use_lexical_graph:
+				word_adj_lexical = batch.word_adj_lexical
 				for i in range(hps.batch_size.value):
 					feed_dict[self._word_adj_lexical[i]] = tf.SparseTensorValue(
 						indices=np.array([word_adj_lexical[i].row, word_adj_lexical[i].col]).T,
@@ -390,7 +394,7 @@ class SummarizationModel(object):
 		labels_out = tf.SparseTensor(indices=indices, values=b_data,
 									 dense_shape=[batch_size * max_words, batch_size * max_words])
 
-		if self._hps.use_coref_graph and word_only:
+		if self._hps.use_coref_graph.value and word_only:
 			indices_in = []
 			indices_out = []
 			
@@ -408,7 +412,7 @@ class SummarizationModel(object):
 			adj_in_coref = tf.SparseTensor(indices=indices_in, values=tf.ones([tf.shape(indices_in)[0]]), dense_shape=[batch_size * max_words, batch_size * max_words])
 			adj_out_coref = tf.SparseTensor(indices=indices_out, values=tf.ones([tf.shape(indices_out)[0]]), dense_shape=[batch_size * max_words, batch_size * max_words])
 
-		if self._hps.use_entity_graph and word_only:
+		if self._hps.use_entity_graph.value and word_only:
 			indices = []
 			
 			for b in range(batch_size):
@@ -419,7 +423,7 @@ class SummarizationModel(object):
 			adj_entity = tf.SparseTensor(indices=indices, values=tf.ones([tf.shape(indices)[0]]), dense_shape=[batch_size * max_words, batch_size * max_words])
 	
 
-		if self._hps.use_lexical_graph and word_only:
+		if self._hps.use_lexical_graph.value and word_only:
 			indices = []
 			
 			for b in range(batch_size):
@@ -468,7 +472,7 @@ class SummarizationModel(object):
 					w_in_coref = tf.get_variable("weights_coref", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
 					w_out_coref = tf.get_variable("weights_inv_coref", [in_dim, gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=20))
 					b_coref_in = tf.get_variable("bias_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
-					b_coref_out = tf.get_variable("bias_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
+					b_coref_out = tf.get_variable("bias_inv_coref", [gcn_dim], initializer=tf.random_normal_initializer(stddev=0.01, seed=70))
 					gates_coref_in = 1.
 					gates_coref_out = 1.
 
@@ -538,7 +542,7 @@ class SummarizationModel(object):
 						values = tf.nn.sigmoid(adj_in_coref.values + b_gate_in_coref)
 						adj_in_coref = tf.SparseTensor(indices=adj_in_coref.indices, values=values, dense_shape=adj_in_coref.dense_shape)
 
-						gates_out_coref = tf.matmul(gcn_out_2d, w_gate_out_coref)
+						gates_out_coref = tf.matmul(gcn_in_2d, w_gate_out_coref)
 						adj_out_coref *= tf.transpose(gates_out_coref)
 						values = tf.nn.sigmoid(adj_out_coref.values + b_gate_out_coref)
 						adj_out_coref = tf.SparseTensor(indices=adj_out_coref.indices, values=values, dense_shape=adj_out_coref.dense_shape)
@@ -547,10 +551,10 @@ class SummarizationModel(object):
 						w_gate_entity = tf.get_variable("weights_gate_entity", [in_dim, 1],
 													 initializer=tf.random_normal_initializer(stddev=0.01, seed=9))
 
-						b_gate_entity = tf.get_variable("bias_entity", [1],
+						b_gate_entity = tf.get_variable("bias_gate_entity", [1],
 													initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01,
 																							 seed=11))
-						gates_entity = tf.matmul(gcn_out_2d, w_gate_entity)
+						gates_entity = tf.matmul(gcn_in_2d, w_gate_entity)
 						adj_entity *= tf.transpose(gates_entity)
 						values = tf.nn.sigmoid(adj_entity.values + b_gate_entity)
 						adj_entity = tf.SparseTensor(indices=adj_entity.indices, values=values, dense_shape=adj_entity.dense_shape)
@@ -560,10 +564,10 @@ class SummarizationModel(object):
 						w_gate_lexical = tf.get_variable("weights_gate_lexical", [in_dim, 1],
 													 initializer=tf.random_normal_initializer(stddev=0.01, seed=9))
 
-						b_gate_lexical = tf.get_variable("bias_lexical", [1],
+						b_gate_lexical = tf.get_variable("bias_gate_lexical", [1],
 													initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01,
 																							 seed=11))
-						gates_lexical = tf.matmul(gcn_out_2d, w_gate_lexical)
+						gates_lexical = tf.matmul(gcn_in_2d, w_gate_lexical)
 						adj_lexical *= tf.transpose(gates_lexical)
 						values = tf.nn.sigmoid(adj_lexical.values + b_gate_lexical)
 						adj_lexical = tf.SparseTensor(indices=adj_lexical.indices, values=values, dense_shape=adj_lexical.dense_shape)

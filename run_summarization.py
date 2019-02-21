@@ -546,7 +546,9 @@ def main(unused_argv):
     if key in hparam_list: # if it's in the list
       hps_dict[key] = val # add it to the dict
   if FLAGS.use_label_information:
-    hps_dict['num_word_dependency_labels'] = 49
+    hps_dict['num_word_dependency_labels'] = 45
+    if FLAGS.flow_combined:
+      hps_dict['num_word_dependency_labels'] = 46 
 
   else:
     hps_dict['num_word_dependency_labels'] = 1
