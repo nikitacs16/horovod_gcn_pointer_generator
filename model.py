@@ -1128,7 +1128,7 @@ class SummarizationModel(object):
 							indices = tf.stack((batch_nums, targets), axis=1)  # shape (batch_size, 2)
 							gold_probs = tf.gather_nd(dist,
 													  indices)  # shape (batch_size). prob of correct words on this step
-							losses = -tf.log(gold_probs)
+							losses = -tf.log(gold_probs + 1e-10)
 							loss_per_step.append(losses)
 
 						# Apply dec_padding_mask and get loss

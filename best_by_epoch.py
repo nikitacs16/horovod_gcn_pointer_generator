@@ -31,6 +31,8 @@ def get_metrics(f1,f2):
 	ref = []
 	decoded = []
 	count = 0
+	print(f1)
+	print(f2)
 	for i, j in zip(sorted(glob.glob(f1)),sorted(glob.glob(f2))):
 		ref_tex = ''
 		dec_tex = ''
@@ -41,12 +43,14 @@ def get_metrics(f1,f2):
 		ref.append(ref_tex)
 		decoded.append(dec_tex)
 		count = count + 1
-	
+	print(len(decoded))
+	print(len(ref))
 	x = rouge.rouge(decoded,ref)
 
 	bl = bleu.moses_multi_bleu(decoded,ref) #replace by pycoco bleu
+	return 0,0,0, bl
 
-	return x['rouge_1/f_score']*100,x['rouge_2/f_score']*100,x['rouge_l/f_score']*100, bl
+	#return x['rouge_1/f_score']*100,x['rouge_2/f_score']*100,x['rouge_l/f_score']*100, bl
 
 
 
@@ -82,6 +86,7 @@ for i in sorted(file_list):
 k = len(file_list)
 p = 0
 #print(count)
+
 for i in range(5,k+5,5):
 	multi_test(count[p:i])
 	p = i
@@ -97,18 +102,22 @@ best_rouge_epoch = 1000
 
 for k,c in enumerate(count): 
 	w =  get_result_dir_name('val',c)
-	r1,r2,rl,bl = get_metrics(os.path.join(w,'decoded','*.txt'), os.path.join(w,'reference','*.txt'))
-	rouge_1.append(r1)
-	rouge_2.append(r2)
-	rouge_l.append(rl)
-	bleu_4.append(bl)
-	if bl > best_bleu:
-		best_bleu = bl 
-		best_rouge_epoch = c
+	try:
+		#print(w)
+		r1,r2,rl,bl = get_metrics(os.path.join(w,'decoded','*.txt'), os.path.join(w,'reference','*.txt'))
+		rouge_1.append(r1)
+		rouge_2.append(r2)
+		rouge_l.append(rl)
+		bleu_4.append(bl)
+		if bl > best_bleu:
+			best_bleu = bl 
+			best_rouge_epoch = c
 
-	d = {'epoch':count[:k+1],'rouge_1':rouge_1, 'rouge_2':rouge_2, 'rouge_l': rouge_l,'bleu_4':bleu_4}
-	df = pd.DataFrame(d)
-	df.to_csv(config['exp_name']+'.csv',index=False)
+		d = {'epoch':count[:k+1],'rouge_1':rouge_1, 'rouge_2':rouge_2, 'rouge_l': rouge_l,'bleu_4':bleu_4}
+		df = pd.DataFrame(d)
+		df.to_csv(config['exp_name']+'.csv',index=False)
+	except:
+		pass
 	print(k)
 
 print(best_rouge_epoch)
