@@ -33,7 +33,7 @@ def get_metrics(f1,f2,steps, bleu_val):
 
 input_path = sys.argv[1]
 
-for k in sorted(glob.glob(input_path+'/*baseline*')):
+for k in sorted(glob.glob(input_path+'/*skip_entity*run_2*')):
         print(k)
         try:
                 x = glob.glob(os.path.join(k,'decode_test*'))
