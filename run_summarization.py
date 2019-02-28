@@ -522,7 +522,7 @@ def main(unused_argv):
   tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))
   if FLAGS.no_lstm_encoder and FLAGS.word_gcn!=True:
     raise Exception("Set word_gcn to True to continue")
-  if FLAGS.no_lstm_query_encoder and FLAGS.query_gcn!=True:
+  if FLAGS.no_lstm_query_encoder and FLAGS.query_gcn!=True and FLAGS.use_elmo!= True:
     raise Exception("Set query_gcn to True to continue")
   if (FLAGS.no_lstm_query_encoder==True or FLAGS.query_gcn==True) and FLAGS.query_encoder==False:
     raise Exception("Set query_encoder to True to continue")

@@ -20,6 +20,8 @@ import os
 import time
 import numpy as np
 import tensorflow as tf
+import tensorflow_hub as hub
+
 from attention_decoder import attention_decoder
 from tensorflow.contrib.tensorboard.plugins import projector
 from tensorflow.python.util import nest
@@ -211,7 +213,7 @@ class SummarizationModel(object):
 			feed_dict[self._query_batch] = batch.query_batch
 			feed_dict[self._query_lens] = batch.query_lens
 			feed_dict[self._query_padding_mask] = batch.query_padding_mask
-		if FLAGS.use_elmo:
+			if FLAGS.use_elmo and FLAGS.no_lstm_query_encoder:
 				feed_dict[self._query_batch_raw] = batch.query_batch_raw
 
 
