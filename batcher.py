@@ -53,7 +53,8 @@ class Example(object):
 		self.enc_input = [vocab.word2id(w) for w in
 						  article_words]  # list of word ids; OOVs are represented by the id for UNK token
 		#tf.logging.info(self.enc_len)
-
+		if self.hps.use_elmo.value:
+			self.enc_input_raw = article_words 
 		# Process the abstract
 		abstract = ' '.join(abstract_sentences)  # string
 		abstract_words = abstract.split()  # list of strings
@@ -71,7 +72,8 @@ class Example(object):
 				query = " ".join(q for q in query_words)
 			self.query_len = len(query_words) # store the length after truncation but before padding
 			self.query_input = [vocab.word2id(w) for w in query_words] # list of word ids; OOVs are represented by the id for UNK token
-
+			if self.hps.use_elmo.value and self.hps.no_lstm_query_encoder.value:
+				self.query_input_raw = query_words
 		# Get the decoder input sequence and target sequence
 		self.dec_input, self.target = self.get_dec_inp_targ_seqs(abs_ids, hps.max_dec_steps.value, start_decoding,
 																 stop_decoding)
@@ -144,6 +146,13 @@ class Example(object):
 		while len(self.query_input) < max_len:
 			self.query_input.append(pad_id)
 
+	def pad_encoder_input_raw(self, max_len):
+		while len(self.enc_input_raw) < max_len:
+			self.enc_input_raw.append("")
+
+	def pad_query_input_raw(self,max_len):
+		while len(self.query_input_raw) < max_len:
+			self.query_input_raw.append("")
 
 class Batch(object):
 	"""Class representing a minibatch of train/val/test examples for text summarization."""
@@ -193,12 +202,19 @@ class Batch(object):
 		# Pad the encoder input sequences up to the length of the longest sequence
 		for ex in example_list:
 			ex.pad_encoder_input(max_enc_seq_len, self.pad_id)
+			if hps.use_elmo.value:
+				ex.pad_encoder_input_raw(max_enc_seq_len)
 
 		# Initialize the numpy arrays
 		# Note: our enc_batch can have different length (second dimension) for each batch because we use dynamic_rnn for the encoder.
 		self.enc_batch = np.zeros((hps.batch_size.value, max_enc_seq_len), dtype=np.int32)
 		self.enc_lens = np.zeros((hps.batch_size.value), dtype=np.int32)
 		self.enc_padding_mask = np.zeros((hps.batch_size.value, max_enc_seq_len), dtype=np.float32)
+
+		if hps.use_elmo.value:
+			self.enc_batch_raw = [ex.enc_input_raw for ex in example_list]
+
+
 
 		# Fill in the numpy arrays
 		for i, ex in enumerate(example_list):
@@ -253,12 +269,16 @@ class Batch(object):
 			# Pad the encoder input sequences up to the length of the longest sequence
 			for ex in example_list:
 				ex.pad_query_input(max_query_seq_len, self.pad_id)
+				if hps.use_elmo.value and hps.no_lstm_query_encoder.value:
+					ex.pad_query_input_raw(max_query_seq_len)
 
 			# Initialize the numpy arrays
 			# Note: our enc_batch can have different length (second dimension) for each batch because we use dynamic_rnn for the encoder.
 			self.query_batch = np.zeros((hps.batch_size.value, max_query_seq_len), dtype=np.int32)
 			self.query_lens = np.zeros((hps.batch_size.value), dtype=np.int32)
 			self.query_padding_mask = np.zeros((hps.batch_size.value, max_query_seq_len), dtype=np.float32)
+			if hps.use_elmo.value and hps.no_lstm_query_encoder.value:
+				self.query_batch_raw = [ex.query_input_raw for ex in example_list]
 
 			# Fill in the numpy arrays
 			for i, ex in enumerate(example_list):
