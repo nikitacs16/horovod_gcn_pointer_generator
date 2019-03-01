@@ -761,7 +761,7 @@ class SummarizationModel(object):
 		else:
 			cell = tf.contrib.rnn.BasicRNNCell(hps.hidden_dim.value)
 
-		if hps.no_lstm_encoder.value or (hps.use_elmo.value and not hps.use_elmo_glove.value):
+		if hps.no_lstm_encoder.value :
 			#self._dec_in_state = get_initial_cell_state(cell, make_variable_state_initializer(), hps.batch_size.value,
 			#self._dec_in_state = rnc._zero_state_tensors(cell.size, hps.batch_size.value, float32)
 		# TODO Feed the averaged gcn word vectors
@@ -886,12 +886,18 @@ class SummarizationModel(object):
 
 
 			if self._hps.use_gcn_before_lstm.value:
+				if self._hps.use_elmo.value:
+					emb_enc_inputs = self._add_elmo_encoder(self._enc_batch_raw, self._enc_lens,trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder')
+
 				
 ################################################## G-LSTM ###############################################
 
 				################ GCN LAYER #######################	
 				gcn_in = emb_enc_inputs
-				in_dim = hps.emb_dim.value
+				if self._hps.use_elmo.value:
+					in_dim = 1024
+				else:
+					in_dim = hps.emb_dim.value
 
 				gcn_dim = hps.word_gcn_dim.value
 
@@ -938,8 +944,15 @@ class SummarizationModel(object):
 
 				################QUERY ENCODER###########################
 				if self._hps.query_encoder.value:
+					if self._hps.use_elmo.value:
+						emb_query_inputs = self._add_elmo_encoder(self._query_batch_raw, self._query_lens, trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder_query')
+
 					q_gcn_in = emb_query_inputs
-					q_in_dim = hps.emb_dim.value
+					if self._hps.use_elmo.value:
+						q_in_dim = hps.emb_dim.value
+					else:
+						q_in_dim = 1024
+
 					q_gcn_outputs = emb_query_inputs #if not used
 					
 					######### GCN LAYER #############
@@ -1013,7 +1026,12 @@ class SummarizationModel(object):
 						self._dec_in_state = self._reduce_states(fw_st, bw_st)
 
 					else:
-						self._enc_states = enc_elmo_states	
+						enc_outputs, fw_st, bw_st = self._add_encoder(enc_elmo_states, self._enc_lens, num_layers=hps.encoder_lstm_layers.value, keep_prob=hps.lstm_dropout.value)
+
+						self._enc_states = enc_outputs
+						self._dec_in_state = self._reduce_states(fw_st, bw_st)	
+
+
 
 
 				if self._hps.word_gcn.value:
@@ -1083,7 +1101,9 @@ class SummarizationModel(object):
 							query_outputs, fw_st_q, bw_st_q = self._add_encoder(query_inputs, self._query_lens, name='query_encoder')
 							self._query_states = query_outputs
 						else:
-							self._query_states = query_elmo_states
+							query_outputs, fw_st_q, bw_st_q = self._add_encoder(query_elmo_states, self._query_lens, name='query_encoder')
+							
+							self._query_states = query_outputs
 
 						
 					if self._hps.query_gcn.value:
