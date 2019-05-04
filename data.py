@@ -355,17 +355,24 @@ dep_list = ['cc', 'agent', 'ccomp', 'prt', 'meta', 'nsubjpass', 'csubj', 'conj',
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 
-def get_specific_adj(batch_list, batch_size, max_nodes, label, use_both=True, keep_prob=1.0):
+def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, use_both=True, keep_prob=1.0):
 	adj_main_in = []
 	adj_main_out = []
 	#print(edge_list)	
-	for edge_list in batch_list:
+	for edge_list, enc_length in zip(batch_list, encoder_lengths):
 		#print(edge_list)
 		curr_adj_in = []
 		curr_adj_out = []
 		curr_data_in = []
 		curr_data_out = []
+		seen_nodes = []
+		
+
+
 		for src, dest, lbl in edge_list:
+			seen_nodes.append(src)
+			seen_nodes.append(dest)
+
 			if lbl!=label:
 				continue
 			if src >= max_nodes or dest >= max_nodes:
@@ -380,6 +387,17 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, use_both=True, ke
 		  		else:
 					curr_adj_out.append((dest, src))    
 					curr_data_out.append(1.0)
+		
+		seen_nodes = list(set(seen_nodes))
+		
+		for src in range(enc_length): #A + I for entity and coref
+			curr_adj_out.append((src, src))
+			curr_data_out.append(1.0)
+			if use_both:
+				curr_adj_in.append((src, src))
+				curr_data_in.append(1.0)
+		  		
+
 		if len(curr_adj_in) == 0:
 			adj_in = sp.coo_matrix((max_nodes, max_nodes))
 		else:

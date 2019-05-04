@@ -197,7 +197,8 @@ class Batch(object):
 					Same as self.enc_batch, but in-article OOVs are represented by their temporary article OOV number.
 		"""
 		# Determine the maximum length of the encoder input sequence in this batch
-		max_enc_seq_len = max([ex.enc_len for ex in example_list])
+		encoder_lengths = [ex.enc_len for ex in example_list]
+		max_enc_seq_len = max(encoder_lengths)
 		self.max_word_len = max_enc_seq_len
 		# Pad the encoder input sequences up to the length of the longest sequence
 		for ex in example_list:
