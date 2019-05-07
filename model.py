@@ -1243,9 +1243,9 @@ class SummarizationModel(object):
 		grads_and_vars=optimizer.compute_gradients(loss, tvars)
 		
 		grads = [grad for grad,var in grads_and_vars]
-    	tvars = [var for grad,var in grads_and_vars]
+	    	tvars = [var for grad,var in grads_and_vars]
     	
-    	grads, global_norm = tf.clip_by_global_norm(grads, self._hps.max_grad_norm.value)
+    		grads, global_norm = tf.clip_by_global_norm(grads, self._hps.max_grad_norm.value)
 
 		
 		# Add a summary
