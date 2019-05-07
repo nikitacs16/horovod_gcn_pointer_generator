@@ -1276,11 +1276,10 @@ class SummarizationModel(object):
 		tf.logging.info('Building graph...')
 		t0 = time.time()
 		self._add_placeholders()
-		with tf.device("/gpu:0"):
-			if self._hps.use_elmo.value:
-				self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
+		if self._hps.use_elmo.value:
+			self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
 
-			self._add_seq2seq()
+		self._add_seq2seq()
 
 		self.global_step = tf.Variable(0, name='global_step', trainable=False)
 		if self._hps.mode.value == 'train':

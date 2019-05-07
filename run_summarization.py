@@ -193,8 +193,11 @@ def restore_best_model():
   # Initialize all vars in the model
   sess = tf.Session(config=util.get_config())
   print ("Initializing all variables...")
-  sess.run(tf.initialize_all_variables())
 
+  bcast = hvd.broadcast_global_variables(0)
+
+  sess.run(tf.initialize_all_variables())
+  bcast.run()
   # Restore the best model from eval dir
   saver = tf.train.Saver([v for v in tf.all_variables() if "Adagrad" not in v.name and "Adam" not in v.name])
   print ("Restoring all non-adagrad variables from best model in eval dir...")
@@ -218,7 +221,11 @@ def convert_to_coverage_model():
   # initialize an entire coverage model from scratch
   sess = tf.Session(config=util.get_config())
   print ("initializing everything...")
-  sess.run(tf.global_variables_initializer())
+  init = tf.global_variables_initializer()
+  bcast = hvd.broadcast_global_variables(0)
+
+  sess.run(init)
+  bcast.run()
 
   # load all non-coverage weights from checkpoint
   saver = tf.train.Saver([v for v in tf.global_variables() if "coverage" not in v.name and "Adagrad" not in v.name and "Adam" not in v.name])
@@ -237,7 +244,7 @@ def convert_to_coverage_model():
 
 def setup_training(model, batcher):
   """Does setup before starting training (run_training)"""
-  train_dir = os.path.join(FLAGS.log_root, "train")
+  train_dir = os.path.join(FLAGS.log_root, "train") 
   if not os.path.exists(train_dir): os.makedirs(train_dir)
 
   model.build_graph() # build the graph
@@ -346,7 +353,7 @@ def run_eval_parallel(hps, vocab, batcher):
 		  
   #saver = tf.train.Saver()
   #sess = tf.Session(config=util.get_config())
-  ckpt_dir = os.path.join(FLAGS.log_root, "train")
+  ckpt_dir = os.path.join(FLAGS.log_root, "train") if hvd.rank() == 0 else None
   loaded_checkpoints = []
   while True:
     #tf.logging.info('Entered while')
