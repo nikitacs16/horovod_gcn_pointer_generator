@@ -35,6 +35,7 @@ import pickle
 import glob
 import yaml
 import copy
+import horovod.tensorflow as hvd 
 
 
 #FLAGS = tf.app.flags.FLAGS
@@ -52,7 +53,7 @@ config = yaml.load(open(FLAGS.config_file,'r'))
 
 # GPU device 
 tf.app.flags.DEFINE_string('gpu_device_id',config['gpu_device_id'],'allocate gpu to which device')
-os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
+#os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
 tf.app.flags.DEFINE_boolean('tf_example_format',config['tf_example_format'],'Is data in pickle or tf example format')
 
 # Where to find data
@@ -481,6 +482,7 @@ def get_data(data_path):
   return new_data
 
 def main(unused_argv):
+  hvd.init()
   if len(unused_argv) != 1: # prints a message if you've entered flags incorrectly
     raise Exception("Problem with flags: %s" % unused_argv)
 
@@ -517,7 +519,7 @@ def main(unused_argv):
   if FLAGS.mode == 'debug':
     FLAGS.debug = True 
 
-  
+
   tf.logging.set_verbosity(tf.logging.INFO) # choose what level of logging you want
   tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))
   #if FLAGS.no_lstm_encoder and FLAGS.word_gcn!=True:
@@ -530,6 +532,8 @@ def main(unused_argv):
     
   # Change log_root to FLAGS.log_root/FLAGS.exp_name and create the dir if necessary
   FLAGS.log_root = os.path.join(FLAGS.log_root, FLAGS.exp_name)
+  FLAGS.log_root = FLAGS.log_root if hvd.rank() == 0 else os.path.join(FLAGS.log_root, str(hvd.rank()))
+
   if not os.path.exists(FLAGS.log_root):
     if FLAGS.mode=="train":
       os.makedirs(FLAGS.log_root)
@@ -560,16 +564,17 @@ def main(unused_argv):
     hps_dict['num_word_dependency_labels'] = 1
     
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
+  device_rank = hvd.rank()
+
   if FLAGS.tf_example_format:
-    batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
+    batcher = Batcher(FLAGS.data_path, vocab, hps, device_rank, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
   else:
     data_ = get_data(FLAGS.data_path)
-    batcher = Batcher(data_, vocab, hps, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
+    batcher = Batcher(data_, vocab, hps, device_rank, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
 
      
   tf.set_random_seed(111) # a seed value for randomness
 
- 
   if hps.mode.value == 'train':
     print "creating model..."
     model = SummarizationModel(hps, vocab)

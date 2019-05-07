@@ -336,7 +336,7 @@ class Batcher(object):
 
 	BATCH_QUEUE_MAX = 100  # max number of batches the batch_queue can hold
 
-	def __init__(self, data_, vocab, hps, single_pass,data_format):
+	def __init__(self, data_, vocab, hps, device_id, single_pass,data_format):
 		"""Initialize the batcher. Start threads that process the data into batches.
 	
 		Args:
@@ -348,6 +348,7 @@ class Batcher(object):
 		self._data = data_
 		self._vocab = vocab
 		self._hps = hps
+		self._device_id = device_id
 		self._single_pass = single_pass
 		self._data_as_tf_example = data_format
 		# Initialize a queue of Batches waiting to be used, and a queue of Examples waiting to be batched
@@ -408,7 +409,7 @@ class Batcher(object):
 
 	def fill_example_queue(self):
 		"""Reads data from file and processes into Examples which are then placed into the example queue."""
-		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass,self._data_as_tf_example))
+		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass,self._data_as_tf_example, self._device_id))
 		count = 0
 		query = None
 		word_edge_list = None

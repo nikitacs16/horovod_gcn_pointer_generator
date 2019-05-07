@@ -144,7 +144,7 @@ class Vocab(object):
 
 
 
-def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=True):
+def example_generator(data_path, single_pass, device_rank, word_gcn=True,data_as_tf_example=True):
 	"""Generates tf.Examples from data files.
 
 	Binary data format: <length><blob>. <length> represents the byte size
@@ -161,7 +161,7 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
 	Deserialized tf.Example.
   """
 	# tf.logging.info(data_path)
-	random.seed(hvd.rank()+1)
+	random.seed(device_rank+1)
 	if data_as_tf_example:
 		epoch = 0
 		while True:
