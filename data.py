@@ -26,6 +26,7 @@ import pickle
 import scipy.sparse as sp
 import tensorflow as tf
 import numpy as np
+import horovod.tensorflow as hvd 
 
 # <s> and </s> are used in the data files to segment the abstracts into sentences. They don't receive vocab ids.
 SENTENCE_START = '<s>'
@@ -160,6 +161,7 @@ def example_generator(data_path, single_pass, word_gcn=True,data_as_tf_example=T
 	Deserialized tf.Example.
   """
 	# tf.logging.info(data_path)
+	random.seed(hvd.rank()+1)
 	if data_as_tf_example:
 		epoch = 0
 		while True:

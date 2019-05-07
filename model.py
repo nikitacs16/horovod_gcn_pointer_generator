@@ -26,6 +26,7 @@ from attention_decoder import attention_decoder
 from tensorflow.contrib.tensorboard.plugins import projector
 from tensorflow.python.util import nest
 from tensorflow.python.ops import rnn_cell_impl as rnc
+import horovod.tensorflow as hvd
 
 #_state_size_with_prefix = rnc._state_size_with_prefix  # will need a workaround with higher versions
 
@@ -1237,12 +1238,16 @@ class SummarizationModel(object):
 		# Take gradients of the trainable variables w.r.t. the loss function to minimize
 		loss_to_minimize = self._total_loss if self._hps.coverage.value else self._loss
 		tvars = tf.trainable_variables()
-		gradients = tf.gradients(loss_to_minimize, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
+		
+		#gradients = tf.gradients(loss_to_minimize, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
+		grads_and_vars=optimizer.compute_gradients(loss, tvars)
+		
+		grads = [grad for grad,var in grads_and_vars]
+    	tvars = [var for grad,var in grads_and_vars]
+    	
+    	grads, global_norm = tf.clip_by_global_norm(grads, self._hps.max_grad_norm.value)
 
-		# Clip the gradients
-		with tf.device("/gpu:0"):
-			grads, global_norm = tf.clip_by_global_norm(gradients, self._hps.max_grad_norm.value)
-
+		
 		# Add a summary
 		tf.summary.scalar('global_norm', global_norm)
 
@@ -1259,9 +1264,11 @@ class SummarizationModel(object):
 			learning_rate = tf.cond(self.global_step <= self._hps.learning_rate_change_after.value * self._hps.save_steps.value, lambda: f1(), lambda: f2())
 
 			optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9, use_nesterov=True)
+
+		optimizer = hvd.DistributedOptimizer(optimizer)
+
 			
-		with tf.device("/gpu:0"):
-			self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step,
+		self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step,
 													   name='train_step')
 
 	def build_graph(self):
