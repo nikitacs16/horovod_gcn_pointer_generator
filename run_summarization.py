@@ -194,10 +194,8 @@ def restore_best_model():
   sess = tf.Session(config=util.get_config())
   print ("Initializing all variables...")
 
-  bcast = hvd.broadcast_global_variables(0)
-
+ 
   sess.run(tf.initialize_all_variables())
-  bcast.run()
   # Restore the best model from eval dir
   saver = tf.train.Saver([v for v in tf.all_variables() if "Adagrad" not in v.name and "Adam" not in v.name])
   print ("Restoring all non-adagrad variables from best model in eval dir...")
@@ -221,11 +219,11 @@ def convert_to_coverage_model():
   # initialize an entire coverage model from scratch
   sess = tf.Session(config=util.get_config())
   print ("initializing everything...")
-  init = tf.global_variables_initializer()
-  bcast = hvd.broadcast_global_variables(0)
+  #init = )
+  #bcast = hvd.broadcast_global_variables(0)
 
-  sess.run(init)
-  bcast.run()
+  sess.run(tf.global_variables_initializer())
+  #bcast.run()
 
   # load all non-coverage weights from checkpoint
   saver = tf.train.Saver([v for v in tf.global_variables() if "coverage" not in v.name and "Adagrad" not in v.name and "Adam" not in v.name])
@@ -278,6 +276,9 @@ def setup_training(model, batcher):
 def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver):
   """Repeatedly runs training iterations, logging loss to screen and writing summaries"""
   tf.logging.info("starting run_training")
+  init = tf.global_variables_initializer()
+  bcast = hvd.broadcast_global_variables(0)
+
   batch_count = 0
   #new_saver = tf.train.Saver()
   prev_epoch_num = 0
@@ -296,6 +297,9 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
 
 
   with sess_context_manager as sess:
+    init.run()
+    bcast.run()
+
     if FLAGS.debug: # start the tensorflow debugger
       sess = tf_debug.LocalCLIDebugWrapperSession(sess)
       sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
