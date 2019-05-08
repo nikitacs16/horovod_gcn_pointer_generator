@@ -297,7 +297,6 @@ class SummarizationModel(object):
 		return feed_dict
 
 	def _add_elmo_encoder(self, encoder_inputs, seq_len, trainable=True, layer_name='word_emb', name='elmo_encoder'):
-		#elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
 
 		with tf.variable_scope(name):
 			
@@ -888,7 +887,9 @@ class SummarizationModel(object):
 
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch, axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 			
-
+			if self._hps.use_elmo.value:
+				self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
+	
 
 			if self._hps.use_gcn_before_lstm.value:
 				if self._hps.use_elmo.value:
@@ -1241,19 +1242,6 @@ class SummarizationModel(object):
 		"""Sets self._train_op, the op to run for training."""
 		# Take gradients of the trainable variables w.r.t. the loss function to minimize
 		loss_to_minimize = self._total_loss if self._hps.coverage.value else self._loss
-		tvars = tf.trainable_variables()
-		
-		gradients = tf.gradients(loss_to_minimize, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
-		#grads_and_vars=optimizer.compute_gradients(loss, tvars)
-		
-		#grads = [grad for grad,var in grads_and_vars]
-	    	#tvars = [var for grad,var in grads_and_vars]
-    	
-    		grads, global_norm = tf.clip_by_global_norm(gradients, self._hps.max_grad_norm.value)
-
-		
-		# Add a summary
-		tf.summary.scalar('global_norm', global_norm)
 
 		# Apply adagrad optimizer
 		if self._hps.optimizer.value == 'adagrad':
@@ -1270,23 +1258,20 @@ class SummarizationModel(object):
 			optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9, use_nesterov=True)
 
 		optimizer = hvd.DistributedOptimizer(optimizer)
-
+		grads_and_vars=optimizer.compute_gradients(loss_to_minimize, tvars)
+		grads = [grad for grad,var in grads_and_vars]
+		tvars = [var for grad,var in grads_and_vars]
+		grads, global_norm = tf.clip_by_global_norm(grads, self._hps.max_grad_norm.value)
 			
-		self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step,
-													   name='train_step')
+		self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step, name='train_step')
 
 	def build_graph(self):
 		"""Add the placeholders, model, global step, train_op and summaries to the graph"""
 		tf.logging.info('Building graph...')
 		t0 = time.time()
-		self._add_placeholders()
+    	with tf.Graph().as_default() as graph:
+			self._add_placeholders()
                 
-		with tf.device("/gpu:0"):
-			'''
-			if self._hps.use_elmo.value:
-				self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
-				tf.logging.info('Elmo added')
-			'''
 			self._add_seq2seq()
 
 		self.global_step = tf.Variable(0, name='global_step', trainable=False)

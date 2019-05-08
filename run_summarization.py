@@ -240,116 +240,83 @@ def convert_to_coverage_model():
   exit()
 
 
-def setup_training(model, batcher):
-  """Does setup before starting training (run_training)"""
+def setup_training(model,batcher):
   train_dir = os.path.join(FLAGS.log_root, "train") 
   if not os.path.exists(train_dir): os.makedirs(train_dir)
-
-  model.build_graph() # build the graph
-  if FLAGS.convert_to_coverage_model:
-    assert FLAGS.coverage, "To convert your non-coverage model to a coverage model, run with convert_to_coverage_model=True and coverage=True"
-    convert_to_coverage_model()
+  model.build_graph()
   if FLAGS.restore_best_model:
     restore_best_model()
-  saver = tf.train.Saver(max_to_keep=FLAGS.max_to_keep)# keep 3 checkpoints at a time
-
-  sv = tf.train.Supervisor(logdir=train_dir,
-                     is_chief=True,
-                     saver=saver,
-                     summary_op=None,
-                     save_summaries_secs=60, # save summaries for tensorboard every 60 secs
-                     save_model_secs=0,                    
-                     global_step=model.global_step)
-
-  summary_writer = sv.summary_writer
-  tf.logging.info("Preparing or waiting for session...")
-  sess_context_manager = sv.prepare_or_wait_for_session(config=util.get_config())
-  tf.logging.info("Created session.")
-  
-  try:
-    run_training(model, batcher, sess_context_manager, sv, summary_writer,saver) # this is an infinite loop until interrupted
-  except KeyboardInterrupt:
-    tf.logging.info("Caught keyboard interrupt on worker. Stopping supervisor...")
-    sv.stop()
-
-
-def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver):
-  """Repeatedly runs training iterations, logging loss to screen and writing summaries"""
-  tf.logging.info("starting run_training")
-  #init = tf.global_variables_initializer()
-  #bcast = hvd.broadcast_global_variables(0)
-
-  batch_count = 0
-  #new_saver = tf.train.Saver()
-  prev_epoch_num = 0
-  best_loss = 0.0
-  if FLAGS.use_save_at:
-    epoch_dir = os.path.join(FLAGS.log_root, "epoch")
-    if not os.path.exists(epoch_dir): os.makedirs(epoch_dir)
-  
-  if os.path.exists(os.path.join(FLAGS.log_root,'epoch.txt')):
-    f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'a')
-  else:
-    f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'w')
-  t_epoch = time.time()
 
   
+  hooks = [hvd.BroadcastGlobalVariablesHook(0)]
+  checkpoint_dir =  os.path.join(FLAGS.log_root, "train")
+  with tf.train.MonitoredTrainingSession(checkpoint_dir=checkpoint_dir,
+                                       config=util.get_config(),
+                                       hooks=hooks,
+                                       save_checkpoint_secs=None,
+                                       save_summaries_steps=100,
+                                       save_summaries_secs=None,
+                                       save_checkpoint_steps=FLAGS.save_steps,
+                                       ) as sess:  
+
+    sess.run([tf.global_variables_initializer(), tf.tables_initializer()])
+    batch_count = 0
+    #new_saver = tf.train.Saver()
+    prev_epoch_num = 0
+    best_loss = 0.0
+    if FLAGS.use_save_at:
+      epoch_dir = os.path.join(FLAGS.log_root, "epoch")
+      if not os.path.exists(epoch_dir): os.makedirs(epoch_dir)
+    
+    if os.path.exists(os.path.join(FLAGS.log_root,'epoch.txt')):
+      f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'a')
+    else:
+      f = open(os.path.join(FLAGS.log_root,'epoch.txt'),'w')
+    t_epoch = time.time()
 
 
-  with sess_context_manager as sess:
-    #init.run()
-    #bcast.run()
 
-    if FLAGS.debug: # start the tensorflow debugger
-      sess = tf_debug.LocalCLIDebugWrapperSession(sess)
-      sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
-    while True: # repeats until interrupted
-      batch = batcher.next_batch()
-      
-      model_save_path = os.path.join(FLAGS.log_root, "train","checkpoint-")
+    try:
+      while True: # repeats until interrupted
+        batch = batcher.next_batch()
+       
+        t0=time.time()
+        results = model.run_train_step(sess, batch)
+        t1=time.time()
+        
+        loss = results['loss']
+        tf.logging.info('loss: %f', loss) # print the loss to screen
 
-      
-      t0=time.time()
-      results = model.run_train_step(sess, batch)
-      t1=time.time()
-      
-      loss = results['loss']
-      tf.logging.info('loss: %f', loss) # print the loss to screen
+        if not np.isfinite(loss):
+          raise Exception("Loss is not finite. Stopping.")
 
-      if not np.isfinite(loss):
-        raise Exception("Loss is not finite. Stopping.")
+        if FLAGS.coverage:
+          coverage_loss = results['coverage_loss']
+          tf.logging.info("coverage_loss: %f", coverage_loss) # print the coverage loss to screen
 
-      if FLAGS.coverage:
-        coverage_loss = results['coverage_loss']
-        tf.logging.info("coverage_loss: %f", coverage_loss) # print the coverage loss to screen
+        train_step = results['global_step'] # we need this to update our running average loss
+        epoch_num = results['epoch_num']
 
-      # get the summaries and iteration number so we can write summaries to tensorboard
-      summaries = results['summaries'] # we will write these summaries to tensorboard using summary_writer
-      train_step = results['global_step'] # we need this to update our running average loss
-      epoch_num = results['epoch_num']
+        tf.logging.info('Batch count: %d',train_step)      
+     
+        #if epoch_num!=prev_epoch_num:
+        if train_step% FLAGS.save_steps  == 0:
+          tf.logging.info('epoch completed')
+          prev_epoch_num = epoch_num
+          t_now = time.time()
+          f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
+          t_epoch = t_now
 
-      tf.logging.info('Batch count: %d',train_step)
-      
-      summary_writer.add_summary(summaries, train_step) # write the summaries
-      if train_step % 100 == 0: # flush the summary writer every so often
-        summary_writer.flush()
+        if FLAGS.use_stop_after:
+          if train_step >= FLAGS.stop_steps:
+            tf.logging.info('Stopping as epoch limit completed')
+            exit()
+    except:
+      tf.logging.info("Caught keyboard interrupt on worker. Stopping supervisor...")
+      exit()
 
-      #if epoch_num!=prev_epoch_num:
-      if train_step% FLAGS.save_steps == 0:
-        tf.logging.info('epoch completed')
-        prev_epoch_num = epoch_num
-        saver.save(sess, model_save_path, global_step = train_step)
-        t_now = time.time()
-        f.write('seconds for epoch %d\t%.3f\n'% (train_step/FLAGS.save_steps,t_now-t_epoch))
-        t_epoch = t_now
+          
 
-      if FLAGS.use_stop_after:
-        if train_step >= FLAGS.stop_steps:
-          tf.logging.info('Stopping as epoch limit completed')
-          exit()
-
-#epoch loss
-global loaded_checkpoints
 
 def run_eval_parallel(hps, vocab, batcher):
 
