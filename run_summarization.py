@@ -36,7 +36,7 @@ import glob
 import yaml
 import copy
 import horovod.tensorflow as hvd 
-
+import tensorflow_hub as hub
 
 #FLAGS = tf.app.flags.FLAGS
 flags = tf.app.flags 
@@ -276,8 +276,8 @@ def setup_training(model, batcher):
 def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver):
   """Repeatedly runs training iterations, logging loss to screen and writing summaries"""
   tf.logging.info("starting run_training")
-  init = tf.global_variables_initializer()
-  bcast = hvd.broadcast_global_variables(0)
+  #init = tf.global_variables_initializer()
+  #bcast = hvd.broadcast_global_variables(0)
 
   batch_count = 0
   #new_saver = tf.train.Saver()
@@ -297,8 +297,8 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer,saver)
 
 
   with sess_context_manager as sess:
-    init.run()
-    bcast.run()
+    #init.run()
+    #bcast.run()
 
     if FLAGS.debug: # start the tensorflow debugger
       sess = tf_debug.LocalCLIDebugWrapperSession(sess)
@@ -585,10 +585,10 @@ def main(unused_argv):
 
      
   tf.set_random_seed(111) # a seed value for randomness
-
+  elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=True)	
   if hps.mode.value == 'train':
     print "creating model..."
-    model = SummarizationModel(hps, vocab)
+    model = SummarizationModel(hps, vocab,elmo)
     setup_training(model, batcher)
   elif hps.mode.value == 'eval':
     model = SummarizationModel(hps, vocab)

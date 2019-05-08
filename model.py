@@ -97,7 +97,7 @@ def make_variable_state_initializer(**kwargs):
 class SummarizationModel(object):
 	"""A class to represent a sequence-to-sequence model for text summarization. Supports both baseline mode, pointer-generator mode, and coverage"""
 
-	def __init__(self, hps, vocab):
+	def __init__(self, hps, vocab, elmo=None):
 		self._hps = hps
 		self._vocab = vocab
 		self.use_glove = hps.use_glove.value
@@ -112,6 +112,7 @@ class SummarizationModel(object):
 
 		self._regularizer = tf.contrib.layers.l2_regularizer(scale=self.beta_l2)
 		self._reuse = hvd.rank() > 0
+		self.elmo = elmo
 
 	def _add_placeholders(self):
 		"""Add placeholders to the graph. These are entry points for any input data."""
@@ -296,6 +297,8 @@ class SummarizationModel(object):
 		return feed_dict
 
 	def _add_elmo_encoder(self, encoder_inputs, seq_len, trainable=True, layer_name='word_emb', name='elmo_encoder'):
+		#elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
+
 		with tf.variable_scope(name):
 			
 			encoder_outputs = self.elmo(inputs={ "tokens": encoder_inputs,"sequence_len": seq_len},signature="tokens",as_dict=True)[layer_name]
@@ -1240,13 +1243,13 @@ class SummarizationModel(object):
 		loss_to_minimize = self._total_loss if self._hps.coverage.value else self._loss
 		tvars = tf.trainable_variables()
 		
-		#gradients = tf.gradients(loss_to_minimize, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
-		grads_and_vars=optimizer.compute_gradients(loss, tvars)
+		gradients = tf.gradients(loss_to_minimize, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
+		#grads_and_vars=optimizer.compute_gradients(loss, tvars)
 		
-		grads = [grad for grad,var in grads_and_vars]
-	    	tvars = [var for grad,var in grads_and_vars]
+		#grads = [grad for grad,var in grads_and_vars]
+	    	#tvars = [var for grad,var in grads_and_vars]
     	
-    		grads, global_norm = tf.clip_by_global_norm(grads, self._hps.max_grad_norm.value)
+    		grads, global_norm = tf.clip_by_global_norm(gradients, self._hps.max_grad_norm.value)
 
 		
 		# Add a summary
@@ -1279,9 +1282,11 @@ class SummarizationModel(object):
 		self._add_placeholders()
                 
 		with tf.device("/gpu:0"):
+			'''
 			if self._hps.use_elmo.value:
 				self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
-
+				tf.logging.info('Elmo added')
+			'''
 			self._add_seq2seq()
 
 		self.global_step = tf.Variable(0, name='global_step', trainable=False)
