@@ -314,7 +314,8 @@ class SummarizationModel(object):
 		  fw_state, bw_state:
 			Each are LSTMStateTuples of shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
 		"""
-		with tf.variable_scope(name):
+		reuse = hvd.rank() > 0
+		with tf.variable_scope(name,reuse=reuse):
 
 			if self._hps.use_lstm.value:
 				cell_fw = []
@@ -1276,7 +1277,9 @@ class SummarizationModel(object):
 		tf.logging.info('Building graph...')
 		t0 = time.time()
 		self._add_placeholders()
-		with tf.device("/gpu:"+str(hvd.rank()))
+                reuse = hvd.rank() > 0
+
+		with tf.device("/gpu:0"), tf.variable_scope(name_or_scope=tf.get_variable_scope(), reuse=reuse):
 			if self._hps.use_elmo.value:
 				self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
 

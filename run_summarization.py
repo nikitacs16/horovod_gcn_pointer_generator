@@ -539,7 +539,7 @@ def main(unused_argv):
     
   # Change log_root to FLAGS.log_root/FLAGS.exp_name and create the dir if necessary
   FLAGS.log_root = os.path.join(FLAGS.log_root, FLAGS.exp_name)
-  FLAGS.log_root = FLAGS.log_root if hvd.rank() == 0 else os.path.join(FLAGS.log_root, str(hvd.rank()))
+  FLAGS.log_root = os.path.join(FLAGS.log_root, str(hvd.rank()))
 
   if not os.path.exists(FLAGS.log_root):
     if FLAGS.mode=="train":
