@@ -31,6 +31,7 @@ import horovod.tensorflow as hvd
 #_state_size_with_prefix = rnc._state_size_with_prefix  # will need a workaround with higher versions
 
 FLAGS = tf.app.flags.FLAGS
+reuse = hvd.rank() > 0
 
 
 def get_initial_cell_state(cell, initializer, batch_size, dtype):
@@ -295,7 +296,7 @@ class SummarizationModel(object):
 		return feed_dict
 
 	def _add_elmo_encoder(self, encoder_inputs, seq_len, trainable=True, layer_name='word_emb', name='elmo_encoder'):
-		with tf.variable_scope(name):
+		with tf.variable_scope(name, reuse=reuse):
 			
 			encoder_outputs = self.elmo(inputs={ "tokens": encoder_inputs,"sequence_len": seq_len},signature="tokens",as_dict=True)[layer_name]
 
@@ -314,7 +315,6 @@ class SummarizationModel(object):
 		  fw_state, bw_state:
 			Each are LSTMStateTuples of shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
 		"""
-		reuse = hvd.rank() > 0
 		with tf.variable_scope(name,reuse=reuse):
 
 			if self._hps.use_lstm.value:
@@ -477,7 +477,7 @@ class SummarizationModel(object):
 
 			gcn_in_2d = tf.reshape(gcn_in, [-1, in_dim])
 
-			with tf.variable_scope('%s-%d' % (name, layer)):
+			with tf.variable_scope('%s-%d' % (name, layer), reuse=reuse):
 
 				w_in = tf.get_variable("weights", [in_dim, gcn_dim],
 									   initializer=tf.random_normal_initializer(stddev=0.01, seed=2))
@@ -711,7 +711,7 @@ class SummarizationModel(object):
 	  state: LSTMStateTuple with hidden_dim units.
 	"""
 		hidden_dim = self._hps.hidden_dim.value
-		with tf.variable_scope('reduce_final_st'):
+		with tf.variable_scope('reduce_final_st', reuse=reuse):
 			if self._hps.use_lstm.value:
 				# Define weights and biases to reduce the cell and reduce the state
 				w_reduce_c = tf.get_variable('w_reduce_c', [hidden_dim * 2, hidden_dim], dtype=tf.float32,
@@ -804,7 +804,7 @@ class SummarizationModel(object):
 	Returns:
 	  final_dists: The final distributions. List length max_dec_steps of (batch_size, extended_vsize) arrays.
 	"""
-		with tf.variable_scope('final_distribution'):
+		with tf.variable_scope('final_distribution', reuse=reuse):
 			# Multiply vocab dists by p_gen and attention dists by (1-p_gen)
 			vocab_dists = [p_gen * dist for (p_gen, dist) in zip(self.p_gens, vocab_dists)]
 			attn_dists = [(1 - p_gen) * dist for (p_gen, dist) in zip(self.p_gens, attn_dists)]
@@ -856,14 +856,14 @@ class SummarizationModel(object):
 		vsize = self._vocab.size()  # size of the vocabulary
 
 
-		with tf.variable_scope('seq2seq'):
+		with tf.variable_scope('seq2seq', reuse=reuse):
 			# Some initializers
 			self.rand_unif_init = tf.random_uniform_initializer(-hps.rand_unif_init_mag.value, hps.rand_unif_init_mag.value,seed=123)
 			self.trunc_norm_init = tf.truncated_normal_initializer(stddev=hps.trunc_norm_init_std.value, seed=123)
 			self.gcn_weight_init = tf.random_normal_initializer(stddev=0.01, seed=123)
 			self.gcn_bias_init = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=123)
 			# Add embedding matrix (shared by the encoder and decoder inputs)
-			with tf.variable_scope('embedding'):
+			with tf.variable_scope('embedding',reuse=reuse):
 				if hps.mode.value == "train":
 					if self.use_glove:
 						embedding = tf.get_variable('embedding', dtype=tf.float32,
@@ -1161,11 +1161,11 @@ class SummarizationModel(object):
 ################################ DECODER ######################################################
 
 			# Add the decoder.
-			with tf.variable_scope('decoder'):
+			with tf.variable_scope('decoder',reuse=reuse):
 				decoder_outputs, self._dec_out_state, self.attn_dists, self.p_gens, self.coverage = self._add_decoder(emb_dec_inputs)
 
 			# Add the output projection to obtain the vocabulary distribution
-			with tf.variable_scope('output_projection'):
+			with tf.variable_scope('output_projection',reuse=reuse):
 				w = tf.get_variable('w', [hps.hidden_dim.value, vsize], dtype=tf.float32, initializer=self.trunc_norm_init,
 									regularizer=self._regularizer)
 				w_t = tf.transpose(w)
@@ -1188,7 +1188,7 @@ class SummarizationModel(object):
 
 			if hps.mode.value in ['train', 'eval']:
 				# Calculate the loss
-				with tf.variable_scope('loss'):
+				with tf.variable_scope('loss',reuse=reuse):
 					if FLAGS.pointer_gen:
 						# Calculate the loss per step
 						# This is fiddly; we use tf.gather_nd to pick out the probabilities of the gold target words
@@ -1218,7 +1218,7 @@ class SummarizationModel(object):
 
 					# Calculate coverage loss from the attention distributions
 					if hps.coverage.value:
-						with tf.variable_scope('coverage_loss'):
+						with tf.variable_scope('coverage_loss',reuse=reuse):
 							self._coverage_loss = _coverage_loss(self.attn_dists, self._dec_padding_mask)
 							tf.summary.scalar('coverage_loss', self._coverage_loss)
 						self._total_loss = self._loss + hps.cov_loss_wt.value * self._coverage_loss
@@ -1277,9 +1277,8 @@ class SummarizationModel(object):
 		tf.logging.info('Building graph...')
 		t0 = time.time()
 		self._add_placeholders()
-                reuse = hvd.rank() > 0
-
-		with tf.device("/gpu:0"), tf.variable_scope(name_or_scope=tf.get_variable_scope(), reuse=reuse):
+                
+		with tf.device("/gpu:0"):
 			if self._hps.use_elmo.value:
 				self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
 
