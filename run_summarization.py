@@ -311,7 +311,7 @@ def setup_training(model,batcher):
           if train_step >= FLAGS.stop_steps:
             tf.logging.info('Stopping as epoch limit completed')
             exit()
-    except :
+    except KeyboardInterrupt:
       tf.logging.info("Caught keyboard interrupt on worker. Stopping supervisor...")
       exit()
 

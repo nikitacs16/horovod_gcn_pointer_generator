@@ -1259,12 +1259,11 @@ class SummarizationModel(object):
 
 		optimizer = hvd.DistributedOptimizer(optimizer)
 		tvars = tf.trainable_variables()
-
 		grads_and_vars=optimizer.compute_gradients(loss_to_minimize, tvars)
 		grads = [grad for grad,var in grads_and_vars]
 		tvars = [var for grad,var in grads_and_vars]
 		grads, global_norm = tf.clip_by_global_norm(grads, self._hps.max_grad_norm.value)
-			
+		
 		self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step, name='train_step')
 
 	def build_graph(self):
