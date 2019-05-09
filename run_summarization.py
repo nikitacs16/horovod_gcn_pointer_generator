@@ -311,145 +311,54 @@ def setup_training(model,batcher):
           if train_step >= FLAGS.stop_steps:
             tf.logging.info('Stopping as epoch limit completed')
             exit()
-    except:
+    except :
       tf.logging.info("Caught keyboard interrupt on worker. Stopping supervisor...")
       exit()
 
-          
 
 
-def run_eval_parallel(hps, vocab, batcher):
-
-  """Repeatedly runs eval iterations, logging to screen and decoding with beam size 1 """ 
-		  
-  #saver = tf.train.Saver()
-  #sess = tf.Session(config=util.get_config())
-  ckpt_dir = os.path.join(FLAGS.log_root, "train") if hvd.rank() == 0 else None
-  loaded_checkpoints = []
-  while True:
-    #tf.logging.info('Entered while')
-    #checkpoint_name = util.load_ckpt(saver, sess) # load a new checkpoint
-    #tf.logging.info(checkpoint_name)
+def run_validation_sequential(model, batcher, vocab, hps):
+    
+    model.build_graph()
+    saver = tf.train.Saver(max_to_keep=3) # we will keep 3 best checkpoints at a time
+    sess = tf.Session(config=util.get_config())
     checkpoint_names = sorted(glob.glob(ckpt_dir + '/*.index'))
-    tf.logging.info(checkpoint_names)	
-    for checkpoint_name in checkpoint_names :
-      if checkpoint_name in loaded_checkpoints:
-        continue
-    
-        #tf.logging.info(checkpoint_name)
-      loaded_checkpoints.append(checkpoint_name)
-      
-      check_point_step_num = int(checkpoint_name.split('--')[-1][:-6]) #regex
-      not_seen = True
-      batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass, data_format=FLAGS.tf_example_format)
-      decode_model_hps = hps  # This will be the hyperparameters for the decoder model
-      decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher $
-      #try:		
-      model = SummarizationModel(decode_model_hps, vocab)
-      decoder = BeamSearchDecoder(model, batcher, vocab, use_epoch=True, epoch_num=check_point_step_num)
-      decoder.decode()
-      tf.reset_default_graph()
-      
-
-    
-    time.sleep(10)
-
-    
-
-
-
-def run_eval(model, batcher, vocab, hps):
-
-  """Repeatedly runs eval iterations, logging to screen and writing summaries. Saves the model with the best loss seen so far."""
-  model.build_graph() # build the graph
-  saver = tf.train.Saver(max_to_keep=3) # we will keep 3 best checkpoints at a time
-  sess = tf.Session(config=util.get_config())
-
-  eval_dir = os.path.join(FLAGS.log_root, "eval") # make a subdir of the root dir for eval data
-  bestmodel_save_path = os.path.join(eval_dir, 'bestmodel') # this is where checkpoints of best models are saved
-  if os.path.exists(os.path.join(FLAGS.log_root,'best_loss.txt')):
-    f_loss = open(os.path.join(FLAGS.log_root,'best_loss.txt'),'r')
-    for i in f.readlines():
-      best_loss = float(i)
-  else:
-    best_loss = None    
-  f_loss = open(os.path.join(FLAGS.log_root,'loss.txt'),'w')
-  summary_writer = tf.summary.FileWriter(eval_dir)
-  running_avg_loss = 0 # the eval job keeps a smoother, running average loss to tell it when to implement early stopping
-  best_loss = None  # will hold the best loss achieved so far 
-  
-  loaded_checkpoints = []
-  not_seen = True 
-
-  while True:
-    #tf.logging.info('Entered while')
-    checkpoint_name = util.load_ckpt(saver, sess) # load a new checkpoint
-    #tf.logging.info(checkpoint_name)
-    if checkpoint_name in loaded_checkpoints:
-      time.sleep(100)
-      #tf.logging.info(checkpoint_name)
-      not_seen = False
-    else:
-      #tf.logging.info(checkpoint_name)
-      loaded_checkpoints.append(checkpoint_name)
-      not_seen = True
-
-    while True and not_seen:
-
-      batch = batcher.next_batch() # get the next batch
-
-      if batch is None:
-        tf.logging.info(running_avg_loss)
-        batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass, data_format=FLAGS.tf_example_format)
-        
-        tf.logging.info(batcher._batch_queue)
-        break
-      
-      # run eval on the batch
-      results = model.run_eval_step(sess, batch)
-      #tf.logging.info('ran eval')
-      # print the loss and coverage loss to screen
-      loss = results['loss']
-      #tf.logging.info('val loss %.3f', loss)
-      if FLAGS.coverage:
-        coverage_loss = results['coverage_loss']
-        loss = loss + coverage_loss
-      # add summaries
-      summaries = results['summaries']
-      train_step = results['global_step']
-     
-      summary_writer.add_summary(summaries, train_step)
-
-      # calculate running avg loss
-      running_avg_loss = running_avg_loss + loss
-      #tf.logging.info(running_avg_loss) 	
-
-    # If running_avg_loss is best so far, save this checkpoint (early stopping).
-    # These checkpoints will appear as bestmodel-<iteration_number> in the eval dir
-    #tf.logging.info(running_avg_loss)
-    if best_loss is None or running_avg_loss < best_loss and not_seen:
-      tf.logging.info('Found new best model with %.3f running_avg_loss. Saving to %s', running_avg_loss, bestmodel_save_path)
-      saver.save(sess, bestmodel_save_path, global_step=train_step, latest_filename='checkpoint_best')
-      best_loss = running_avg_loss
-      f_loss.write("%f\n"%(best_loss))
-
-
-    if FLAGS.use_stop_after:
-      if train_step >= FLAGS.stop_steps:
-        tf.logging.info('Stopping as epoch limit completed')
-        exit()
-
+    eval_dir = os.path.join(FLAGS.log_root, '0', "eval") # make a subdir of the root dir for eval data
+    bestmodel_save_path = os.path.join(eval_dir, 'bestmodel') # this is where checkpoints of best models are saved
     running_avg_loss = 0.0
-    loss = 0.0	
+    best_loss = None
     
-    # flush the summary writer every so often
-    if train_step % 100 == 0:
-      summary_writer.flush()
+    for checkpoint in checkpoint_names
+      epoch_num = int(checkpoint_name.split('-')[-1][:-6])
+      model_path = os.path.join(FLAGS.log_root,'0', 'train','model.ckpt-'+str(epoch_num))
+      saver.restore(sess, model_path)
+      while True:
+        batch = batcher.next_batch()
+        if batch is None:
+          tf.logging.info(running_avg_loss)
+          batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass, data_format=FLAGS.tf_example_format)
+          break
+        results = model.run_eval_step(sess, batch)
+        loss = results['loss']
+        train_step = 
+        if FLAGS.coverage:
+          coverage_loss = results['coverage_loss']
+          loss = loss + coverage_loss
+        running_avg_loss = running_avg_loss + loss
+      
+      if best_loss is None or running_avg_loss < best_loss:
+        tf.logging.info('Found new best model with %.3f running_avg_loss. Saving to %s', running_avg_loss, bestmodel_save_path)
+        saver.save(sess, bestmodel_save_path, global_step=train_step, latest_filename='checkpoint_best')
+        best_loss = running_avg_loss
+        f_loss.write("%f\n"%(best_loss))
+      
+      running_avg_loss = 0.0
+      loss = 0.0  
 
-    if FLAGS.use_stop_after:
-        if (train_step + 300)  - FLAGS.stop_steps > 0:
-          tf.logging.info('Stopping as epoch limit completed')
-          exit()
+    
+
+
+
 
 def get_data(data_path):
   new_data = []
@@ -543,8 +452,6 @@ def main(unused_argv):
     
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
   device_rank = hvd.rank()
-  tf.logging.info('rank')
-  tf.logging.info(device_rank)	
   if FLAGS.tf_example_format:
     batcher = Batcher(FLAGS.data_path, vocab, hps, device_rank, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
   else:
@@ -561,11 +468,9 @@ def main(unused_argv):
   elif hps.mode.value == 'eval':
     model = SummarizationModel(hps, vocab)
     try:
-      run_eval(model, batcher, vocab,hps)
+      run_validation_sequential(model, batcher, vocab, hps)
     except KeyboardInterrupt:
       tf.logging.info("Caught keyboard interrupt on worker. Stopping supervisor...")
-      json.dump(loaded_checkpoints,open('loaded_checkpoints.json','w'))
-      sv.stop()
 
   elif hps.mode.value == 'decode':
     decode_model_hps = hps  # This will be the hyperparameters for the decoder model
