@@ -390,7 +390,7 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 		  		else:
 					curr_adj_out.append((dest, src))    
 					curr_data_out.append(1.0)
-		
+		'''		
 		seen_nodes = list(set(seen_nodes))
 		
 		for src in range(enc_length): #A + I for entity and coref
@@ -399,7 +399,7 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 			if use_both:
 				curr_adj_in.append((src, src))
 				curr_data_in.append(1.0)
-		  		
+		'''		  		
 
 		if len(curr_adj_in) == 0:
 			adj_in = sp.coo_matrix((max_nodes, max_nodes))
