@@ -97,7 +97,7 @@ def make_variable_state_initializer(**kwargs):
 class SummarizationModel(object):
 	"""A class to represent a sequence-to-sequence model for text summarization. Supports both baseline mode, pointer-generator mode, and coverage"""
 
-	def __init__(self, hps, vocab, elmo=None):
+	def __init__(self, hps, vocab):
 		self._hps = hps
 		self._vocab = vocab
 		self.use_glove = hps.use_glove.value
@@ -112,7 +112,7 @@ class SummarizationModel(object):
 
 		self._regularizer = tf.contrib.layers.l2_regularizer(scale=self.beta_l2)
 		self._reuse = hvd.rank() > 0
-		self.elmo = elmo
+		
 
 	def _add_placeholders(self):
 		"""Add placeholders to the graph. These are entry points for any input data."""

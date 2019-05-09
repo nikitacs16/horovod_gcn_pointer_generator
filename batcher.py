@@ -409,7 +409,7 @@ class Batcher(object):
 
 	def fill_example_queue(self):
 		"""Reads data from file and processes into Examples which are then placed into the example queue."""
-		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass,self._data_as_tf_example, self._device_id))
+		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass,self._device_id, data_as_tf_example=self._data_as_tf_example))
 		count = 0
 		query = None
 		word_edge_list = None

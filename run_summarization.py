@@ -249,7 +249,7 @@ def setup_training(model,batcher):
 
   
   hooks = [hvd.BroadcastGlobalVariablesHook(0)]
-  checkpoint_dir =  os.path.join(FLAGS.log_root, "train")
+  checkpoint_dir =  os.path.join(FLAGS.log_root, "train") if hvd.rank() <  1 else None
   with tf.train.MonitoredTrainingSession(checkpoint_dir=checkpoint_dir,
                                        config=util.get_config(),
                                        hooks=hooks,
@@ -259,7 +259,7 @@ def setup_training(model,batcher):
                                        save_checkpoint_steps=FLAGS.save_steps,
                                        ) as sess:  
 
-    sess.run([tf.global_variables_initializer(), tf.tables_initializer()])
+    #sess.run([tf.global_variables_initializer(), tf.tables_initializer()])
     batch_count = 0
     #new_saver = tf.train.Saver()
     prev_epoch_num = 0
@@ -502,10 +502,10 @@ def main(unused_argv):
   tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))
   #if FLAGS.no_lstm_encoder and FLAGS.word_gcn!=True:
     #raise Exception("Set word_gcn to True to continue")
-  if FLAGS.no_lstm_query_encoder and FLAGS.query_gcn!=True and FLAGS.use_elmo!= True:
-    raise Exception("Set query_gcn to True to continue")
-  if (FLAGS.no_lstm_query_encoder==True or FLAGS.query_gcn==True) and FLAGS.query_encoder==False:
-    raise Exception("Set query_encoder to True to continue")
+ # if FLAGS.no_lstm_query_encoder and FLAGS.query_gcn!=True and FLAGS.use_elmo!= True:
+  #  raise Exception("Set query_gcn to True to continue")
+ # if (FLAGS.no_lstm_query_encoder==True or FLAGS.query_gcn==True) and FLAGS.query_encoder==False:
+  #  raise Exception("Set query_encoder to True to continue")
 
     
   # Change log_root to FLAGS.log_root/FLAGS.exp_name and create the dir if necessary
@@ -543,7 +543,8 @@ def main(unused_argv):
     
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
   device_rank = hvd.rank()
-
+  tf.logging.info('rank')
+  tf.logging.info(device_rank)	
   if FLAGS.tf_example_format:
     batcher = Batcher(FLAGS.data_path, vocab, hps, device_rank, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
   else:
@@ -552,10 +553,10 @@ def main(unused_argv):
 
      
   tf.set_random_seed(111) # a seed value for randomness
-  elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=True)	
+  	
   if hps.mode.value == 'train':
     print "creating model..."
-    model = SummarizationModel(hps, vocab,elmo)
+    model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
   elif hps.mode.value == 'eval':
     model = SummarizationModel(hps, vocab)
