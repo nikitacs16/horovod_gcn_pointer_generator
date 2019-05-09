@@ -318,29 +318,33 @@ def setup_training(model,batcher):
 
 
 def run_validation_sequential(model, batcher, vocab, hps):
-    
+    ckpt_dir = os.path.join(FLAGS.log_root, 'train')	    
     model.build_graph()
     saver = tf.train.Saver(max_to_keep=3) # we will keep 3 best checkpoints at a time
     sess = tf.Session(config=util.get_config())
     checkpoint_names = sorted(glob.glob(ckpt_dir + '/*.index'))
-    eval_dir = os.path.join(FLAGS.log_root, '0', "eval") # make a subdir of the root dir for eval data
+    tf.logging.info(checkpoint_names)
+    eval_dir = os.path.join(FLAGS.log_root, "eval") # make a subdir of the root dir for eval data
+    if not os.path.exists(eval_dir): os.makedirs(eval_dir)
+    f_loss = open( os.path.join(eval_dir, 'val_loss.txt'), 'w')
     bestmodel_save_path = os.path.join(eval_dir, 'bestmodel') # this is where checkpoints of best models are saved
     running_avg_loss = 0.0
     best_loss = None
     
-    for checkpoint in checkpoint_names
-      epoch_num = int(checkpoint_name.split('-')[-1][:-6])
-      model_path = os.path.join(FLAGS.log_root,'0', 'train','model.ckpt-'+str(epoch_num))
+    for checkpoint in checkpoint_names:
+      tf.logging.info(checkpoint)
+      epoch_num = int(checkpoint.split('-')[-1][:-6])
+      model_path = os.path.join(FLAGS.log_root,'train','model.ckpt-'+str(epoch_num))
       saver.restore(sess, model_path)
       while True:
         batch = batcher.next_batch()
         if batch is None:
           tf.logging.info(running_avg_loss)
-          batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass, data_format=FLAGS.tf_example_format)
+          batcher = Batcher(FLAGS.data_path, vocab, hps, 0, single_pass=FLAGS.single_pass, data_format=FLAGS.tf_example_format)
           break
         results = model.run_eval_step(sess, batch)
         loss = results['loss']
-        train_step = 
+        train_step = results['global_step']
         if FLAGS.coverage:
           coverage_loss = results['coverage_loss']
           loss = loss + coverage_loss
@@ -354,6 +358,7 @@ def run_validation_sequential(model, batcher, vocab, hps):
       
       running_avg_loss = 0.0
       loss = 0.0  
+    restore_best_model()
 
     
 

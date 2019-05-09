@@ -160,8 +160,7 @@ def example_generator(data_path, single_pass, device_rank,data_as_tf_example=Tru
   Yields:
 	Deserialized tf.Example.
   """
-	tf.logging.info(device_rank)
-	# tf.logging.info(data_path)
+		
 	random.seed(device_rank+1)
 	if data_as_tf_example:
 		epoch = 0
@@ -172,7 +171,7 @@ def example_generator(data_path, single_pass, device_rank,data_as_tf_example=Tru
 				filelist = sorted(filelist)
 			else:
 				random.shuffle(filelist)
-				tf.logging.info(filelist)
+				
 			for file_no, f in enumerate(filelist):
 				reader = open(f, 'rb')
 				all_examples = []
