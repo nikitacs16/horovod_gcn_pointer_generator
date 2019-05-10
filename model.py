@@ -885,6 +885,8 @@ class SummarizationModel(object):
 
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch, axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 				if self._hps.use_elmo.value:
+					self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
+
 					enc_elmo_states = self._add_elmo_encoder(self._enc_batch_raw, self._enc_lens,trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder')
 					if self._hps.use_query_elmo.value:
 						enc_query_elmo_states = self._add_elmo_encoder(self._query_batch_raw, self._query_lens, trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder_query')

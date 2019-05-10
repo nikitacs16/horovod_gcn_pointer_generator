@@ -171,7 +171,7 @@ def example_generator(data_path, single_pass, device_rank,data_as_tf_example=Tru
 				filelist = sorted(filelist)
 			else:
 				random.shuffle(filelist)
-				
+			#tf.logging.info(filelist)				
 			for file_no, f in enumerate(filelist):
 				reader = open(f, 'rb')
 				all_examples = []
