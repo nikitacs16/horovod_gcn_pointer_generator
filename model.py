@@ -131,7 +131,7 @@ class SummarizationModel(object):
 			self._query_batch = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='query_batch')
 			self._query_lens = tf.placeholder(tf.int32, [hps.batch_size.value], name='query_lens')
 			self._query_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='query_padding_mask')
-			if FLAGS.use_elmo:
+			if FLAGS.use_query_elmo:
 				self._query_batch_raw = tf.placeholder(tf.string, [hps.batch_size.value, None], name='query_batch_raw')
 
 
@@ -209,15 +209,12 @@ class SummarizationModel(object):
 
 		if FLAGS.use_elmo:
 			feed_dict[self._enc_batch_raw] = batch.enc_batch_raw
-			feed_dict[self._query_batch_raw] = batch.query_batch_raw
-
-
 
 		if FLAGS.query_encoder:
 			feed_dict[self._query_batch] = batch.query_batch
 			feed_dict[self._query_lens] = batch.query_lens
 			feed_dict[self._query_padding_mask] = batch.query_padding_mask
-			if FLAGS.use_elmo and FLAGS.no_lstm_query_encoder:
+			if FLAGS.use_query_elmo:
 				feed_dict[self._query_batch_raw] = batch.query_batch_raw
 
 
@@ -887,27 +884,28 @@ class SummarizationModel(object):
 					emb_query_inputs = tf.nn.embedding_lookup(embedding, self._query_batch)  # tensor with shape (batch_size, max_query_steps, emb_size)
 
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch, axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
-			
-			if self._hps.use_elmo.value:
-				with tf.variable_scope('elmo_hub'):
-					self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
+				if self._hps.use_elmo.value:
+					enc_elmo_states = self._add_elmo_encoder(self._enc_batch_raw, self._enc_lens,trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder')
+					if self._hps.use_query_elmo.value:
+						enc_query_elmo_states = self._add_elmo_encoder(self._query_batch_raw, self._query_lens, trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder_query')
 	
+					if self._hps.use_elmo_glove.value:
+						emb_enc_inputs = tf.concat([emb_enc_inputs,enc_elmo_states],axis=2) #batch_size, max_enc_steps, emb_size + 1024
+						if self._hps.use_query_elmo.value:
+							emb_query_inputs = tf.concat([emb_query_inputs,enc_query_elmo_states], axis=2)
+
+					else:
+						emb_enc_inputs = enc_elmo_states
+						if self._hps.use_query_elmo.value:
+							emb_query_inputs = enc_query_elmo_states
 
 			if self._hps.use_gcn_before_lstm.value:
-				if self._hps.use_elmo.value:
-					with tf.variable_scope('elmo_encoder'):
-						emb_enc_inputs = self._add_elmo_encoder(self._enc_batch_raw, self._enc_lens,trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder')
-
 				
 ################################################## G-LSTM ###############################################
 
 				################ GCN LAYER #######################	
 				gcn_in = emb_enc_inputs
-				if self._hps.use_elmo.value:
-					in_dim = 1024
-				else:
-					in_dim = hps.emb_dim.value
-
+				in_dim = tf.shape(emb_enc_inputs)[2]
 				gcn_dim = hps.word_gcn_dim.value
 
 				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim.value,
@@ -953,15 +951,10 @@ class SummarizationModel(object):
 
 				################QUERY ENCODER###########################
 				if self._hps.query_encoder.value:
-					if self._hps.use_elmo.value:
-						emb_query_inputs = self._add_elmo_encoder(self._query_batch_raw, self._query_lens, trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder_query')
 
 					q_gcn_in = emb_query_inputs
-					if self._hps.use_elmo.value:
-						q_in_dim = hps.emb_dim.value
-					else:
-						q_in_dim = 1024
-
+					
+					q_in_dim = tf.shape(emb_query_inputs)[2]
 					q_gcn_outputs = emb_query_inputs #if not used
 					
 					######### GCN LAYER #############
@@ -1011,6 +1004,7 @@ class SummarizationModel(object):
 ######################################### TLSTM and PA-LSTM ###################################################
 
 			else:
+								
 				if not self._hps.no_lstm_encoder.value:
 
 				#####LSTM LAYER ########
@@ -1022,24 +1016,7 @@ class SummarizationModel(object):
 					# Our encoder is bidirectional and our decoder is unidirectional so we need to reduce the final encoder hidden state to the right size to be the initial decoder hidden state
 					self._dec_in_state = self._reduce_states(fw_st, bw_st)	
 					self._enc_states = enc_outputs	
-				
-
-				if self._hps.use_elmo.value:
-					enc_elmo_states = self._add_elmo_encoder(self._enc_batch_raw, self._enc_lens,trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder')
-					
-					if self._hps.use_elmo_glove.value:
-						
-						enc_inputs = tf.concat([emb_enc_inputs,enc_elmo_states],axis=2) #batch_size, max_enc_steps, emb_size + 1024
-						enc_outputs, fw_st, bw_st = self._add_encoder(enc_inputs, self._enc_lens)
-						self._enc_states = enc_outputs
-						self._dec_in_state = self._reduce_states(fw_st, bw_st)
-
-					else:
-						enc_outputs, fw_st, bw_st = self._add_encoder(enc_elmo_states, self._enc_lens, num_layers=hps.encoder_lstm_layers.value, keep_prob=hps.lstm_dropout.value)
-
-						self._enc_states = enc_outputs
-						self._dec_in_state = self._reduce_states(fw_st, bw_st)	
-
+			
 
 
 
@@ -1047,7 +1024,7 @@ class SummarizationModel(object):
 
 					if self._hps.use_gcn_lstm_parallel.value or self._hps.no_lstm_encoder.value:
 						gcn_in = emb_enc_inputs
-						in_dim = hps.emb_dim.value
+						in_dim = tf.shape(emb_enc_inputs)[2]
 					
 					else:
 						######### INTERM CONCAT ########
@@ -1102,23 +1079,11 @@ class SummarizationModel(object):
 						self._query_states = query_outputs
 						q_in_dim = self._hps.hidden_dim.value * 2
 
-					if self._hps.use_elmo.value and self._hps.no_lstm_query_encoder.value:	
-
-						query_elmo_states = self._add_elmo_encoder(self._query_batch_raw, self._query_lens, trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder_query')
-						if self._hps.use_elmo_glove.value:
-							query_inputs = tf.concat([emb_query_inputs,query_elmo_states],axis=2)
-							query_outputs, fw_st_q, bw_st_q = self._add_encoder(query_inputs, self._query_lens, name='query_encoder')
-							self._query_states = query_outputs
-						else:
-							query_outputs, fw_st_q, bw_st_q = self._add_encoder(query_elmo_states, self._query_lens, name='query_encoder')
-							
-							self._query_states = query_outputs
-
-						
+				
 					if self._hps.query_gcn.value:
 						if self._hps.use_gcn_lstm_parallel.value or self._hps.no_lstm_query_encoder.value:
 							q_gcn_in = emb_query_inputs
-							q_in_dim = hps.emb_dim.value
+							q_in_dim = tf.shape(emb_query_inputs)[2]
 						else:
 							q_in_dim = self._hps.hidden_dim.value * 2
 
@@ -1163,6 +1128,7 @@ class SummarizationModel(object):
 						
 						else:
 							self._query_states = q_gcn_outputs  
+
 
 
 ################################ DECODER ######################################################

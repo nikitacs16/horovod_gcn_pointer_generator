@@ -72,7 +72,7 @@ class Example(object):
 				query = " ".join(q for q in query_words)
 			self.query_len = len(query_words) # store the length after truncation but before padding
 			self.query_input = [vocab.word2id(w) for w in query_words] # list of word ids; OOVs are represented by the id for UNK token
-			if self.hps.use_elmo.value:
+			if self.hps.use_query_elmo.value:
 				self.query_input_raw = query_words
 		# Get the decoder input sequence and target sequence
 		self.dec_input, self.target = self.get_dec_inp_targ_seqs(abs_ids, hps.max_dec_steps.value, start_decoding,
@@ -270,7 +270,7 @@ class Batch(object):
 			# Pad the encoder input sequences up to the length of the longest sequence
 			for ex in example_list:
 				ex.pad_query_input(max_query_seq_len, self.pad_id)
-				if hps.use_elmo.value and hps.no_lstm_query_encoder.value:
+				if hps.use_query_elmo.value:
 					ex.pad_query_input_raw(max_query_seq_len)
 
 			# Initialize the numpy arrays
@@ -278,7 +278,7 @@ class Batch(object):
 			self.query_batch = np.zeros((hps.batch_size.value, max_query_seq_len), dtype=np.int32)
 			self.query_lens = np.zeros((hps.batch_size.value), dtype=np.int32)
 			self.query_padding_mask = np.zeros((hps.batch_size.value, max_query_seq_len), dtype=np.float32)
-			if hps.use_elmo.value:
+			if hps.use_query_elmo.value: 
 				self.query_batch_raw = [ex.query_input_raw for ex in example_list]
 
 			# Fill in the numpy arrays
@@ -409,7 +409,7 @@ class Batcher(object):
 
 	def fill_example_queue(self):
 		"""Reads data from file and processes into Examples which are then placed into the example queue."""
-		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass,self._device_id, data_as_tf_example=self._data_as_tf_example))
+		input_gen = self.text_generator(data.example_generator(self._data, self._single_pass,self._data_as_tf_example, self._device_id))
 		count = 0
 		query = None
 		word_edge_list = None
