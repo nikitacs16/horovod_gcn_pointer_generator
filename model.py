@@ -209,6 +209,7 @@ class SummarizationModel(object):
 
 		if FLAGS.use_elmo:
 			feed_dict[self._enc_batch_raw] = batch.enc_batch_raw
+			feed_dict[self._query_batch_raw] = batch.query_batch_raw
 
 
 
@@ -888,12 +889,14 @@ class SummarizationModel(object):
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch, axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
 			
 			if self._hps.use_elmo.value:
-				self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
+				with tf.variable_scope('elmo_hub'):
+					self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
 	
 
 			if self._hps.use_gcn_before_lstm.value:
 				if self._hps.use_elmo.value:
-					emb_enc_inputs = self._add_elmo_encoder(self._enc_batch_raw, self._enc_lens,trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder')
+					with tf.variable_scope('elmo_encoder'):
+						emb_enc_inputs = self._add_elmo_encoder(self._enc_batch_raw, self._enc_lens,trainable=self._hps.elmo_trainable.value, layer_name=self._hps.elmo_embedding_layer.value, name='elmo_encoder')
 
 				
 ################################################## G-LSTM ###############################################
