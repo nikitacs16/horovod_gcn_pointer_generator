@@ -250,9 +250,11 @@ def setup_training(model,batcher):
   
   hooks = [hvd.BroadcastGlobalVariablesHook(0)]
   checkpoint_dir =  os.path.join(FLAGS.log_root, "train") if hvd.rank() <  1 else None
+  scaffold = tf.train.Scaffold(saver=tf.train.Saver(max_to_keep = FLAGS.max_to_keep))
   with tf.train.MonitoredTrainingSession(checkpoint_dir=checkpoint_dir,
                                        config=util.get_config(),
                                        hooks=hooks,
+				       scaffold = scaffold, 
                                        save_checkpoint_secs=None,
                                        save_summaries_steps=100,
                                        save_summaries_secs=None,
