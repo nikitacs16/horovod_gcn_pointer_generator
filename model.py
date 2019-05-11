@@ -907,7 +907,7 @@ class SummarizationModel(object):
 
 				################ GCN LAYER #######################	
 				gcn_in = emb_enc_inputs
-				in_dim = tf.shape(emb_enc_inputs)[2]
+				in_dim = emb_enc_inputs.get_shape().as_list()[2]
 				gcn_dim = hps.word_gcn_dim.value
 
 				gcn_outputs = self._add_gcn_layer(gcn_in=gcn_in, in_dim=in_dim, gcn_dim=hps.word_gcn_dim.value,
@@ -956,7 +956,7 @@ class SummarizationModel(object):
 
 					q_gcn_in = emb_query_inputs
 					
-					q_in_dim = tf.shape(emb_query_inputs)[2]
+					q_in_dim = emb_query_inputs.get_shape().as_list()[2]
 					q_gcn_outputs = emb_query_inputs #if not used
 					
 					######### GCN LAYER #############
@@ -1026,7 +1026,7 @@ class SummarizationModel(object):
 
 					if self._hps.use_gcn_lstm_parallel.value or self._hps.no_lstm_encoder.value:
 						gcn_in = emb_enc_inputs
-						in_dim = tf.shape(emb_enc_inputs)[2]
+						in_dim = emb_enc_inputs.get_shape().as_list()[2]
 					
 					else:
 						######### INTERM CONCAT ########
@@ -1085,7 +1085,7 @@ class SummarizationModel(object):
 					if self._hps.query_gcn.value:
 						if self._hps.use_gcn_lstm_parallel.value or self._hps.no_lstm_query_encoder.value:
 							q_gcn_in = emb_query_inputs
-							q_in_dim = tf.shape(emb_query_inputs)[2]
+							q_in_dim = emb_query_inputs.get_shape().as_list()[2]
 						else:
 							q_in_dim = self._hps.hidden_dim.value * 2
 
