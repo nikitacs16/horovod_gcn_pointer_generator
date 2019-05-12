@@ -353,7 +353,7 @@ class Batcher(object):
 
 	BATCH_QUEUE_MAX = 100  # max number of batches the batch_queue can hold
 
-	def __init__(self, data_, vocab, hps, device_id, single_pass,data_format):
+	def __init__(self, data_, vocab, bert_vocab, hps, device_id, single_pass,data_format):
 		"""Initialize the batcher. Start threads that process the data into batches.
 	
 		Args:
@@ -445,7 +445,7 @@ class Batcher(object):
 					else:
 						raise Exception("single_pass mode is off but the example generator is out of data; error.")
 				abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
-				example = Example(article, abstract_sentences, self._vocab, self._hps, word_edge_list=word_edge_list, query=query, query_edge_list=query_edge_list, epoch_num=epoch_num)
+				example = Example(article, abstract_sentences, self._vocab, self._hps, word_edge_list=word_edge_list, query=query, query_edge_list=query_edge_list, epoch_num=epoch_num, bert_vocab=self.bert_vocab)
 				self._example_queue.put(example)
 		else:
 
