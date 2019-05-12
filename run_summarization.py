@@ -187,10 +187,10 @@ tf.app.flags.DEFINE_boolean('use_elmo_glove',config['use_elmo_glove'], 'should y
 #bert
 tf.app.flags.DEFINE_boolean('use_bert',config['use_bert'], 'should you use bert')
 tf.app.flags.DEFINE_boolean('use_query_bert',config['use_query_bert'], 'should you use query bert')
-tf.app.flags.DEFINE_string('bert_embedding_layer',config['elmo_embedding_layer'], 'which layer for embedding')
+tf.app.flags.DEFINE_string('bert_embedding_layer',config['bert_embedding_layer'], 'which layer for finetune') #not added yet!
 tf.app.flags.DEFINE_boolean('bert_trainable',config['bert_trainable'], 'should you finetune bert ?')
 tf.app.flags.DEFINE_string('bert_path',config['bert_path'], 'should you finetune bert ?')
-
+tf.app.flags.DEFINE_string('bert_vocab_file_path', config['bert_vocab_file_path'], 'bert vocab file')
 
 
 
