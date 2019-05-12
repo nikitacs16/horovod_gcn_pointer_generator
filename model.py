@@ -916,9 +916,10 @@ class SummarizationModel(object):
 				if self._hps.use_bert.value:
 					self.bert = hub.Module(self._hps.bert_path.value, trainable=self._hps.bert_trainable.value)
 					emb_enc_inputs = self._add_bert_encoder(self._enc_batch, self._enc_padding_mask, self._enc_segment_id) #complete this
+					self._enc_states = emb_enc_inputs
 					if self._hps.use_query_bert:
 						emb_query_inputs = self._add_bert_encoder(self._query_batch, self._query_padding_mask, self._query_segment_id) #complete this
-
+						self._query_states = emb_query_inputs
 			
 
 			if self._hps.use_gcn_before_lstm.value:
