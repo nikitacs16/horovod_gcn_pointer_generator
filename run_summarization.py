@@ -327,7 +327,7 @@ def setup_training(model,batcher):
 
 
 
-def run_validation_sequential(model, batcher, vocab, hps):
+def run_validation_sequential(model, batcher, vocab, bert_vocab, hps):
     ckpt_dir = os.path.join(FLAGS.log_root, 'train')	    
     model.build_graph()
     saver = tf.train.Saver(max_to_keep=3) # we will keep 3 best checkpoints at a time
@@ -350,7 +350,7 @@ def run_validation_sequential(model, batcher, vocab, hps):
         batch = batcher.next_batch()
         if batch is None:
           tf.logging.info(running_avg_loss)
-          batcher = Batcher(FLAGS.data_path, vocab, hps, 0, single_pass=FLAGS.single_pass, data_format=FLAGS.tf_example_format)
+          batcher = Batcher(FLAGS.data_path, vocab, bert_vocab, hps, 0, single_pass=FLAGS.single_pass, data_format=FLAGS.tf_example_format)
           break
         results = model.run_eval_step(sess, batch)
         loss = results['loss']
@@ -443,7 +443,10 @@ def main(unused_argv):
       raise Exception("Logdir %s doesn't exist. Run in train mode to create it." % (FLAGS.log_root))
 
   vocab = Vocab(FLAGS.vocab_path, FLAGS.vocab_size) # create a vocabulary
-      
+  if FLAGS.use_bert:
+    bert_vocab = BertVocab(vocab, FLAGS.bert_vocab_file_path)
+  else:
+    bert_vocab = None    
   # If in decode mode, set batch_size = beam_size
   # Reason: in decode mode, we decode one example at a time.
   # On each step, we have beam_size-many hypotheses in the beam, so we need to make a batch of these hypotheses.
@@ -452,7 +455,7 @@ def main(unused_argv):
 
 
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
-  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm', 'use_gru','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','simple_concat','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','stacked_lstm', 'word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'word_loop_dropout', 'query_loop_dropout', 'use_gru', 'word_gcn_fusion', 'query_gcn_fusion','encoder_lstm_layers','query_encoder_lstm_layers', 'lstm_dropout', 'use_learning_rate_halving', 'learning_rate_change_after', 'learning_rate_change_interval', 'save_steps', 'lstm_type', 'use_coref_graph','use_entity_graph', 'use_default_graph', 'use_elmo', 'elmo_trainable','elmo_embedding_layer','use_lexical_graph', 'use_elmo_glove', 'use_query_elmo', 'use_bert', 'use_query_bert', 'bert_path','bert_trainable', 'bert_embedding_layer']
+  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm', 'use_gru','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','simple_concat','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','stacked_lstm', 'word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'word_loop_dropout', 'query_loop_dropout', 'use_gru', 'word_gcn_fusion', 'query_gcn_fusion','encoder_lstm_layers','query_encoder_lstm_layers', 'lstm_dropout', 'use_learning_rate_halving', 'learning_rate_change_after', 'learning_rate_change_interval', 'save_steps', 'lstm_type', 'use_coref_graph','use_entity_graph', 'use_default_graph', 'use_elmo', 'elmo_trainable','elmo_embedding_layer','use_lexical_graph', 'use_elmo_glove', 'use_query_elmo', 'use_bert', 'use_query_bert', 'bert_path','bert_trainable', 'bert_embedding_layer', 'bert_vocab_file_path']
   hps_dict = {}
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list
@@ -468,10 +471,10 @@ def main(unused_argv):
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
   device_rank = hvd.rank()
   if FLAGS.tf_example_format:
-    batcher = Batcher(FLAGS.data_path, vocab, hps, device_rank, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
+    batcher = Batcher(FLAGS.data_path, vocab, bert_vocab=bert_vocab, hps, device_rank, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
   else:
     data_ = get_data(FLAGS.data_path)
-    batcher = Batcher(data_, vocab, hps, device_rank, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
+    batcher = Batcher(data_, vocab, hps, bert_vocab=bert_vocab, device_rank,single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
 
      
   tf.set_random_seed(111) # a seed value for randomness
@@ -483,7 +486,7 @@ def main(unused_argv):
   elif hps.mode.value == 'eval':
     model = SummarizationModel(hps, vocab)
     try:
-      run_validation_sequential(model, batcher, vocab, hps)
+      run_validation_sequential(model, batcher, vocab, bert_vocab, hps)
     except KeyboardInterrupt:
       tf.logging.info("Caught keyboard interrupt on worker. Stopping supervisor...")
 

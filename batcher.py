@@ -28,10 +28,15 @@ import threading
 import random
 import ast
 
+
+
+
+
+
 class Example(object):
 	"""Class representing a train/val/test example for text summarization."""
 
-	def __init__(self, article, abstract_sentences, vocab, hps, word_edge_list=None, query=None, query_edge_list=None, epoch_num=None):
+	def __init__(self, article, abstract_sentences, vocab, hps, word_edge_list=None, query=None, query_edge_list=None, epoch_num=None, bert_vocab=None):
 		"""Initializes the Example, performing tokenization and truncation to produce the encoder, decoder and target sequences, which are stored in self.
 
 		Args:
@@ -44,6 +49,7 @@ class Example(object):
 		# Get ids of special tokens
 		start_decoding = vocab.word2id(data.START_DECODING)
 		stop_decoding = vocab.word2id(data.STOP_DECODING)
+		self.bert_vocab = bert_vocab
 		self.epoch_num = epoch_num
 		# Process the article
 		article_words = article.split()
@@ -71,6 +77,7 @@ class Example(object):
 				#tf.logging.info('Big_query : %d'%(len(query_words)))
 				query = " ".join(q for q in query_words)
 			self.query_len = len(query_words) # store the length after truncation but before padding
+			
 			self.query_input = [vocab.word2id(w) for w in query_words] # list of word ids; OOVs are represented by the id for UNK token
 			if self.hps.use_query_elmo.value:
 				self.query_input_raw = query_words
@@ -97,6 +104,13 @@ class Example(object):
 		if hps.query_gcn.value:
 			self.query_edge_list = query_edge_list
 
+		if hps.use_bert.value:
+			self.enc_input = bert_vocab.convert_glove_to_bert_indices(self.enc_input)	
+			self.enc_len = len(enc_input)
+			if hps.use_query_bert.value:
+				self.query_input = bert_vocab.convert_glove_to_bert_indices(self.query_input)	
+ 				self.query_len = len(enc_input)
+		
 		# Store the original strings
 		self.original_article = article
 		self.original_abstract = abstract
@@ -153,6 +167,7 @@ class Example(object):
 	def pad_query_input_raw(self,max_len):
 		while len(self.query_input_raw) < max_len:
 			self.query_input_raw.append("")
+		
 
 class Batch(object):
 	"""Class representing a minibatch of train/val/test examples for text summarization."""
@@ -201,7 +216,9 @@ class Batch(object):
 		max_enc_seq_len = max(encoder_lengths)
 		self.max_word_len = max_enc_seq_len
 		# Pad the encoder input sequences up to the length of the longest sequence
+		if 
 		for ex in example_list:
+
 			ex.pad_encoder_input(max_enc_seq_len, self.pad_id)
 			if hps.use_elmo.value:
 				ex.pad_encoder_input_raw(max_enc_seq_len)

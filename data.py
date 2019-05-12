@@ -140,8 +140,128 @@ class Vocab(object):
 #		if k%1000 == 0:
 #		   tf.logging.info('glove : %d',k)
 		self.glove_emb = emb
-	
 
+
+class BertVocab(object):
+	
+	def __init__(self,glove_vocab, bert_vocab_file_path)
+		self.bert_vocab = collections.OrderedDict()
+		self.glove_vocab = glove_vocab
+		index = 0
+		with tf.gfile.GFile(bert_vocab_file_pathh, "r") as reader:
+			while True:
+				token = convert_to_unicode(reader.readline())
+				if not token:
+					break
+				token = token.strip()
+				self.bert_vocab[token] = index
+				index += 1
+		not_found = 0 
+		self.index_map_glove_to_bert = {}
+		for i in range(glove_vocab._count):
+			if glove_vocab._id_to_word[i] in self.bert_vocab:
+				self.index_map_glove_to_bert[i] = [self.bert_vocab[glove_vocab._id_to_word[i]]]
+			else:
+				not_found = not_found + 1
+				new_tokens = [] 
+				token = glove_vocab._id_to_word[i]
+				chars = list(token)
+				is_bad = False
+				start = 0
+				sub_tokens = []
+				while start < len(chars):
+					end = len(chars)
+					cur_substr = None
+					while start < end:
+						substr = "".join(chars[start:end])
+						if start > 0:
+							substr = "##" + substr
+						if substr in self.vocab:
+							cur_substr = substr
+							break
+						end -= 1
+					if cur_substr is None:
+						is_bad = True
+						break
+					sub_tokens.append(cur_substr)
+					start = end
+
+				if is_bad:
+					new_tokens.append(self.index_map_glove_to_bert['[UNK]'])
+				else:
+					sub_tokens_bert = [self.bert_vocab[s] for s in sub_tokens]
+					new_tokens = new_tokens + sub_tokens_bert
+
+				self.index_map_glove_to_bert[i] = new_tokens
+
+
+		tf.logging.info(not_found)		
+
+
+	def convert_glove_to_bert_indices(self, token_ids):
+		new_tokens = [self.bert_vocab['[CLS]']]
+		for token_id in token_ids:
+			if token_id in self.index_map_glove_to_bert:
+				new_tokens.append(self.index_map_glove_to_bert[token_id])
+
+			else:
+				#wordpiece might be redundant
+				token = glove_vocab._id_to_word[token_id]
+				chars = list(token)
+
+				is_bad = False
+				start = 0
+				sub_tokens = []
+				while start < len(chars):
+					end = len(chars)
+					cur_substr = None
+					while start < end:
+						substr = "".join(chars[start:end])
+						if start > 0:
+							substr = "##" + substr
+						if substr in self.vocab:
+							cur_substr = substr
+							break
+						end -= 1
+					if cur_substr is None:
+						is_bad = True
+						break
+					sub_tokens.append(cur_substr)
+					start = end
+
+				if is_bad:
+					new_tokens.append(self.index_map_glove_to_bert['[UNK]'])
+				else:
+					sub_tokens_bert = [self.bert_vocab[s] for s in sub_tokens]
+					new_tokens = new_tokens + sub_tokens_bert
+
+			
+		new_tokens.append[self.bert_vocab['[SEP]']]
+		return new_tokens
+
+
+
+
+
+
+
+def convert_by_vocab(vocab, items):
+  """Converts a sequence of [tokens|ids] using the vocab."""
+  output = []
+  for item in items:
+	if item in vocab:
+	  output.append(vocab[item])
+	else:
+	  output.append(vocab['[UNK]'])
+  return output
+
+
+def convert_tokens_to_ids(vocab, tokens):
+  return convert_by_vocab(vocab, tokens)
+
+
+def convert_ids_to_tokens(inv_vocab, ids):
+  return convert_by_vocab(inv_vocab, ids)
 
 
 def example_generator(data_path, single_pass, device_rank,data_as_tf_example=True):
@@ -283,12 +403,12 @@ def outputids2words(id_list, vocab, article_oovs):
 			w = vocab.id2word(i)  # might be [UNK]
 		except ValueError as e:  # w is OOV
 			assert article_oovs is not None, "Error: model produced a word ID that isn't in the vocabulary. This should not happen in baseline (no pointer-generator) mode"
-           		article_oov_idx = i - vocab.size()
-            		try:
-                		w = article_oovs[article_oov_idx]
-            		except ValueError as e:  # i doesn't correspond to an article oov
-                		raise ValueError('Error: model produced word ID %i which corresponds to article OOV %i but this example only has %i article OOVs' % (i, article_oov_idx, len(article_oovs)))
-        	words.append(w)
+				article_oov_idx = i - vocab.size()
+					try:
+						w = article_oovs[article_oov_idx]
+					except ValueError as e:  # i doesn't correspond to an article oov
+						raise ValueError('Error: model produced word ID %i which corresponds to article OOV %i but this example only has %i article OOVs' % (i, article_oov_idx, len(article_oovs)))
+			words.append(w)
 	return words
 		
 
@@ -387,7 +507,7 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 				if use_both:
 					curr_adj_in.append((dest, src))
 					curr_data_in.append(1.0)
-		  		else:
+				else:
 					curr_adj_out.append((dest, src))    
 					curr_data_out.append(1.0)
 		'''		
