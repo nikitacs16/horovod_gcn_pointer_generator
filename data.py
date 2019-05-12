@@ -27,6 +27,9 @@ import scipy.sparse as sp
 import tensorflow as tf
 import numpy as np
 import horovod.tensorflow as hvd 
+import collections
+import six
+import unicodedata
 
 # <s> and </s> are used in the data files to segment the abstracts into sentences. They don't receive vocab ids.
 SENTENCE_START = '<s>'
@@ -39,6 +42,26 @@ STOP_DECODING = '[STOP]'  # This has a vocab id, which is used at the end of unt
 
 
 # Note: none of <s>, </s>, [PAD], [UNK], [START], [STOP] should appear in the vocab file.
+
+def convert_to_unicode(text):
+  """Converts `text` to Unicode (if it's not already), assuming utf-8 input."""
+  if six.PY3:
+    if isinstance(text, str):
+      return text
+    elif isinstance(text, bytes):
+      return text.decode("utf-8", "ignore")
+    else:
+      raise ValueError("Unsupported string type: %s" % (type(text)))
+  elif six.PY2:
+    if isinstance(text, str):
+      return text.decode("utf-8", "ignore")
+    elif isinstance(text, unicode):
+      return text
+    else:
+      raise ValueError("Unsupported string type: %s" % (type(text)))
+  else:
+    raise ValueError("Not running on Python2 or Python 3?")
+
 
 class Vocab(object):
 	"""Vocabulary class for mapping between words and ids (integers)"""
@@ -148,7 +171,7 @@ class BertVocab(object):
 		self.bert_vocab = collections.OrderedDict()
 		self.glove_vocab = glove_vocab
 		index = 0
-		with tf.gfile.GFile(bert_vocab_file_pathh, "r") as reader:
+		with tf.gfile.GFile(bert_vocab_file_path, "r") as reader:
 			while True:
 				token = convert_to_unicode(reader.readline())
 				if not token:
@@ -176,7 +199,7 @@ class BertVocab(object):
 						substr = "".join(chars[start:end])
 						if start > 0:
 							substr = "##" + substr
-						if substr in self.vocab:
+						if substr in self.bert_vocab:
 							cur_substr = substr
 							break
 						end -= 1
@@ -187,7 +210,7 @@ class BertVocab(object):
 					start = end
 
 				if is_bad:
-					new_tokens.append(self.index_map_glove_to_bert['[UNK]'])
+					new_tokens.append(self.bert_vocab['[UNK]'])
 				else:
 					sub_tokens_bert = [self.bert_vocab[s] for s in sub_tokens]
 					new_tokens = new_tokens + sub_tokens_bert
@@ -202,8 +225,8 @@ class BertVocab(object):
 		new_tokens = [self.bert_vocab['[CLS]']]
 		for token_id in token_ids:
 			if token_id in self.index_map_glove_to_bert:
-				new_tokens.append(self.index_map_glove_to_bert[token_id])
-
+				#new_tokens.append(self.index_map_glove_to_bert[token_id])
+				new_tokens = new_tokens + self.index_map_glove_to_bert[token_id]
 			else:
 				#wordpiece might be redundant
 				token = glove_vocab._id_to_word[token_id]
@@ -230,13 +253,14 @@ class BertVocab(object):
 					start = end
 
 				if is_bad:
-					new_tokens.append(self.index_map_glove_to_bert['[UNK]'])
+					#new_tokens.append(self.index_map_glove_to_bert['[UNK]'])
+					new_token = new_token + self.index_map_glove_to_bert['[UNK]']
 				else:
 					sub_tokens_bert = [self.bert_vocab[s] for s in sub_tokens]
 					new_tokens = new_tokens + sub_tokens_bert
 
 			
-		new_tokens.append[self.bert_vocab['[SEP]']]
+		new_tokens.append(self.bert_vocab['[SEP]'])
 		return new_tokens
 
 

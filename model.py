@@ -122,7 +122,7 @@ class SummarizationModel(object):
 		self._enc_batch = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='enc_batch')
 		self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size.value], name='enc_lens')
 		self._enc_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='enc_padding_mask')
-		
+		self._enc_segment_id = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='enc_segment_id')		
 		if FLAGS.use_elmo:
 			self._enc_batch_raw = tf.placeholder(tf.string, [hps.batch_size.value,None], name='enc_batch_raw')
 
@@ -131,6 +131,7 @@ class SummarizationModel(object):
 			self._query_batch = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='query_batch')
 			self._query_lens = tf.placeholder(tf.int32, [hps.batch_size.value], name='query_lens')
 			self._query_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='query_padding_mask')
+			self._query_segment_id = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='query_segment_id')
 			if FLAGS.use_query_elmo:
 				self._query_batch_raw = tf.placeholder(tf.string, [hps.batch_size.value, None], name='query_batch_raw')
 
@@ -204,6 +205,7 @@ class SummarizationModel(object):
 		feed_dict[self._enc_batch] = batch.enc_batch
 		feed_dict[self._enc_lens] = batch.enc_lens
 		feed_dict[self._enc_padding_mask] = batch.enc_padding_mask
+		feed_dict[self._enc_segment_id] = batch.enc_segment_id
 		feed_dict[self._epoch_num] = batch.epoch_num
 
 
@@ -214,6 +216,7 @@ class SummarizationModel(object):
 			feed_dict[self._query_batch] = batch.query_batch
 			feed_dict[self._query_lens] = batch.query_lens
 			feed_dict[self._query_padding_mask] = batch.query_padding_mask
+			feed_dict[self._query_segment_id] = batch.query_segment_id
 			if FLAGS.use_query_elmo:
 				feed_dict[self._query_batch_raw] = batch.query_batch_raw
 
@@ -295,7 +298,7 @@ class SummarizationModel(object):
 		return feed_dict
 
 	def _add_bert_encoder(self, input_ids, input_mask, segment_ids):
-		bert_inputs = dict(input_ids=input_ids, input_mask=input_mask, segment_ids=segment_ids)
+		bert_inputs = dict(input_ids=input_ids, input_mask=tf.cast(input_mask, tf.int32), segment_ids=segment_ids)
 		encoder_outputs = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)["sequence_output"]
         
 		return encoder_outputs	
@@ -912,9 +915,9 @@ class SummarizationModel(object):
 				############### BERT ###################
 				if self._hps.use_bert.value:
 					self.bert = hub.Module(self._hps.bert_path.value, trainable=self._hps.bert_trainable.value)
-					emb_enc_inputs = self._add_bert_encoder(self._bert) #complete this
+					emb_enc_inputs = self._add_bert_encoder(self._enc_batch, self._enc_padding_mask, self._enc_segment_id) #complete this
 					if self._hps.use_query_bert:
-						emb_query_inputs = self._add_bert_encoder(self._bert) #complete this
+						emb_query_inputs = self._add_bert_encoder(self._query_batch, self._query_padding_mask, self._query_segment_id) #complete this
 
 			
 

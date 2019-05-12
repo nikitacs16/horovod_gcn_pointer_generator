@@ -25,7 +25,7 @@ import numpy as np
 np.random.seed(111)
 import tensorflow as tf
 from collections import namedtuple
-from data import Vocab
+from data import Vocab, BertVocab
 from batcher import Batcher
 from model import SummarizationModel
 from decode import BeamSearchDecoder

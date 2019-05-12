@@ -106,10 +106,10 @@ class Example(object):
 
 		if hps.use_bert.value:
 			self.enc_input = bert_vocab.convert_glove_to_bert_indices(self.enc_input)	
-			self.enc_len = len(enc_input)
+			self.enc_len = len(self.enc_input)
 			if hps.use_query_bert.value:
 				self.query_input = bert_vocab.convert_glove_to_bert_indices(self.query_input)	
- 				self.query_len = len(enc_input)
+ 				self.query_len = len(self.query_input)
 		
 		# Store the original strings
 		self.original_article = article
@@ -216,7 +216,7 @@ class Batch(object):
 		max_enc_seq_len = max(encoder_lengths)
 		self.max_word_len = max_enc_seq_len
 		# Pad the encoder input sequences up to the length of the longest sequence
-		if 
+		
 		for ex in example_list:
 
 			ex.pad_encoder_input(max_enc_seq_len, self.pad_id)
@@ -228,7 +228,7 @@ class Batch(object):
 		self.enc_batch = np.zeros((hps.batch_size.value, max_enc_seq_len), dtype=np.int32)
 		self.enc_lens = np.zeros((hps.batch_size.value), dtype=np.int32)
 		self.enc_padding_mask = np.zeros((hps.batch_size.value, max_enc_seq_len), dtype=np.float32)
-
+		self.enc_segment_id = [0] * max_enc_seq_len
 		if hps.use_elmo.value:
 			self.enc_batch_raw = [ex.enc_input_raw for ex in example_list]
 			#tf.logging.info(self.enc_batch_raw)
@@ -295,6 +295,7 @@ class Batch(object):
 			self.query_batch = np.zeros((hps.batch_size.value, max_query_seq_len), dtype=np.int32)
 			self.query_lens = np.zeros((hps.batch_size.value), dtype=np.int32)
 			self.query_padding_mask = np.zeros((hps.batch_size.value, max_query_seq_len), dtype=np.float32)
+			self.query_segment_id = [0] * max_query_seq_len
 			if hps.use_query_elmo.value:
 				self.query_batch_raw = [ex.query_input_raw for ex in example_list]
 
@@ -368,6 +369,7 @@ class Batcher(object):
 		self._device_id = device_id
 		self._single_pass = single_pass
 		self._data_as_tf_example = data_format
+		self.bert_vocab = bert_vocab
 		# Initialize a queue of Batches waiting to be used, and a queue of Examples waiting to be batched
 		self._batch_queue = Queue.Queue(self.BATCH_QUEUE_MAX)
 		self._example_queue = Queue.Queue(self.BATCH_QUEUE_MAX * self._hps.batch_size.value)
