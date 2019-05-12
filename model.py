@@ -294,7 +294,13 @@ class SummarizationModel(object):
 
 		return feed_dict
 
-	def _add_elmo_encoder(self, encoder_inputs, seq_len, trainable=True, layer_name='word_emb', name='elmo_encoder'):
+	def _add_bert_encoder(self, input_ids, input_mask, segment_ids):
+		bert_inputs = dict(input_ids=input_ids, input_mask=input_mask, segment_ids=segment_ids)
+		encoder_outputs = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)["sequence_output"]
+        
+		return encoder_outputs	
+
+	def _add_elmo_encoder(self, encoder_inputs, seq_len, trainable=True, layer_name='elmo', name='elmo_encoder'):
 
 		#with tf.variable_scope(name):
 			
@@ -884,6 +890,8 @@ class SummarizationModel(object):
 					emb_query_inputs = tf.nn.embedding_lookup(embedding, self._query_batch)  # tensor with shape (batch_size, max_query_steps, emb_size)
 
 				emb_dec_inputs = [tf.nn.embedding_lookup(embedding, x) for x in tf.unstack(self._dec_batch, axis=1)]  # list length max_dec_steps containing shape (batch_size, emb_size)
+				
+				############ ELMO ###################
 				if self._hps.use_elmo.value:
 					self.elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=self._hps.elmo_trainable.value)
 
@@ -900,6 +908,15 @@ class SummarizationModel(object):
 						emb_enc_inputs = enc_elmo_states
 						if self._hps.use_query_elmo.value:
 							emb_query_inputs = enc_query_elmo_states
+
+				############### BERT ###################
+				if self._hps.use_bert.value:
+					self.bert = hub.Module(self._hps.bert_path.value, trainable=self._hps.bert_trainable.value)
+					emb_enc_inputs = self._add_bert_encoder(self._bert) #complete this
+					if self._hps.use_query_bert:
+						emb_query_inputs = self._add_bert_encoder(self._bert) #complete this
+
+			
 
 			if self._hps.use_gcn_before_lstm.value:
 				
