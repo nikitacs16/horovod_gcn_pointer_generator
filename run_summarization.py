@@ -471,10 +471,10 @@ def main(unused_argv):
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict) 
   device_rank = hvd.rank()
   if FLAGS.tf_example_format:
-    batcher = Batcher(FLAGS.data_path, vocab, bert_vocab=bert_vocab, hps, device_rank, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
+    batcher = Batcher(FLAGS.data_path, vocab, bert_vocab, hps, device_rank, single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
   else:
     data_ = get_data(FLAGS.data_path)
-    batcher = Batcher(data_, vocab, hps, bert_vocab=bert_vocab, device_rank,single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
+    batcher = Batcher(data_, vocab, hps, bert_vocab, device_rank,single_pass=FLAGS.single_pass,data_format=FLAGS.tf_example_format)
 
      
   tf.set_random_seed(111) # a seed value for randomness

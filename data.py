@@ -144,7 +144,7 @@ class Vocab(object):
 
 class BertVocab(object):
 	
-	def __init__(self,glove_vocab, bert_vocab_file_path)
+	def __init__(self,glove_vocab, bert_vocab_file_path):
 		self.bert_vocab = collections.OrderedDict()
 		self.glove_vocab = glove_vocab
 		index = 0
@@ -403,11 +403,11 @@ def outputids2words(id_list, vocab, article_oovs):
 			w = vocab.id2word(i)  # might be [UNK]
 		except ValueError as e:  # w is OOV
 			assert article_oovs is not None, "Error: model produced a word ID that isn't in the vocabulary. This should not happen in baseline (no pointer-generator) mode"
-				article_oov_idx = i - vocab.size()
-					try:
-						w = article_oovs[article_oov_idx]
-					except ValueError as e:  # i doesn't correspond to an article oov
-						raise ValueError('Error: model produced word ID %i which corresponds to article OOV %i but this example only has %i article OOVs' % (i, article_oov_idx, len(article_oovs)))
+			article_oov_idx = i - vocab.size()
+			try:
+				w = article_oovs[article_oov_idx]
+			except ValueError as e:  # i doesn't correspond to an article oov
+				raise ValueError('Error: model produced word ID %i which corresponds to article OOV %i but this example only has %i article OOVs' % (i, article_oov_idx, len(article_oovs)))
 			words.append(w)
 	return words
 		
