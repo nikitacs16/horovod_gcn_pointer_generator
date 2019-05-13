@@ -53,7 +53,7 @@ config = yaml.load(open(FLAGS.config_file,'r'))
 
 # GPU device 
 tf.app.flags.DEFINE_string('gpu_device_id',config['gpu_device_id'],'allocate gpu to which device')
-#os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
+os.environ["CUDA_VISIBLE_DEVICES"] = config['gpu_device_id']
 tf.app.flags.DEFINE_boolean('tf_example_format',config['tf_example_format'],'Is data in pickle or tf example format')
 
 # Where to find data

@@ -228,8 +228,8 @@ class Batch(object):
 		self.enc_batch = np.zeros((hps.batch_size.value, max_enc_seq_len), dtype=np.int32)
 		self.enc_lens = np.zeros((hps.batch_size.value), dtype=np.int32)
 		self.enc_padding_mask = np.zeros((hps.batch_size.value, max_enc_seq_len), dtype=np.float32)
-		self.enc_segment_id = [[0] * max_enc_seq_len for i in hps.batch_size.value]
-		self.enc_bert_mask_id = [[0] * max_enc_seq_len for i in hps.batch_size.value]
+		self.enc_segment_id = [[0] * max_enc_seq_len for i in range(hps.batch_size.value)]
+		self.enc_bert_mask_id = [[0] * max_enc_seq_len for i in range(hps.batch_size.value)]
 		if hps.use_elmo.value:
 			self.enc_batch_raw = [ex.enc_input_raw for ex in example_list]
 			#tf.logging.info(self.enc_batch_raw)
@@ -308,7 +308,7 @@ class Batch(object):
 				self.query_lens[i] = ex.query_len
 				for j in xrange(ex.query_len):
 					self.query_padding_mask[i][j] = 1
-					self.query_bert_mask_id = 1
+					self.query_bert_mask_id[i][j] = 1
 
 			if hps.query_gcn.value:
 				query_edge_list = []

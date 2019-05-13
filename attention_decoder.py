@@ -53,10 +53,13 @@ def attention_decoder(decoder_inputs, initial_state, encoder_states, enc_padding
     coverage: Coverage vector on the last step computed. None if use_coverage=False.
   """
   with variable_scope.variable_scope("attention_decoder") as scope:
+    tf.logging.info(encoder_states.get_shape())
     batch_size = encoder_states.get_shape()[0].value # if this line fails, it's because the batch size isn't defined
     attn_size = encoder_states.get_shape()[2].value # if this line fails, it's because the attention length isn't defined
-
+    tf.logging.info(type(attn_size))
+    tf.logging.info(type(batch_size))	
     # Reshape encoder_states (need to insert a dim)
+    batch_size = 6
     encoder_states = tf.expand_dims(encoder_states, axis=2) # now is shape (batch_size, attn_len, 1, attn_size)
     
 

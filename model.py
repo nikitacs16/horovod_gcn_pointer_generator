@@ -122,6 +122,7 @@ class SummarizationModel(object):
 		self._enc_batch = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='enc_batch')
 		self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size.value], name='enc_lens')
 		self._enc_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='enc_padding_mask')
+		self._enc_bert_mask_id = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='enc_bert_mask_id')
 		self._enc_segment_id = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='enc_segment_id')		
 		if FLAGS.use_elmo:
 			self._enc_batch_raw = tf.placeholder(tf.string, [hps.batch_size.value,None], name='enc_batch_raw')
@@ -131,6 +132,7 @@ class SummarizationModel(object):
 			self._query_batch = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='query_batch')
 			self._query_lens = tf.placeholder(tf.int32, [hps.batch_size.value], name='query_lens')
 			self._query_padding_mask = tf.placeholder(tf.float32, [hps.batch_size.value, None], name='query_padding_mask')
+			self._query_bert_mask_id = tf.placeholder(tf.int32, [hps.batch_size.value, None],name='query_bert_mask_id') 
 			self._query_segment_id = tf.placeholder(tf.int32, [hps.batch_size.value, None], name='query_segment_id')
 			if FLAGS.use_query_elmo:
 				self._query_batch_raw = tf.placeholder(tf.string, [hps.batch_size.value, None], name='query_batch_raw')
@@ -206,7 +208,7 @@ class SummarizationModel(object):
 		feed_dict[self._enc_lens] = batch.enc_lens
 		feed_dict[self._enc_padding_mask] = batch.enc_padding_mask
 		feed_dict[self._enc_segment_id] = batch.enc_segment_id
-		feed_dict[self._enc_bert_mask_id] batch.enc_bert_mask_id
+		feed_dict[self._enc_bert_mask_id] = batch.enc_bert_mask_id
 		feed_dict[self._epoch_num] = batch.epoch_num
 
 
