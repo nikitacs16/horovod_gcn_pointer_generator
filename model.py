@@ -787,7 +787,8 @@ class SummarizationModel(object):
 			outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
 																				 self._enc_states,
 																				 self._enc_padding_mask,
-																				 cell, use_query=True,
+																				 cell, hps.batch_size.value,
+																				 use_query=True,
 																				 query_states=self._query_states,
 																				 query_padding_mask=self._query_padding_mask,
 																				 initial_state_attention=(
@@ -800,7 +801,7 @@ class SummarizationModel(object):
 			outputs, out_state, attn_dists, p_gens, coverage = attention_decoder(inputs, self._dec_in_state,
 																				 self._enc_states,
 																				 self._enc_padding_mask,
-																				 cell, initial_state_attention=(
+																				 cell, hps.batch_size.value, initial_state_attention=(
 							hps.mode.value == "decode"  or hps.mode.value == "decode_by_val" ), use_lstm=hps.use_lstm.value,  pointer_gen=hps.pointer_gen.value,
 																				 use_coverage=hps.coverage.value,
 																				 prev_coverage=prev_coverage)
