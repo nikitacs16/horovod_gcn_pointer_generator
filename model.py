@@ -206,6 +206,7 @@ class SummarizationModel(object):
 		feed_dict[self._enc_lens] = batch.enc_lens
 		feed_dict[self._enc_padding_mask] = batch.enc_padding_mask
 		feed_dict[self._enc_segment_id] = batch.enc_segment_id
+		feed_dict[self._enc_bert_mask_id] batch.enc_bert_mask_id
 		feed_dict[self._epoch_num] = batch.epoch_num
 
 
@@ -216,6 +217,7 @@ class SummarizationModel(object):
 			feed_dict[self._query_batch] = batch.query_batch
 			feed_dict[self._query_lens] = batch.query_lens
 			feed_dict[self._query_padding_mask] = batch.query_padding_mask
+			feed_dict[self._query_bert_mask_id] = batch.query_bert_mask_id
 			feed_dict[self._query_segment_id] = batch.query_segment_id
 			if FLAGS.use_query_elmo:
 				feed_dict[self._query_batch_raw] = batch.query_batch_raw
@@ -915,10 +917,10 @@ class SummarizationModel(object):
 				############### BERT ###################
 				if self._hps.use_bert.value:
 					self.bert = hub.Module(self._hps.bert_path.value, trainable=self._hps.bert_trainable.value)
-					emb_enc_inputs = self._add_bert_encoder(self._enc_batch, self._enc_padding_mask, self._enc_segment_id) #complete this
+					emb_enc_inputs = self._add_bert_encoder(self._enc_batch, self._enc_bert_mask_id, self._enc_segment_id) #complete this
 					self._enc_states = emb_enc_inputs
 					if self._hps.use_query_bert:
-						emb_query_inputs = self._add_bert_encoder(self._query_batch, self._query_padding_mask, self._query_segment_id) #complete this
+						emb_query_inputs = self._add_bert_encoder(self._query_batch, self._query_bert_mask_id, self._query_segment_id) #complete this
 						self._query_states = emb_query_inputs
 			
 
