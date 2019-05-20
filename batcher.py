@@ -51,6 +51,8 @@ class Example(object):
 		stop_decoding = vocab.word2id(data.STOP_DECODING)
 		self.bert_vocab = bert_vocab
 		self.epoch_num = epoch_num
+		self.enc_pos_offset = None
+		self.query_pos_offset = None
 		# Process the article
 		article_words = article.split()
 		if len(article_words) > hps.max_enc_steps.value:
@@ -108,7 +110,7 @@ class Example(object):
 			self.enc_input, self.enc_pos_offset = bert_vocab.convert_glove_to_bert_indices(self.enc_input)	
 			self.enc_len = len(self.enc_input)
 			if hps.use_query_bert.value:
-				self.query_input, self.pos_offset_query = bert_vocab.convert_glove_to_bert_indices(self.query_input)	
+				self.query_input, self.query_pos_offset = bert_vocab.convert_glove_to_bert_indices(self.query_input)	
  				self.query_len = len(self.query_input)
 		
 		# Store the original strings
@@ -253,21 +255,23 @@ class Batch(object):
 			self.enc_batch_extend_vocab = np.zeros((hps.batch_size.value, max_enc_seq_len), dtype=np.int32)
 			for i, ex in enumerate(example_list):
 				self.enc_batch_extend_vocab[i, :] = ex.enc_input_extend_vocab[:]
+
 		if hps.word_gcn.value:
 			edge_list = []
 			for ex in example_list:
 				edge_list.append(ex.word_edge_list)
 
-			self.word_adj_in, self.word_adj_out = data.get_adj(edge_list, hps.batch_size.value, max_enc_seq_len, use_label_information=hps.use_label_information.value, flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.word_gcn_edge_dropout.value)
+			self.word_adj_in, self.word_adj_out = data.get_adj(edge_list, hps.batch_size.value, max_enc_seq_len, use_label_information=hps.use_label_information.value, flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.word_gcn_edge_dropout.value, 
+				use_bert=hps.use_bert.value, bert_mapping=self.enc_pos_offset)
 
 			if hps.use_coref_graph.value:
-				self.word_adj_in_coref, self.word_adj_out_coref = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'coref', encoder_lengths, keep_prob=hps.word_gcn_edge_dropout.value)
+				self.word_adj_in_coref, self.word_adj_out_coref = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'coref', encoder_lengths, keep_prob=hps.word_gcn_edge_dropout.value,use_bert=hps.use_bert.value, bert_mapping=self.enc_pos_offset)
 			
 			if hps.use_entity_graph.value:
-				_, self.word_adj_entity = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'entity', encoder_lengths, use_both=False, keep_prob=hps.word_gcn_edge_dropout.value)
+				_, self.word_adj_entity = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'entity', encoder_lengths, use_both=False, keep_prob=hps.word_gcn_edge_dropout.value,use_bert=hps.use_bert.value, bert_mapping=self.enc_pos_offset)
 
 			if hps.use_lexical_graph.value:
-				_, self.word_adj_lexical = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'lexical', encoder_lengths, use_both=False, keep_prob=hps.word_gcn_edge_dropout.value)
+				_, self.word_adj_lexical = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'lexical', encoder_lengths, use_both=False, keep_prob=hps.word_gcn_edge_dropout.value, use_bert=hps.use_bert.value, bert_mapping=self.enc_pos_offset)
 
 
 	def init_query_seq(self, example_list, hps):
@@ -315,7 +319,7 @@ class Batch(object):
 				for ex in example_list:
 					query_edge_list.append(ex.query_edge_list)
 				#note query_edge_list is list of query edge lists. The length is equal to the batch size
-				self.query_adj_in, self.query_adj_out = data.get_adj(query_edge_list, hps.batch_size.value, max_query_seq_len,use_label_information=hps.use_label_information.value,																   flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.query_gcn_edge_dropout.value)
+				self.query_adj_in, self.query_adj_out = data.get_adj(query_edge_list, hps.batch_size.value, max_query_seq_len,use_label_information=hps.use_label_information.value,																   flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.query_gcn_edge_dropout.value, use_bert=hps.use_bert.value, bert_mapping=hps.query_pos_offset)
 
 
 	def init_decoder_seq(self, example_list, hps):

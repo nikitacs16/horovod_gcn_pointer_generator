@@ -509,7 +509,7 @@ dep_list = ['cc', 'agent', 'ccomp', 'prt', 'meta', 'nsubjpass', 'csubj', 'conj',
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 
-def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, use_both=True, keep_prob=1.0):
+def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, use_both=True, keep_prob=1.0, use_bert=False, bert_mapping=None):
 	adj_main_in = []
 	adj_main_out = []
 	#print(edge_list)	
@@ -523,7 +523,13 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 		
 
 
-		for src, dest, lbl in edge_list:
+		for s, d, lbl in edge_list:
+			if use_bert:
+				src = s + bert_mapping[s]
+				dest = d + bert_mapping[d]
+			else:
+				src = s
+				dest = d
 			seen_nodes.append(src)
 			seen_nodes.append(dest)
 
