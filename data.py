@@ -268,6 +268,9 @@ class BertVocab(object):
 
 			
 		new_tokens.append(self.bert_vocab['[SEP]'])
+#		tf.logging.info(token_ids)
+#		tf.logging.info(new_tokens)
+#		tf.logging.info(pos_offset)
 		return new_tokens, pos_offset
 
 
@@ -524,6 +527,8 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 
 
 		for s, d, lbl in edge_list:
+			if s >=max_nodes or d >=max_nodes or s>=300 or d>=300:
+				continue
 			if use_bert:
 				src = s + offset_list[s]
 				dest = d + offset_list[d]
@@ -535,8 +540,8 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 
 			if lbl!=label:
 				continue
-			if src >= max_nodes or dest >= max_nodes:
-				continue
+			#if src >= max_nodes or dest >= max_nodes:
+			#	continue
 			x = np.random.uniform()
 			if x<=keep_prob:
 				curr_adj_out.append((src, dest))
@@ -584,14 +589,21 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label
 		count = 0
 	  
 		for s, d, lbl_ in edge_list:
+			if s>=max_nodes or d >= max_nodes or s>=300 or d>=300:
+				continue
 			if use_bert:
-				src = s + offset_list[s]
+				try:
+					src = s + offset_list[s]
+				except:
+					tf.logging.info(s)
+					tf.logging.info(len(offset_list))
+	
 				dest = d + offset_list[d]
 			else:
 				src = s
 				dest = d
-			if src >= max_nodes or dest >= max_nodes:
-				continue
+			#if src >= max_nodes or dest >= max_nodes:
+			#	continue
 			
 			if flow_alone:
 				lbl = 0
