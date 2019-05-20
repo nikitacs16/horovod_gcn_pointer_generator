@@ -513,7 +513,7 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 	adj_main_in = []
 	adj_main_out = []
 	#print(edge_list)	
-	for edge_list, enc_length in zip(batch_list, encoder_lengths):
+	for edge_list, enc_length, offset_list in zip(batch_list, encoder_lengths, bert_mapping):
 		#print(edge_list)
 		curr_adj_in = []
 		curr_adj_out = []
@@ -525,8 +525,8 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 
 		for s, d, lbl in edge_list:
 			if use_bert:
-				src = s + bert_mapping[s]
-				dest = d + bert_mapping[d]
+				src = s + offset_list[s]
+				dest = d + offset_list[d]
 			else:
 				src = s
 				dest = d
@@ -575,7 +575,7 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0, use_bert=False, bert_mapping=None):
 	adj_main_in, adj_main_out = [], []
 	max_labels = 45
-	for edge_list in batch_list:
+	for edge_list, offset_list in zip(batch_list, bert_mapping):
 		adj_in, adj_out = {}, {}
 
 		l_e = len(edge_list)
@@ -585,8 +585,8 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label
 	  
 		for s, d, lbl_ in edge_list:
 			if use_bert:
-				src = s + bert_mapping[s]
-				dest = d + bert_mapping[d]
+				src = s + offset_list[s]
+				dest = d + offset_list[d]
 			else:
 				src = s
 				dest = d
