@@ -4,10 +4,12 @@ Finished constructing vocabulary of 25000 total words. Last word added: uncoveri
 INFO:tensorflow:Scale of 0 disables regularizer.
 INFO:tensorflow:Building graph...
 INFO:tensorflow:Using /tmp/tfhub_modules to cache modules.
-2019-05-11 10:17:16.084354: W tensorflow/core/graph/graph_constructor.cc:1265] Importing a graph with a lower producer version 26 into an existing graph with producer version 27. Shape inference will have run different parts of the graph with different producer versions.
+2019-05-15 18:30:48.082439: W tensorflow/core/graph/graph_constructor.cc:1265] Importing a graph with a lower producer version 26 into an existing graph with producer version 27. Shape inference will have run different parts of the graph with different producer versions.
 INFO:tensorflow:Saver not created because there are no variables in the graph to restore
 INFO:tensorflow:Saver not created because there are no variables in the graph to restore
 INFO:tensorflow:Saver not created because there are no variables in the graph to restore
+INFO:tensorflow:<type 'int'>
+INFO:tensorflow:<type 'int'>
 INFO:tensorflow:Adding attention_decoder timestep 0 of 60
 INFO:tensorflow:Adding attention_decoder timestep 1 of 60
 INFO:tensorflow:Adding attention_decoder timestep 2 of 60
@@ -68,241 +70,43 @@ INFO:tensorflow:Adding attention_decoder timestep 56 of 60
 INFO:tensorflow:Adding attention_decoder timestep 57 of 60
 INFO:tensorflow:Adding attention_decoder timestep 58 of 60
 INFO:tensorflow:Adding attention_decoder timestep 59 of 60
-INFO:tensorflow:Time to build graph: 53 seconds
-2019-05-11 10:17:57.073584: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
-2019-05-11 10:17:58.898358: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1432] Found device 0 with properties: 
+INFO:tensorflow:Time to build graph: 54 seconds
+2019-05-15 18:31:29.762783: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2019-05-15 18:31:31.303993: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1432] Found device 0 with properties: 
 name: GeForce GTX 1080 Ti major: 6 minor: 1 memoryClockRate(GHz): 1.582
 pciBusID: 0000:02:00.0
 totalMemory: 10.92GiB freeMemory: 10.76GiB
-2019-05-11 10:17:58.898407: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1511] Adding visible gpu devices: 0
-2019-05-11 10:17:59.231171: I tensorflow/core/common_runtime/gpu/gpu_device.cc:982] Device interconnect StreamExecutor with strength 1 edge matrix:
-2019-05-11 10:17:59.231222: I tensorflow/core/common_runtime/gpu/gpu_device.cc:988]      0 
-2019-05-11 10:17:59.231230: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1001] 0:   N 
-2019-05-11 10:17:59.232074: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10406 MB memory) -> physical GPU (device: 0, name: GeForce GTX 1080 Ti, pci bus id: 0000:02:00.0, compute capability: 6.1)
-INFO:tensorflow:['/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-0.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-10241.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-1078.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-10780.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-11319.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-11858.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-12397.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-12936.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-13475.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-14014.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-14553.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-1617.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-2156.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-2695.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-3234.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-3773.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-4312.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-4851.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-539.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-5390.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-5929.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-6468.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-7007.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-7546.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-8085.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-8624.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-9163.index', '/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-9702.index']
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-0.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-0
+2019-05-15 18:31:31.304063: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1511] Adding visible gpu devices: 0
+2019-05-15 18:31:31.580439: I tensorflow/core/common_runtime/gpu/gpu_device.cc:982] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-05-15 18:31:31.580509: I tensorflow/core/common_runtime/gpu/gpu_device.cc:988]      0 
+2019-05-15 18:31:31.580518: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1001] 0:   N 
+2019-05-15 18:31:31.580800: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10406 MB memory) -> physical GPU (device: 0, name: GeForce GTX 1080 Ti, pci bus id: 0000:02:00.0, compute capability: 6.1)
+INFO:tensorflow:['/media/riseadmin/data1/gttp_64_holle_logs/holle_type_64_updated_elmo_gcn_before_lstm_gcn_128_entity_hops_1/0/train/model.ckpt-0.index']
+INFO:tensorflow:/media/riseadmin/data1/gttp_64_holle_logs/holle_type_64_updated_elmo_gcn_before_lstm_gcn_128_entity_hops_1/0/train/model.ckpt-0.index
+INFO:tensorflow:Restoring parameters from /media/riseadmin/data1/gttp_64_holle_logs/holle_type_64_updated_elmo_gcn_before_lstm_gcn_128_entity_hops_1/0/train/model.ckpt-0
 example_generator completed reading all datafiles. No more data.
 INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
 INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
 WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
 INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:1612.2366676330566
-INFO:tensorflow:Found new best model with 1612.237 running_avg_loss. Saving to /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/eval/bestmodel
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-10241.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-10241
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:361.0498478412628
-INFO:tensorflow:Found new best model with 361.050 running_avg_loss. Saving to /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/eval/bestmodel
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-1078.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-1078
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:351.72106263041496
-INFO:tensorflow:Found new best model with 351.721 running_avg_loss. Saving to /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/eval/bestmodel
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-10780.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-10780
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 267
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:370.15004259347916
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-11319.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-11319
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 54
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:382.00474256277084
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-11858.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-11858
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 56
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:373.4638421237469
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-12397.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-12397
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 58
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:419.8680122792721
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-12936.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-12936
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 50
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:395.37498211860657
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-13475.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-13475
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 52
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:424.4900113940239
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-14014.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-14014
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 56
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:421.61768835783005
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-14553.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-14553
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 40
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:436.49949166178703
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-1617.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-1617
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 53
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:318.5707237422466
-INFO:tensorflow:Found new best model with 318.571 running_avg_loss. Saving to /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/eval/bestmodel
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-2156.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-2156
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:306.3237350285053
-INFO:tensorflow:Found new best model with 306.324 running_avg_loss. Saving to /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/eval/bestmodel
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-2695.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-2695
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 214
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:301.1587231606245
-INFO:tensorflow:Found new best model with 301.159 running_avg_loss. Saving to /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/eval/bestmodel
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-3234.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-3234
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 449
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:301.5478403419256
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-3773.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-3773
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 36
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:292.942852422595
-INFO:tensorflow:Found new best model with 292.943 running_avg_loss. Saving to /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/eval/bestmodel
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-4312.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-4312
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 371
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:298.126765742898
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-4851.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-4851
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 51
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:311.6432329714298
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-539.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-539
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 67
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:459.7257750630379
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-5390.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-5390
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 52
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:301.7643702477217
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-5929.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-5929
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 53
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:313.1799777150154
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-6468.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-6468
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 57
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:316.58303251862526
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-7007.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-7007
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 51
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:317.8800411224365
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-7546.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-7546
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 54
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 0
-INFO:tensorflow:Finished reading dataset in single_pass mode.
-INFO:tensorflow:323.9238333553076
-INFO:tensorflow:/media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-8085.index
-INFO:tensorflow:Restoring parameters from /media/riseadmin/data2/gttp_64_holle_logs/holle_type_64_updated_gcn_before_lstm_gcn_size_128_use_label_and_gating_elmo_run_1/0/train/model.ckpt-8085
-WARNING:tensorflow:Bucket input queue is empty when calling next_batch. Bucket queue size: 0, Input queue size: 55
-example_generator completed reading all datafiles. No more data.
-INFO:tensorflow:The example generator for this example queue filling thread has exhausted data.
-INFO:tensorflow:single_pass mode is on, so we've finished reading dataset. This thread is stopping.
-INFO:tensorflow:Caught keyboard interrupt on worker. Stopping supervisor...
+INFO:tensorflow:1642.55755711
+INFO:tensorflow:Found new best model with 1642.558 running_avg_loss. Saving to /media/riseadmin/data1/gttp_64_holle_logs/holle_type_64_updated_elmo_gcn_before_lstm_gcn_128_entity_hops_1/0/eval/bestmodel
+INFO:tensorflow:Restoring bestmodel for training...
+2019-05-15 18:38:17.283128: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1511] Adding visible gpu devices: 0
+2019-05-15 18:38:17.283210: I tensorflow/core/common_runtime/gpu/gpu_device.cc:982] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-05-15 18:38:17.283225: I tensorflow/core/common_runtime/gpu/gpu_device.cc:988]      0 
+2019-05-15 18:38:17.283238: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1001] 0:   N 
+2019-05-15 18:38:17.283445: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10406 MB memory) -> physical GPU (device: 0, name: GeForce GTX 1080 Ti, pci bus id: 0000:02:00.0, compute capability: 6.1)
+Initializing all variables...
+WARNING:tensorflow:From /home/riseadmin/.local/lib/python2.7/site-packages/tensorflow/python/util/tf_should_use.py:189: initialize_all_variables (from tensorflow.python.ops.variables) is deprecated and will be removed after 2017-03-02.
+Instructions for updating:
+Use `tf.global_variables_initializer` instead.
+WARNING:tensorflow:From run_summarization.py:208: all_variables (from tensorflow.python.ops.variables) is deprecated and will be removed after 2017-03-02.
+Instructions for updating:
+Please use tf.global_variables instead.
+Restoring all non-adagrad variables from best model in eval dir...
+INFO:tensorflow:Loading checkpoint /media/riseadmin/data1/gttp_64_holle_logs/holle_type_64_updated_elmo_gcn_before_lstm_gcn_128_entity_hops_1/0/eval/bestmodel-0
+INFO:tensorflow:Restoring parameters from /media/riseadmin/data1/gttp_64_holle_logs/holle_type_64_updated_elmo_gcn_before_lstm_gcn_128_entity_hops_1/0/eval/bestmodel-0
+Restored /media/riseadmin/data1/gttp_64_holle_logs/holle_type_64_updated_elmo_gcn_before_lstm_gcn_128_entity_hops_1/0/eval/bestmodel-0.
+Saving model to /media/riseadmin/data1/gttp_64_holle_logs/holle_type_64_updated_elmo_gcn_before_lstm_gcn_128_entity_hops_1/0/train/model-0...
+Saved.

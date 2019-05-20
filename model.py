@@ -916,7 +916,8 @@ class SummarizationModel(object):
 						emb_enc_inputs = enc_elmo_states
 						if self._hps.use_query_elmo.value:
 							emb_query_inputs = enc_query_elmo_states
-
+					self._enc_states = emb_enc_inputs
+					self._query_states = emb_query_inputs
 				############### BERT ###################
 				if self._hps.use_bert.value:
 					self.bert = hub.Module(self._hps.bert_path.value, trainable=self._hps.bert_trainable.value)
@@ -1060,9 +1061,9 @@ class SummarizationModel(object):
 
 						if self._hps.concat_with_word_embedding.value:  # interm concat
 							b_interm_word = tf.get_variable('b_interm_word', [1], initializer=tf.constant_initializer(0.0))
-
+							small_dim = emb_enc_inputs.get_shape().as_list()[2]
 							if hps.emb_dim.value != hps.hidden_dim.value * 2:
-								w_interm_word = tf.get_variable('w_interm_word', [hps.emb_dim.value, hps.hidden_dim.value * 2], initializer=tf.contrib.layers.xavier_initializer(),  regularizer=self._regularizer)
+								w_interm_word = tf.get_variable('w_interm_word', [small_dim, hps.hidden_dim.value * 2], initializer=tf.contrib.layers.xavier_initializer(),  regularizer=self._regularizer)
 								emb_enc_inputs = tf.tensordot(emb_enc_inputs, w_interm_word, axes=[[2], [0]])
 								
 							gcn_in = b_interm_word * emb_enc_inputs + (1.0 - b_interm_word) * self._enc_states
