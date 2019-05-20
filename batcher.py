@@ -105,10 +105,10 @@ class Example(object):
 			self.query_edge_list = query_edge_list
 
 		if hps.use_bert.value:
-			self.enc_input = bert_vocab.convert_glove_to_bert_indices(self.enc_input)	
+			self.enc_input, self.enc_pos_offset = bert_vocab.convert_glove_to_bert_indices(self.enc_input)	
 			self.enc_len = len(self.enc_input)
 			if hps.use_query_bert.value:
-				self.query_input = bert_vocab.convert_glove_to_bert_indices(self.query_input)	
+				self.query_input, self.pos_offset_query = bert_vocab.convert_glove_to_bert_indices(self.query_input)	
  				self.query_len = len(self.query_input)
 		
 		# Store the original strings

@@ -222,11 +222,17 @@ class BertVocab(object):
 
 
 	def convert_glove_to_bert_indices(self, token_ids):
+		
 		new_tokens = [self.bert_vocab['[CLS]']]
+		offset = 1
+		pos_offset = []
 		for token_id in token_ids:
+			pos_offset.append(offset)
 			if token_id in self.index_map_glove_to_bert:
+				bert_tokens = self.index_map_glove_to_bert[token_id]
+				offset = offset + len(bert_tokens) - 1 
 				#new_tokens.append(self.index_map_glove_to_bert[token_id])
-				new_tokens = new_tokens + self.index_map_glove_to_bert[token_id]
+				new_tokens = new_tokens + bert_tokens
 			else:
 				#wordpiece might be redundant
 				token = glove_vocab._id_to_word[token_id]
@@ -258,10 +264,11 @@ class BertVocab(object):
 				else:
 					sub_tokens_bert = [self.bert_vocab[s] for s in sub_tokens]
 					new_tokens = new_tokens + sub_tokens_bert
+					offset = offset + len(sub_tokens_bert) - 1
 
 			
 		new_tokens.append(self.bert_vocab['[SEP]'])
-		return new_tokens
+		return new_tokens, pos_offset
 
 
 
@@ -559,7 +566,7 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 		
 	return adj_main_in, adj_main_out                
 
-def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0):
+def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0, use_bert=False, bert_mapping=None):
 	adj_main_in, adj_main_out = [], []
 	max_labels = 45
 	for edge_list in batch_list:
@@ -570,7 +577,13 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label
 		out_ind, out_data = ddict(list), ddict(list)
 		count = 0
 	  
-		for src, dest, lbl_ in edge_list:
+		for s, d, lbl_ in edge_list:
+			if use_bert:
+				src = s + bert_mapping[s]
+				dest = d + bert_mapping[d]
+			else:
+				src = s
+				dest = d
 			if src >= max_nodes or dest >= max_nodes:
 				continue
 			
