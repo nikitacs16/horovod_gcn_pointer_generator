@@ -33,9 +33,9 @@ def get_metrics(f1,f2):
 
 input_path = sys.argv[1]
 
-for k in sorted(glob.glob(input_path+'/*fusion*run_2')):
+for k in sorted(glob.glob(input_path+'/*bert*run_4')):
 	try:
-		x = glob.glob(os.path.join(k,'decode_*'))
+		x = glob.glob(os.path.join('0',k,'decode_*'))
 	except IndexError:
 		print(k)
 		continue
