@@ -166,12 +166,16 @@ class Vocab(object):
 
 
 class BertVocab(object):
+	"""
+	While glove_vocab has been used as default. The term glove is misnomer. Glove_vocab represents normal vocab in this file
+	This function converts individual tokens to their respective word piece tokens
+	"""
 	
-	def __init__(self,glove_vocab, bert_vocab_file_path):
+	def __init__(self, glove_vocab, bert_vocab_file_path):
 		self.bert_vocab = collections.OrderedDict()
 		self.glove_vocab = glove_vocab
 		index = 0
-		with tf.gfile.GFile(bert_vocab_file_path, "r") as reader:
+		with tf.gfile.GFile(bert_vocab_file_path, "r") as reader: #obtain bert vocab
 			while True:
 				token = convert_to_unicode(reader.readline())
 				if not token:
@@ -181,10 +185,11 @@ class BertVocab(object):
 				index += 1
 		not_found = 0 
 		self.index_map_glove_to_bert = {}
+		
 		for i in range(glove_vocab._count):
 			if glove_vocab._id_to_word[i] in self.bert_vocab:
 				self.index_map_glove_to_bert[i] = [self.bert_vocab[glove_vocab._id_to_word[i]]]
-			else:
+			else: #Word Piece Tokenizer
 				not_found = not_found + 1
 				new_tokens = [] 
 				token = glove_vocab._id_to_word[i]
@@ -222,19 +227,23 @@ class BertVocab(object):
 
 
 	def convert_glove_to_bert_indices(self, token_ids):
+		"""
+		Converts words to their respective word-piece tokenized indices
+		token_ids : ids from the word 
+		"""
 		
-		new_tokens = [self.bert_vocab['[CLS]']]
+		new_tokens = [self.bert_vocab['[CLS]']] #As pert the bert repo instructions
 		offset = 1
 		pos_offset = []
 		for token_id in token_ids:
-			pos_offset.append(offset)
+			pos_offset.append(offset) #wordpiece tokenizer can return more than one index hence we maintain an offset array. This is useful for the BERT + GCN experiments. 
 			if token_id in self.index_map_glove_to_bert:
 				bert_tokens = self.index_map_glove_to_bert[token_id]
 				offset = offset + len(bert_tokens) - 1 
 				#new_tokens.append(self.index_map_glove_to_bert[token_id])
 				new_tokens = new_tokens + bert_tokens
 			else:
-				#wordpiece might be redundant
+				#wordpiece might be redundant for training data. Keep for unseen instances
 				token = glove_vocab._id_to_word[token_id]
 				chars = list(token)
 
@@ -268,9 +277,6 @@ class BertVocab(object):
 
 			
 		new_tokens.append(self.bert_vocab['[SEP]'])
-#		tf.logging.info(token_ids)
-#		tf.logging.info(new_tokens)
-#		tf.logging.info(pos_offset)
 		return new_tokens, pos_offset
 
 
@@ -513,9 +519,15 @@ dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 
 def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, use_both=True, keep_prob=1.0, use_bert=False, bert_mapping=None):
+	
+
 	adj_main_in = []
 	adj_main_out = []
-	#print(edge_list)	
+	
+	if bert_mapping is None:
+		bert_mapping = [[] for i in range(len(batch_list))] #empty array for allowing in the next loop
+
+
 	for edge_list, enc_length, offset_list in zip(batch_list, encoder_lengths, bert_mapping):
 		#print(edge_list)
 		curr_adj_in = []
@@ -552,7 +564,9 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 				else:
 					curr_adj_out.append((dest, src))    
 					curr_data_out.append(1.0)
+		
 		'''		
+		Use this snippet when you need to use the A + I condition (refer README)
 		seen_nodes = list(set(seen_nodes))
 		
 		for src in range(enc_length): #A + I for entity and coref
@@ -580,6 +594,10 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0, use_bert=False, bert_mapping=None):
 	adj_main_in, adj_main_out = [], []
 	max_labels = 45
+
+	if bert_mapping is None:
+		bert_mapping = [[] for i in range(len(batch_list))] #empty array for allowing in the next loop
+
 	for edge_list, offset_list in zip(batch_list, bert_mapping):
 		adj_in, adj_out = {}, {}
 

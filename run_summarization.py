@@ -64,7 +64,6 @@ tf.app.flags.DEFINE_boolean('emb_trainable',config['emb_trainable'],'')
 tf.app.flags.DEFINE_boolean('use_gru',config['use_gru'],'For QBAS experiments')
 
 tf.app.flags.DEFINE_boolean('use_lstm',config['use_lstm'],'For conceptual experiments')
-tf.app.flags.DEFINE_boolean('stacked_lstm',config['stacked_lstm'],'lstm over lstm baseline')
 
 
 tf.app.flags.DEFINE_integer('max_to_keep',config['max_to_keep'],'how many models to keep')
@@ -123,7 +122,6 @@ tf.app.flags.DEFINE_boolean('pointer_gen', config['pointer_gen'], 'If True, use 
 
 tf.app.flags.DEFINE_boolean('no_lstm_encoder', config['no_lstm_encoder'], 'Removes LSTM layer from the seq2seq model. word_gcn flag should be true.')
 tf.app.flags.DEFINE_boolean('concat_gcn_lstm',config['concat_gcn_lstm'], 'Should you concat hidden states from lstm and gcn?')
-tf.app.flags.DEFINE_boolean('simple_concat',config['simple_concat'], 'Should you simple or weighed concat')
 tf.app.flags.DEFINE_boolean('use_gcn_lstm_parallel',config['use_gcn_lstm_parallel'], 'Should you concat hidden states from lstm and gcn?')
 tf.app.flags.DEFINE_boolean('use_label_information',config['use_label_information'], 'Should you use names of labels from the respective parses ?')
 tf.app.flags.DEFINE_boolean('use_coref_graph',config['use_coref_graph'], 'Should you add coreference graph with dependency graph')
@@ -142,7 +140,6 @@ tf.app.flags.DEFINE_integer('word_gcn_layers', config['word_gcn_layers'], 'Layer
 tf.app.flags.DEFINE_integer('word_gcn_dim', config['word_gcn_dim'], 'output of gcn ')
 tf.app.flags.DEFINE_boolean('word_gcn_skip',config['word_gcn_skip'], 'add skkip ?')
 tf.app.flags.DEFINE_float('word_gcn_edge_dropout', config['word_gcn_edge_dropout'], 'dropout keep probability for the edges in word_gcn')
-tf.app.flags.DEFINE_float('word_loop_dropout', config['word_loop_dropout'], 'dropout keep probability for self loop in word_gcn')
 tf.app.flags.DEFINE_boolean('word_gcn_fusion', config['word_gcn_fusion'], 'should you use a final fusion layers for the hops?')
 
 
@@ -158,7 +155,6 @@ tf.app.flags.DEFINE_integer('query_gcn_layers', config['query_gcn_layers'], 'Lay
 tf.app.flags.DEFINE_integer('query_gcn_dim', config['query_gcn_dim'], 'output of gcn ')
 tf.app.flags.DEFINE_boolean('query_gcn_skip',config['query_gcn_skip'], 'add skip ?')
 tf.app.flags.DEFINE_float('query_gcn_edge_dropout', config['query_gcn_edge_dropout'], 'dropout keep probability for the gcn layer')
-tf.app.flags.DEFINE_float('query_loop_dropout', config['query_loop_dropout'], 'dropout keep probability for self loop in query_gcn')
 tf.app.flags.DEFINE_boolean('query_gcn_fusion', config['query_gcn_fusion'], 'should you use a final fusion layers for the hops?')
 #tf.app.flags.DEFINE_boolean('use_query_aware_attention', config['use_query_aware_attention'], 'True if to include query in attention equation')
 #edge types
@@ -424,12 +420,7 @@ def main(unused_argv):
 
   tf.logging.set_verbosity(tf.logging.INFO) # choose what level of logging you want
   tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))
-  #if FLAGS.no_lstm_encoder and FLAGS.word_gcn!=True:
-    #raise Exception("Set word_gcn to True to continue")
- # if FLAGS.no_lstm_query_encoder and FLAGS.query_gcn!=True and FLAGS.use_elmo!= True:
-  #  raise Exception("Set query_gcn to True to continue")
- # if (FLAGS.no_lstm_query_encoder==True or FLAGS.query_gcn==True) and FLAGS.query_encoder==False:
-  #  raise Exception("Set query_encoder to True to continue")
+
 
     
   # Change log_root to FLAGS.log_root/FLAGS.exp_name and create the dir if necessary
@@ -455,7 +446,7 @@ def main(unused_argv):
 
 
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
-  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm', 'use_gru','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','simple_concat','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','stacked_lstm', 'word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'word_loop_dropout', 'query_loop_dropout', 'use_gru', 'word_gcn_fusion', 'query_gcn_fusion','encoder_lstm_layers','query_encoder_lstm_layers', 'lstm_dropout', 'use_learning_rate_halving', 'learning_rate_change_after', 'learning_rate_change_interval', 'save_steps', 'lstm_type', 'use_coref_graph','use_entity_graph', 'use_default_graph', 'use_elmo', 'elmo_trainable','elmo_embedding_layer','use_lexical_graph', 'use_elmo_glove', 'use_query_elmo', 'use_bert', 'use_query_bert', 'bert_path','bert_trainable', 'bert_embedding_layer', 'bert_vocab_file_path']
+  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'optimizer', 'adam_lr','rand_unif_init_mag', 'use_glove', 'glove_path', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'max_query_steps', 'coverage', 'cov_loss_wt', 'pointer_gen','word_gcn','word_gcn_layers','word_gcn_dropout','word_gcn_gating','word_gcn_dim','no_lstm_encoder','query_encoder','query_gcn','query_gcn_layers','query_gcn_dropout','query_gcn_gating','query_gcn_dim','no_lstm_query_encoder','emb_trainable','concat_gcn_lstm','use_gcn_lstm_parallel','use_label_information','use_lstm', 'use_gru','use_gcn_before_lstm','use_regularizer','beta_l2','concat_with_word_embedding','word_gcn_skip','query_gcn_skip','flow_alone','flow_combined','word_gcn_edge_dropout', 'query_gcn_edge_dropout', 'use_gru', 'word_gcn_fusion', 'query_gcn_fusion','encoder_lstm_layers','query_encoder_lstm_layers', 'lstm_dropout', 'use_learning_rate_halving', 'learning_rate_change_after', 'learning_rate_change_interval', 'save_steps', 'lstm_type', 'use_coref_graph','use_entity_graph', 'use_default_graph', 'use_elmo', 'elmo_trainable','elmo_embedding_layer','use_lexical_graph', 'use_elmo_glove', 'use_query_elmo', 'use_bert', 'use_query_bert', 'bert_path','bert_trainable', 'bert_embedding_layer', 'bert_vocab_file_path']
   hps_dict = {}
   for key,val in FLAGS.__flags.iteritems(): # for each flag
     if key in hparam_list: # if it's in the list

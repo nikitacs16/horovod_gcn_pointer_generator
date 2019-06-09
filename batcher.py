@@ -50,7 +50,7 @@ class Example(object):
 		start_decoding = vocab.word2id(data.START_DECODING)
 		stop_decoding = vocab.word2id(data.STOP_DECODING)
 		self.bert_vocab = bert_vocab
-		self.epoch_num = epoch_num
+		self.epoch_num = epoch_num #deprecated
 		self.enc_pos_offset = None
 		self.query_pos_offset = None
 		# Process the article
@@ -82,7 +82,8 @@ class Example(object):
 			
 			self.query_input = [vocab.word2id(w) for w in query_words] # list of word ids; OOVs are represented by the id for UNK token
 			if self.hps.use_query_elmo.value:
-				self.query_input_raw = query_words
+				self.query_input_raw = query_words #tensorflow_hub requires raw text
+				
 		# Get the decoder input sequence and target sequence
 		self.dec_input, self.target = self.get_dec_inp_targ_seqs(abs_ids, hps.max_dec_steps.value, start_decoding,
 																 stop_decoding)
@@ -576,6 +577,7 @@ class Batcher(object):
 							query_edge_list = query_edge_list + ast.literal_eval(e.features.feature['query_edge_list'].bytes_list.value[0])
 						
 						'''
+						These are inter-sentence graph and may not be applicable
 						if self._hps.use_coref_graph.value:
 							query_edge_list = query_edge_list + ast.literal_eval(e.features.feature['query_coref_edge_list'].bytes_list.value[0])
 						if self._hps.use_entity_graph.value:

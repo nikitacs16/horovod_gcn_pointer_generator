@@ -1,22 +1,116 @@
-{adagrad_init_acc: 0.01, adam_lr: 0.0004, base_experiment: gcn_cnn, batch_size: 16,
-  beam_size: 4, beta_l2: 0.0, concat_gcn_lstm: false, concat_with_word_embedding: true,
-  dev_path: /home/ubuntu/finished_files/chunked/val_000.bin, emb_dim: 100,
-  emb_trainable: true, exp_name: baseline_1_holle_small_save_MEAN,
-  flow_alone: false, flow_combined: false, glove_path: /home/ubuntu/glove/glove.6B.100d.txt,
-  gpu_device_id: '0', hidden_dim: 256, log_root: /home/ubuntu/gttp_holle_logs, lr: 0.015,
-  max_dec_steps: 60, max_enc_steps: 300, max_grad_norm: 2.0, max_query_steps: 65,
-  max_to_keep: 7, min_dec_steps: 3, no_lstm_encoder: false, no_lstm_query_encoder: false,
-  optimizer: adam, pointer_gen: true, query_encoder: true, query_gcn: false, query_gcn_dim: 128,
-  query_gcn_dropout: 1.0, query_gcn_edge_dropout: 1.0, query_gcn_gating: false, query_gcn_layers: 1,
-  query_gcn_skip: false, query_loop_dropout: 1.0, rand_unif_init_mag: 0.02, save_model_secs: 60,
-  save_steps: 2125, simple_concat: false, stacked_lstm: false, stop_steps: 20000,
-  test_path: /home/ubuntu/finished_files/chunked/test_000.bin, tf_example_format: true,
-  train_path: /home/ubuntu/finished_files/chunked/train*3*.bin, trunc_norm_init_std: 1e-4,
-  use_gating: true, use_gcn_before_lstm: false, use_gcn_lstm_parallel: false, use_glove: true,
-  use_label_information: true, use_lstm: true, use_lstm_before_gcn: false, use_regularizer: false,
-  use_save_at: false, use_stop_after: true, vocab_path: /home/ubuntu/finished_files/vocab,
-  vocab_size: 25000, word_gcn: false, word_gcn_dim: 512, word_gcn_dropout: 1.0, word_gcn_edge_dropout: 0.75,
-  word_gcn_gating: true, word_gcn_layers: 1, word_gcn_skip: true, word_loop_dropout: 1.0}
+{
+  #Network Hyper-params
+
+  adagrad_init_acc: 0.01, 
+  optimizer: adam, #adagrad, adam, momentum
+  adam_lr: 0.0004, 
+  lr: 0.015, #adam, momentum
+  use_learning_rate_halving: false,
+  learning_rate_change_after: 8, 
+  learning_rate_change_interval: 2,
+  gpu_device_id: '2',
+  batch_size: 64,
+  use_regularizer: false,
+  beta_l2: 1e-5, #regularization rate
+  max_grad_norm: 2.0, 
+  rand_unif_init_mag: 0.02, 
+  trunc_norm_init_std: 1e-4, 
+  max_to_keep: 30, #models
+  save_model_secs: 60, #deprecated 
+  use_save_at: false, 
+  save_steps: 539,
+  use_stop_after: true,
+  stop_steps: 15000, 
+  tf_example_format: true, 
+  
+  min_dec_steps: 3,
+  max_dec_steps: 60, 
+  max_enc_steps: 300, 
+  max_query_steps: 65,
+
+  #data_paths
+  log_root: /media/riseadmin/data1/gttp_64_holle_logs,
+  dev_path: /home/riseadmin/full_holle/finished_files/chunked/val*,
+  test_path: /home/riseadmin/full_holle/finished_files/chunked/test*,
+  train_path: /home/riseadmin/full_holle/finished_files/chunked/train*,
+  exp_name: holle_type_64_updated_lstm_before_gcn_gcn_size_512_use_label_and_gating_dep_bert_hops_2,
+
+  #Sem Choices
+  vocab_path: /home/riseadmin/updated_finished_files/vocab,
+  vocab_size: 25000,
+  emb_dim: 100, #default and glove size
+  emb_trainable: true, #default choices
+  #glove
+  use_glove: true,
+  glove_path: /home/riseadmin/glove/glove.6B.100d.txt,
+  #elmo
+  use_elmo: false,
+  elmo_embedding_layer: elmo,
+  elmo_trainable: true, 
+  use_query_elmo: false,
+  use_elmo_glove: false, #concat glove and elmo embeddings
+  #bert
+  use_bert: true,
+  bert_embedding_layer: None, #not implemented
+  use_query_bert: true, 
+  bert_trainable: false, 
+  bert_path: 'https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1', 
+  bert_vocab_file_path: '/home/riseadmin/vocab.txt',
 
 
+  #Seq choices  
+  encoder_lstm_layers: 1,
+  hidden_dim: 256, 
+  lstm_dropout: 0.7, #applicable only for multi-layer lstm
+  lstm_type: basic, #basic, layer_norm
+  no_lstm_encoder: false, #skip the Seq layer
+  use_gru: false,
+  use_lstm: true, #false results in RNN
+  query_encoder: true, 
+  query_encoder_lstm_layers: 1,
+  no_lstm_query_encoder: false, #skip the Seq layer
+    
 
+  #Str choices
+  use_gcn_before_lstm: false, #str-c-lstm
+  use_gcn_lstm_parallel: false, #parallel model
+  use_label_information: true, #label gcn
+  concat_gcn_lstm: false, #parallel model
+  concat_with_word_embedding: true, 
+
+  word_gcn: true, 
+  word_gcn_dim: 512, 
+  word_gcn_dropout: 1.0, 
+  word_gcn_edge_dropout: 1.0,
+  word_gcn_fusion: false, 
+  word_gcn_gating: true, 
+  word_gcn_layers: 2, 
+  word_gcn_skip: true,
+
+  query_gcn: false, 
+  query_gcn_dim: 512, 
+  query_gcn_dropout: 1.0, 
+  query_gcn_edge_dropout: 1.0,
+  query_gcn_fusion: false, 
+  query_gcn_gating: true, 
+  query_gcn_layers: 1, 
+  query_gcn_skip: true,
+  
+
+  #graph choices
+  use_coref_graph: false, 
+  use_default_graph: true,  
+  use_entity_graph: false,  
+  use_lexical_graph: false, 
+  flow_alone: false, 
+  flow_combined: false,
+
+
+  #decoder choices
+  beam_size: 4, 
+  pointer_gen: true #false becomes seq2seq
+
+       
+      
+   
+    }
