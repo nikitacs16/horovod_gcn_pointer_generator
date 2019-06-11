@@ -690,7 +690,7 @@ class SummarizationModel(object):
 				if dropout != 1.0: h_in = tf.nn.dropout(h_in, keep_prob=dropout)  # this is normal dropout
 
 				# Do convolution for adj_out
-				# h^(k+1)_v = ∑u∈N(v)g^(k)_(u,v) (W(^k)_dir(u,v)h^(k)_u + b^(k) L(u,v)) This is g_conv
+				# h^(k+1)_v =  sum_u in N(v)g^(k)_(u,v) (W(^k)_dir(u,v)h^(k)_u + b^(k) L(u,v)) This is g_conv
 				h_out = tf.matmul(gcn_in_2d, w_out)
 				h_out = tf.sparse_tensor_dense_matmul(adj_out, h_out)
 				labels_out_pad, _ = tf.sparse_fill_empty_rows(labels_out, 0)
@@ -736,7 +736,7 @@ class SummarizationModel(object):
 					#h_lexical = h_lexical * gates_loop
 					h_final = h_final + h_lexical
 
-				h = tf.nn.relu(h_final) #The M-GCN equation h_v^(k+1) = (W_self h_v^(k)+∑ g_conv(N))
+				h = tf.nn.relu(h_final) #The M-GCN equation h_v^(k+1) = (W_self h_v^(k)+sum g_conv(N))
 				
 				h = tf.reshape(h, [batch_size, max_nodes, gcn_dim])
 

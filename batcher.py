@@ -325,7 +325,7 @@ class Batch(object):
 				for ex in example_list:
 					query_edge_list.append(ex.query_edge_list)
 				#note query_edge_list is list of query edge lists. The length is equal to the batch size
-				self.query_adj_in, self.query_adj_out = data.get_adj(query_edge_list, hps.batch_size.value, max_query_seq_len,use_label_information=hps.use_label_information.value,																   flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.query_gcn_edge_dropout.value, use_bert=hps.use_bert.value, bert_mapping=hps.query_pos_offset)
+				self.query_adj_in, self.query_adj_out = data.get_adj(query_edge_list, hps.batch_size.value, max_query_seq_len,use_label_information=hps.use_label_information.value,																   flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.query_gcn_edge_dropout.value, use_bert=hps.use_bert.value, bert_mapping=offset_list)
 
 
 	def init_decoder_seq(self, example_list, hps):
