@@ -268,16 +268,16 @@ class Batch(object):
 					offset_list.append(ex.enc_pos_offset)
 
 			self.word_adj_in, self.word_adj_out = data.get_adj(edge_list, hps.batch_size.value, max_enc_seq_len, use_label_information=hps.use_label_information.value, flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.word_gcn_edge_dropout.value, 
-				use_bert=hps.use_bert.value, bert_mapping=offset_list)
+				use_bert=hps.use_bert.value, bert_mapping=offset_list, max_length=hps.max_enc_steps.value)
 
 			if hps.use_coref_graph.value:
-				self.word_adj_in_coref, self.word_adj_out_coref = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'coref', encoder_lengths, keep_prob=hps.word_gcn_edge_dropout.value,use_bert=hps.use_bert.value, bert_mapping=offset_list)
+				self.word_adj_in_coref, self.word_adj_out_coref = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'coref', encoder_lengths, keep_prob=hps.word_gcn_edge_dropout.value,use_bert=hps.use_bert.value, bert_mapping=offset_list, max_length=hps.max_enc_steps.value)
 			
 			if hps.use_entity_graph.value:
-				_, self.word_adj_entity = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'entity', encoder_lengths, use_both=False, keep_prob=hps.word_gcn_edge_dropout.value,use_bert=hps.use_bert.value, bert_mapping=offset_list)
+				_, self.word_adj_entity = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'entity', encoder_lengths, use_both=False, keep_prob=hps.word_gcn_edge_dropout.value,use_bert=hps.use_bert.value, bert_mapping=offset_list, max_length=hps.max_enc_steps.value)
 
 			if hps.use_lexical_graph.value:
-				_, self.word_adj_lexical = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'lexical', encoder_lengths, use_both=False, keep_prob=hps.word_gcn_edge_dropout.value, use_bert=hps.use_bert.value, bert_mapping=offset_list)
+				_, self.word_adj_lexical = data.get_specific_adj(edge_list, hps.batch_size.value, max_enc_seq_len, 'lexical', encoder_lengths, use_both=False, keep_prob=hps.word_gcn_edge_dropout.value, use_bert=hps.use_bert.value, bert_mapping=offset_list, max_length=hps.max_enc_steps.value)
 
 
 	def init_query_seq(self, example_list, hps):
@@ -330,7 +330,7 @@ class Batch(object):
 						offset_list.append(ex.query_pos_offset)
 
 				#note query_edge_list is list of query edge lists. The length is equal to the batch size
-				self.query_adj_in, self.query_adj_out = data.get_adj(query_edge_list, hps.batch_size.value, max_query_seq_len,use_label_information=hps.use_label_information.value,																   flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.query_gcn_edge_dropout.value, use_bert=hps.use_bert.value, bert_mapping=offset_list)
+				self.query_adj_in, self.query_adj_out = data.get_adj(query_edge_list, hps.batch_size.value, max_query_seq_len,use_label_information=hps.use_label_information.value,																   flow_alone=hps.flow_alone.value, flow_combined=hps.flow_combined.value, keep_prob=hps.query_gcn_edge_dropout.value, use_bert=hps.use_bert.value, bert_mapping=offset_list, max_length=hps.max_query_steps.value)
 
 
 	def init_decoder_seq(self, example_list, hps):

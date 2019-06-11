@@ -518,7 +518,7 @@ dep_list = ['cc', 'agent', 'ccomp', 'prt', 'meta', 'nsubjpass', 'csubj', 'conj',
 dep_dict = {label: i for i, label in enumerate(dep_list)}
 
 
-def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, use_both=True, keep_prob=1.0, use_bert=False, bert_mapping=None):
+def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, use_both=True, keep_prob=1.0, use_bert=False, bert_mapping=None, max_length=300):
 	
 
 	adj_main_in = []
@@ -539,7 +539,7 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 
 
 		for s, d, lbl in edge_list:
-			if s >=max_nodes or d >=max_nodes or s>=300 or d>=300:
+			if s >=max_nodes or d >=max_nodes or s>=max_length or d>=max_length:
 				continue
 			if use_bert:
 				src = s + offset_list[s]
@@ -591,7 +591,7 @@ def get_specific_adj(batch_list, batch_size, max_nodes, label, encoder_lengths, 
 		
 	return adj_main_in, adj_main_out                
 
-def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0, use_bert=False, bert_mapping=None):
+def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label_dict=dep_dict,flow_alone=False, flow_combined=False, keep_prob=1.0, use_bert=False, bert_mapping=None, max_length=300):
 	adj_main_in, adj_main_out = [], []
 	max_labels = 45
 
@@ -607,7 +607,7 @@ def get_adj(batch_list, batch_size, max_nodes, use_label_information=True, label
 		count = 0
 	  
 		for s, d, lbl_ in edge_list:
-			if s>=max_nodes or d >= max_nodes or s>=300 or d>=300:
+			if s>=max_nodes or d >= max_nodes or s>=max_length or d>=max_length:
 				continue
 			if use_bert:
 				try:
