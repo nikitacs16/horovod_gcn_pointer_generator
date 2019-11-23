@@ -30,7 +30,7 @@ Single GPU code [here](https://github.com/nikitacs16/gcn_pointer_generator)
 ### Run training
 To train your model, run:
 ```
-python run_summarization.py --mode=eval --config_file=/path/to/config_file.yaml 
+python run_summarization.py --mode=train --config_file=/path/to/config_file.yaml 
 ```
 This will create a subdirectory of your specified `log_root` called `myexperiment` where all checkpoints and other data will be saved. Then the model will start training using the `train_*.bin` files as training data.
 These fields are available *config.yaml*
