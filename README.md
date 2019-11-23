@@ -14,7 +14,6 @@ Tensorflow v1.8 and above
 
 [Horovod](https://github.com/horovod/horovod)
 
-Single GPU code [here](https://github.com/nikitacs16/gcn_pointer_generator)
 
 ## Pre-Processed Data
 [Download](https://drive.google.com/open?id=1PrtMQaXwiPDHNZamVBXyFcDHKGjtnlVQ)
